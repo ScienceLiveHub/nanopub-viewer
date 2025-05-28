@@ -65,6 +65,114 @@ function clearContainers() {
     hideResults();
 }
 
+// Enhanced text processing functions - preserve HTML formatting
+function cleanAndFormatText(text) {
+    if (!text || typeof text !== 'string') return text;
+    
+    // Only clean up specific escape sequences, preserve HTML tags and normal spaces
+    let cleanedText = text
+        // Convert literal escape sequences to actual characters
+        .replace(/\\n/g, '\n')
+        .replace(/\\r\\n/g, '\n')
+        .replace(/\\r/g, '\n')
+        .replace(/\\t/g, '\t')
+        .replace(/\\"/g, '"')
+        .replace(/\\'/g, "'")
+        .replace(/\\\\/g, '\\')
+        
+        // Handle multiple consecutive newlines (more than 2)
+        .replace(/\n{3,}/g, '\n\n')
+        
+        // Only clean up excessive whitespace (preserve normal spaces)
+        .replace(/[ ]{4,}/g, '   ')  // Replace 4+ spaces with 3 spaces
+        .replace(/\t+/g, '\t')      // Multiple tabs to single tab
+        
+        // Clean up whitespace at line boundaries only
+        .replace(/[ \t]+\n/g, '\n')  // Remove trailing whitespace before newlines
+        .replace(/\n[ \t]+/g, '\n')  // Remove leading whitespace after newlines
+        
+        .trim();
+    
+    return cleanedText;
+}
+
+function formatHTMLContent(content) {
+    if (!content) return content;
+    
+    // Don't parse as HTML if it's just plain text - preserve it as-is
+    if (!content.includes('<') && !content.includes('&')) {
+        return cleanAndFormatText(content);
+    }
+    
+    // Only decode HTML entities, don't manipulate the HTML structure
+    let formatted = content
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&nbsp;/g, ' ');
+    
+    return formatted;
+}
+
+function enhanceNanopubContent(container) {
+    // Process content more carefully to preserve HTML formatting
+    const elements = container.querySelectorAll('*');
+    
+    elements.forEach(element => {
+        // Skip script and style elements
+        if (element.tagName === 'SCRIPT' || element.tagName === 'STYLE') {
+            return;
+        }
+        
+        // Check if element innerHTML contains HTML tags or encoded HTML
+        if (element.innerHTML) {
+            const originalHTML = element.innerHTML;
+            let needsProcessing = false;
+            let processedHTML = originalHTML;
+            
+            // Check for HTML entities that need decoding
+            if (originalHTML.includes('&lt;') || originalHTML.includes('&gt;') || 
+                originalHTML.includes('&amp;') || originalHTML.includes('&quot;')) {
+                processedHTML = formatHTMLContent(originalHTML);
+                needsProcessing = true;
+            }
+            
+            // Check for literal escape sequences in the content
+            if (originalHTML.includes('\\n') || originalHTML.includes('\\r') || 
+                originalHTML.includes('\\"') || originalHTML.includes('\\t')) {
+                processedHTML = processedHTML
+                    .replace(/\\n/g, '<br>')  // Convert \n to HTML line breaks
+                    .replace(/\\r\\n/g, '<br>')
+                    .replace(/\\r/g, '<br>')
+                    .replace(/\\"/g, '"')
+                    .replace(/\\'/g, "'")
+                    .replace(/\\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;'); // Convert tab to spaces
+                needsProcessing = true;
+            }
+            
+            // Only update if we actually made changes
+            if (needsProcessing && processedHTML !== originalHTML) {
+                element.innerHTML = processedHTML;
+            }
+        }
+    });
+    
+    // Also process nanopub-display elements if they have shadow DOM
+    const nanopubElements = container.querySelectorAll('nanopub-display');
+    nanopubElements.forEach(element => {
+        // Wait for the component to render, then process its content
+        setTimeout(() => {
+            if (element.shadowRoot) {
+                enhanceNanopubContent(element.shadowRoot);
+            }
+            // Also process any regular DOM content within the component
+            enhanceNanopubContent(element);
+        }, 1000);
+    });
+}
+
 // Component Loading Logic
 async function loadComponentsWithMultipleMethods() {
     // Check if components are already loaded and registered
@@ -163,6 +271,11 @@ function fixBrokenImages(container) {
                     if (node.nodeType === Node.ELEMENT_NODE) {
                         const newImages = node.querySelectorAll ? node.querySelectorAll('img') : [];
                         newImages.forEach(img => fixSingleImage(img));
+                        
+                        // Also enhance text content in newly added nodes
+                        if (node.querySelectorAll) {
+                            enhanceNanopubContent(node);
+                        }
                     }
                 });
             }
@@ -235,29 +348,28 @@ function fixSingleImage(img) {
     }
 }
 
-// Pre-process RDF data to fix HTML content issues
+// Enhanced RDF data preprocessing - preserve HTML formatting
 function preprocessRDFData(rdfData) {
     console.log('Original RDF data length:', rdfData.length);
     
-    // More aggressive HTML cleaning in RDF data
+    // Very selective cleaning - mainly fix URL issues, preserve HTML content
     let cleanedData = rdfData
         // Fix the specific broken image URL pattern
         .replace(
             /src=\\"https:\/\/zenodo\.org\/records\/15391804\/files\/Sarland_17May2024_Germany_DWD\.png\\"/g,
             'src="https://zenodo.org/records/15391804/files/Sarland_17May2024_Germany_DWD.png"'
         )
-        // Fix general pattern of escaped quotes around URLs
+        // Fix general pattern of escaped quotes around URLs only
         .replace(/src=\\"([^"\\]*)\\"([^>]*>)/g, 'src="$1"$2')
         // Fix malformed src attributes with quotes
         .replace(/src="([^"]*)"([^>]*>)/g, (match, src, rest) => {
-            // Clean up the src attribute
             let cleanSrc = src
                 .replace(/^["']+|["']+$/g, '') // Remove extra quotes
                 .replace(/%22/g, '') // Remove URL-encoded quotes
                 .replace(/\\\"/g, '"') // Fix escaped quotes
                 .trim();
             
-            // Ensure proper protocol
+            // Ensure proper protocol for URLs
             if (cleanSrc.startsWith('zenodo.org') || cleanSrc.startsWith('www.') || 
                 (!cleanSrc.startsWith('http') && cleanSrc.includes('/'))) {
                 if (!cleanSrc.startsWith('http')) {
@@ -267,12 +379,14 @@ function preprocessRDFData(rdfData) {
             
             return `src="${cleanSrc}"${rest}`;
         })
-        // Remove any remaining malformed file:// URLs
+        // Remove malformed file:// URLs
         .replace(/file:\/\/\/["%22]+https?:\/\/[^"\\%]+["%22]+/g, (match) => {
-            // Extract the actual URL from the malformed one
             const urlMatch = match.match(/https?:\/\/[^"\\%]+/);
             return urlMatch ? urlMatch[0] : match;
         });
+    
+    // DO NOT clean RDF literals containing HTML - let them be processed later
+    // This preserves content like: "A <b>tweet</b> posted by..."
     
     console.log('Cleaned RDF data length:', cleanedData.length);
     console.log('Changes made:', rdfData !== cleanedData);
@@ -557,7 +671,7 @@ function initializeEventListeners() {
     });
 }
 
-// Clean nanopub rendering - just the component, no extra buttons or custom displays
+// Enhanced nanopub rendering with better text formatting
 async function renderCleanNanopubView(url, rdfData) {
     showLoading(true, 'Rendering nanopublication...');
     
@@ -587,10 +701,16 @@ async function renderCleanNanopubView(url, rdfData) {
         displayElement.setAttribute('rdf', rdfData);
         displayContainer.appendChild(displayElement);
         
-        // Fix any remaining broken images after component renders
+        // Enhanced content processing after component renders
         setTimeout(() => {
             fixBrokenImages(displayContainer);
+            enhanceNanopubContent(displayContainer);
         }, 2000);
+        
+        // Additional processing after more time for complex content
+        setTimeout(() => {
+            enhanceNanopubContent(displayContainer);
+        }, 4000);
         
     } catch (error) {
         console.error('Error creating nanopub display:', error);
@@ -602,6 +722,12 @@ async function renderCleanNanopubView(url, rdfData) {
         const statusElement = document.createElement('nanopub-status');
         statusElement.setAttribute('url', url);
         statusContainer.appendChild(statusElement);
+        
+        // Also enhance status content
+        setTimeout(() => {
+            enhanceNanopubContent(statusContainer);
+        }, 2000);
+        
     } catch (error) {
         console.log('Status element creation failed (non-critical):', error);
     }

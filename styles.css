@@ -617,6 +617,37 @@ input[type="url"]:focus {
     to { transform: rotate(360deg); }
 }
 
+/* Handle images properly */
+.custom-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 16px 0;
+    display: block;
+}
+
+/* Image placeholder styling */
+.image-placeholder {
+    padding: 20px;
+    background: var(--background-light);
+    border: 1px dashed var(--border-light);
+    border-radius: 8px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin: 16px 0;
+}
+
+.image-placeholder a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.image-placeholder a:hover {
+    text-decoration: underline;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
@@ -816,6 +847,7 @@ nanopub-display .quad:hover {
     margin: 12px 0;
     line-height: 1.6;
     color: var(--text-primary);
+    white-space: pre-line; /* Preserve line breaks */
 }
 
 .custom-content a {
@@ -852,6 +884,8 @@ nanopub-display .quad:hover {
     border-radius: 8px;
     overflow-x: auto;
     margin: 16px 0;
+    white-space: pre-wrap; /* Preserve whitespace and line breaks */
+    line-height: 1.4;
 }
 
 .custom-content img {
@@ -859,6 +893,7 @@ nanopub-display .quad:hover {
     height: auto;
     border-radius: 8px;
     margin: 16px 0;
+    display: block;
 }
 
 .custom-content blockquote {
@@ -867,6 +902,25 @@ nanopub-display .quad:hover {
     margin: 16px 0;
     font-style: italic;
     color: var(--text-secondary);
+}
+
+.custom-content br {
+    line-height: 1.6;
+}
+
+/* Ensure nanopub component content also handles line breaks properly */
+nanopub-display .content,
+nanopub-display [data-graph] .content {
+    white-space: pre-line !important;
+    line-height: 1.6 !important;
+}
+
+/* Handle text content in nanopub components */
+nanopub-display p,
+nanopub-display div,
+nanopub-display span {
+    white-space: pre-line !important;
+    line-height: 1.6 !important;
 }
 
 .rdf-triple {
