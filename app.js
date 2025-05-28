@@ -135,6 +135,151 @@ async function loadComponentsWithMultipleMethods() {
     return false;
 }
 
+// Fix broken image URLs in nanopub content
+function fixBrokenImages(container) {
+    console.log('Fixing broken images in container:', container);
+    
+    // Look for all img elements, including those in shadow DOMs
+    const images = container.querySelectorAll('img');
+    console.log('Found images:', images.length);
+    
+    // Also check in nanopub-display component's shadow DOM
+    const nanopubElements = container.querySelectorAll('nanopub-display');
+    nanopubElements.forEach(element => {
+        if (element.shadowRoot) {
+            const shadowImages = element.shadowRoot.querySelectorAll('img');
+            console.log('Found shadow DOM images:', shadowImages.length);
+            shadowImages.forEach(img => fixSingleImage(img));
+        }
+    });
+    
+    images.forEach(img => fixSingleImage(img));
+    
+    // Also intercept and fix any future image loads
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        const newImages = node.querySelectorAll ? node.querySelectorAll('img') : [];
+                        newImages.forEach(img => fixSingleImage(img));
+                    }
+                });
+            }
+        });
+    });
+    
+    observer.observe(container, { childList: true, subtree: true });
+    
+    // Stop observing after 10 seconds
+    setTimeout(() => observer.disconnect(), 10000);
+}
+
+function fixSingleImage(img) {
+    const src = img.getAttribute('src');
+    if (src) {
+        console.log('Processing image src:', src);
+        
+        // Remove extra quotes and fix URL encoding issues
+        let fixedSrc = src
+            .replace(/^["']+|["']+$/g, '') // Remove quotes at start/end
+            .replace(/%22/g, '') // Remove URL-encoded quotes
+            .replace(/^file:\/\/\//, '') // Remove file:// protocol
+            .replace(/\\\"/g, '"') // Fix escaped quotes
+            .trim();
+        
+        // Handle the specific malformed pattern
+        if (fixedSrc.includes('%22https://') || fixedSrc.includes('"https://')) {
+            const urlMatch = fixedSrc.match(/https?:\/\/[^"\\%\s]+/);
+            if (urlMatch) {
+                fixedSrc = urlMatch[0];
+            }
+        }
+        
+        // Ensure it starts with https:// if it looks like a web URL
+        if (fixedSrc.startsWith('zenodo.org') || fixedSrc.startsWith('www.') || 
+            (!fixedSrc.startsWith('http') && fixedSrc.includes('/'))) {
+            if (!fixedSrc.startsWith('http')) {
+                fixedSrc = 'https://' + fixedSrc;
+            }
+        }
+        
+        // Only update if we actually fixed something
+        if (fixedSrc !== src && fixedSrc.startsWith('http')) {
+            console.log(`Fixing image URL: ${src} → ${fixedSrc}`);
+            img.setAttribute('src', fixedSrc);
+            
+            // Add error handling for this specific image
+            img.onerror = function() {
+                console.warn(`Failed to load fixed image: ${fixedSrc}`);
+                this.style.display = 'none';
+                
+                // Create a placeholder
+                const placeholder = document.createElement('div');
+                placeholder.style.cssText = `
+                    padding: 20px;
+                    background: var(--background-light);
+                    border: 1px dashed var(--border-light);
+                    border-radius: 8px;
+                    text-align: center;
+                    color: var(--text-secondary);
+                    font-style: italic;
+                    margin: 16px 0;
+                `;
+                placeholder.innerHTML = `🖼️ Image not available: <a href="${fixedSrc}" target="_blank" style="color: var(--primary-blue);">View original</a>`;
+                if (this.parentNode) {
+                    this.parentNode.insertBefore(placeholder, this.nextSibling);
+                }
+            };
+        }
+    }
+}
+
+// Pre-process RDF data to fix HTML content issues
+function preprocessRDFData(rdfData) {
+    console.log('Original RDF data length:', rdfData.length);
+    
+    // More aggressive HTML cleaning in RDF data
+    let cleanedData = rdfData
+        // Fix the specific broken image URL pattern
+        .replace(
+            /src=\\"https:\/\/zenodo\.org\/records\/15391804\/files\/Sarland_17May2024_Germany_DWD\.png\\"/g,
+            'src="https://zenodo.org/records/15391804/files/Sarland_17May2024_Germany_DWD.png"'
+        )
+        // Fix general pattern of escaped quotes around URLs
+        .replace(/src=\\"([^"\\]*)\\"([^>]*>)/g, 'src="$1"$2')
+        // Fix malformed src attributes with quotes
+        .replace(/src="([^"]*)"([^>]*>)/g, (match, src, rest) => {
+            // Clean up the src attribute
+            let cleanSrc = src
+                .replace(/^["']+|["']+$/g, '') // Remove extra quotes
+                .replace(/%22/g, '') // Remove URL-encoded quotes
+                .replace(/\\\"/g, '"') // Fix escaped quotes
+                .trim();
+            
+            // Ensure proper protocol
+            if (cleanSrc.startsWith('zenodo.org') || cleanSrc.startsWith('www.') || 
+                (!cleanSrc.startsWith('http') && cleanSrc.includes('/'))) {
+                if (!cleanSrc.startsWith('http')) {
+                    cleanSrc = 'https://' + cleanSrc;
+                }
+            }
+            
+            return `src="${cleanSrc}"${rest}`;
+        })
+        // Remove any remaining malformed file:// URLs
+        .replace(/file:\/\/\/["%22]+https?:\/\/[^"\\%]+["%22]+/g, (match) => {
+            // Extract the actual URL from the malformed one
+            const urlMatch = match.match(/https?:\/\/[^"\\%]+/);
+            return urlMatch ? urlMatch[0] : match;
+        });
+    
+    console.log('Cleaned RDF data length:', cleanedData.length);
+    console.log('Changes made:', rdfData !== cleanedData);
+    
+    return cleanedData;
+}
+
 // RDF Fetching Logic
 async function fetchNanopubRDF(url) {
     const attempts = [
@@ -364,13 +509,16 @@ function loadNanopub() {
 
     fetchNanopubRDF(url)
         .then(rdfData => {
+            // Pre-process the RDF data to fix HTML issues
+            const cleanedRdfData = preprocessRDFData(rdfData);
+            
             showSuccess('Nanopublication data loaded successfully!');
             
             if (loadAttempts < maxLoadAttempts) {
                 return loadComponentsWithMultipleMethods()
                     .then(componentsLoadedSuccessfully => {
                         if (componentsLoadedSuccessfully || customElements.get('nanopub-display')) {
-                            return renderCleanNanopubView(url, rdfData);
+                            return renderCleanNanopubView(url, cleanedRdfData);
                         } else {
                             showError('Unable to load nanopub components. Please try refreshing the page.');
                             showLoading(false);
@@ -418,6 +566,13 @@ async function renderCleanNanopubView(url, rdfData) {
     
     showResults();
     
+    // Set the viewer to collapsed state by default
+    const content = getElementById('results-content');
+    const icon = getElementById('toggle-icon');
+    content.classList.add('collapsed');
+    icon.classList.add('collapsed');
+    icon.textContent = '▶';
+    
     // Clear everything and add only the nanopub component
     const displayContainer = getElementById('display-container');
     displayContainer.innerHTML = '';
@@ -431,6 +586,11 @@ async function renderCleanNanopubView(url, rdfData) {
         displayElement.setAttribute('url', url);
         displayElement.setAttribute('rdf', rdfData);
         displayContainer.appendChild(displayElement);
+        
+        // Fix any remaining broken images after component renders
+        setTimeout(() => {
+            fixBrokenImages(displayContainer);
+        }, 2000);
         
     } catch (error) {
         console.error('Error creating nanopub display:', error);
@@ -453,9 +613,11 @@ async function renderCleanNanopubView(url, rdfData) {
     }, 2000);
 }
 
-// Export new functions
+// Export functions to global scope
 window.toggleNanopubViewer = toggleNanopubViewer;
 window.processNanopub = processNanopub;
+window.loadNanopub = loadNanopub;
+window.loadExample = loadExample;
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
