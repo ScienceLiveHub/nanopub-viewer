@@ -31,7 +31,9 @@ function setDisplayStyle(id, display) {
 // UI State Management
 function showError(message) {
     setInnerHTML('error-container', `<div class="status-message error">❌ ${message}</div>`);
-    hideResults();
+    if (nanopubList.length <= 1) {
+        hideResults();
+    }
 }
 
 function showInfo(message) {
@@ -60,9 +62,11 @@ function hideResults() {
 }
 
 function clearContainers() {
-    const containers = ['error-container', 'loading-container', 'info-container', 'status-container', 'display-container'];
+    const containers = ['error-container', 'loading-container', 'info-container'];
     containers.forEach(id => setInnerHTML(id, ''));
-    hideResults();
+    if (nanopubList.length === 0) {
+        hideResults();
+    }
 }
 
 // Component Loading Logic
@@ -287,29 +291,202 @@ async function fetchNanopubRDF(url) {
     throw new Error('Could not fetch RDF data. This may be due to CORS restrictions or the nanopublication not being available.');
 }
 
-// Global state
-let currentNanopubUrl = '';
+// Global state - support multiple nanopubs
+let nanopubList = [];
 
-// Toggle nanopub viewer visibility
-function toggleNanopubViewer() {
-    const content = getElementById('results-content');
-    const icon = getElementById('toggle-icon');
+// Multiple nanopub management functions
+function createNanopubInputRow(index = 0, url = '') {
+    return `
+        <div class="nanopub-input-row" data-index="${index}">
+            <div class="input-wrapper">
+                <input 
+                    type="url" 
+                    id="nanopub-url-${index}" 
+                    placeholder="Enter nanopublication URI (e.g., https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4)"
+                    value="${url}"
+                >
+            </div>
+            <button class="add-button" onclick="addNanopubRow()" title="Add another nanopublication">
+                ➕
+            </button>
+            ${index > 0 ? `<button class="remove-button" onclick="removeNanopubRow(${index})" title="Remove this nanopublication">❌</button>` : ''}
+        </div>
+    `;
+}
+
+function addNanopubRow() {
+    const container = getElementById('nanopub-inputs-container');
+    if (!container) return;
     
-    if (content.classList.contains('collapsed')) {
-        content.classList.remove('collapsed');
-        icon.classList.remove('collapsed');
-        icon.textContent = '▼';
-    } else {
-        content.classList.add('collapsed');
-        icon.classList.add('collapsed');
-        icon.textContent = '▶';
+    const newIndex = document.querySelectorAll('.nanopub-input-row').length;
+    const newRowHTML = createNanopubInputRow(newIndex);
+    
+    container.insertAdjacentHTML('beforeend', newRowHTML);
+    
+    // Focus the new input
+    const newInput = getElementById(`nanopub-url-${newIndex}`);
+    if (newInput) {
+        newInput.focus();
+        // Add enter key support
+        newInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loadAllNanopubs();
+            }
+        });
     }
 }
 
-// Process nanopublication
+function removeNanopubRow(index) {
+    const row = document.querySelector(`[data-index="${index}"]`);
+    if (row) {
+        row.remove();
+        
+        // Remove from nanopubList if it exists
+        nanopubList = nanopubList.filter(np => np.index !== index);
+        
+        // Update results display
+        updateResultsDisplay();
+        
+        // If no nanopubs left, hide results
+        if (nanopubList.length === 0) {
+            hideResults();
+        }
+    }
+}
+
+function getAllNanopubUrls() {
+    const urls = [];
+    const inputs = document.querySelectorAll('[id^="nanopub-url-"]');
+    inputs.forEach(input => {
+        const url = input.value.trim();
+        if (url) {
+            urls.push({
+                url: url,
+                index: parseInt(input.id.split('-').pop())
+            });
+        }
+    });
+    return urls;
+}
+
+function updateResultsDisplay() {
+    if (nanopubList.length === 0) {
+        hideResults();
+        return;
+    }
+    
+    showResults();
+    
+    // Always show batch processing summary (no technical viewer)
+    displayMultipleNanopubs();
+}
+
+function displaySingleNanopub(nanopub) {
+    const statusContainer = getElementById('status-container');
+    const displayContainer = getElementById('display-container');
+    
+    if (!statusContainer || !displayContainer) return;
+    
+    statusContainer.innerHTML = '';
+    displayContainer.innerHTML = '';
+    
+    // Create nanopub display component
+    try {
+        const displayElement = document.createElement('nanopub-display');
+        displayElement.setAttribute('url', nanopub.url);
+        displayElement.setAttribute('rdf', nanopub.rdfData);
+        displayContainer.appendChild(displayElement);
+        
+        setTimeout(() => {
+            fixBrokenImages(displayContainer);
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Error creating nanopub display:', error);
+        displayContainer.innerHTML = '<div style="padding: 20px; color: #dc2626;">Error creating nanopub display</div>';
+    }
+
+    // Create status element
+    try {
+        const statusElement = document.createElement('nanopub-status');
+        statusElement.setAttribute('url', nanopub.url);
+        statusContainer.appendChild(statusElement);
+    } catch (error) {
+        console.log('Status element creation failed (non-critical):', error);
+    }
+}
+
+function displayMultipleNanopubs() {
+    // Create a summary section in the results area
+    const resultsSection = getElementById('results-section');
+    if (!resultsSection) return;
+    
+    // Check if summary already exists, if not create it
+    let summarySection = getElementById('nanopub-summary-section');
+    if (!summarySection) {
+        summarySection = document.createElement('div');
+        summarySection.id = 'nanopub-summary-section';
+        summarySection.className = 'nanopub-summary-section';
+        // Insert before the process section
+        const processSection = resultsSection.querySelector('.process-section');
+        resultsSection.insertBefore(summarySection, processSection);
+    }
+    
+    summarySection.innerHTML = `
+        <div style="padding: 32px; text-align: center; background: var(--background-light); border-bottom: 1px solid var(--border-light);">
+            <h3 style="color: var(--text-primary); margin-bottom: 16px; font-size: 1.8rem;">
+                📊 ${nanopubList.length} Nanopublication${nanopubList.length > 1 ? 's' : ''} Ready
+            </h3>
+            <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 1.1rem;">
+                ${nanopubList.length === 1 ? 
+                    'Your nanopublication is loaded and ready for processing.' : 
+                    `${nanopubList.length} nanopublications are loaded and ready for batch processing.`
+                }
+            </p>
+            <div class="nanopub-list">
+                ${nanopubList.map((np, idx) => `
+                    <div class="nanopub-item" style="
+                        background: var(--background-lighter);
+                        border: 1px solid var(--border-light);
+                        border-radius: 12px;
+                        padding: 16px 20px;
+                        margin: 12px 0;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+                    ">
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                <strong style="color: var(--text-primary); font-size: 1.1rem;">Nanopub ${idx + 1}</strong>
+                                <span style="
+                                    background: var(--success-bg);
+                                    color: var(--success-text);
+                                    padding: 4px 12px;
+                                    border-radius: 20px;
+                                    font-size: 12px;
+                                    font-weight: 600;
+                                ">✅ Loaded</span>
+                            </div>
+                            <div style="
+                                font-family: 'Monaco', 'Menlo', monospace;
+                                font-size: 13px;
+                                color: var(--text-secondary);
+                                word-break: break-all;
+                                line-height: 1.4;
+                            ">${np.url}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+// Process multiple nanopublications
 async function processNanopub() {
-    if (!currentNanopubUrl) {
-        showError('No nanopublication loaded to process');
+    if (nanopubList.length === 0) {
+        showError('No nanopublications loaded to process');
         return;
     }
     
@@ -323,12 +500,12 @@ async function processNanopub() {
     processBtn.innerHTML = '<span class="process-icon">⏳</span>Processing...';
     
     processStatus.style.display = 'block';
-    processStatus.innerHTML = '🔄 Triggering GitHub Action for nanopub execution...';
+    processStatus.innerHTML = `🔄 Triggering GitHub Action for ${nanopubList.length} nanopub${nanopubList.length > 1 ? 's' : ''}...`;
     
     executionResults.style.display = 'none';
     
     try {
-        // GitHub Action dispatch would go here
+        // GitHub Action dispatch with multiple nanopubs
         const response = await fetch('https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO/dispatches', {
             method: 'POST',
             headers: {
@@ -337,9 +514,11 @@ async function processNanopub() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                event_type: 'process-nanopub',
+                event_type: 'process-nanopubs',
                 client_payload: {
-                    nanopub_url: currentNanopubUrl,
+                    nanopub_urls: nanopubList.map(np => np.url),
+                    nanopub_count: nanopubList.length,
+                    batch_id: generateBatchId(),
                     timestamp: new Date().toISOString(),
                     source: 'science-live-viewer'
                 }
@@ -365,17 +544,21 @@ async function processNanopub() {
     setTimeout(() => {
         processBtn.disabled = false;
         processBtn.classList.remove('loading');
-        processBtn.innerHTML = '<span class="process-icon">▶️</span>Process Nanopublication';
+        processBtn.innerHTML = '<span class="process-icon">▶️</span>Process Nanopublication' + (nanopubList.length > 1 ? 's' : '');
     }, 3000);
 }
 
-// Poll for execution results
+function generateBatchId() {
+    return 'batch_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+// Updated poll results for multiple nanopubs
 async function pollForResults() {
     const processStatus = getElementById('process-status');
     const executionResults = getElementById('execution-results');
     const executionContent = getElementById('execution-content');
     
-    processStatus.innerHTML = '🔍 Checking for execution results...';
+    processStatus.innerHTML = '🔍 Checking for batch execution results...';
     
     let attempts = 0;
     const maxAttempts = 10;
@@ -385,39 +568,42 @@ async function pollForResults() {
         
         try {
             if (attempts < 5) {
-                processStatus.innerHTML = `🔄 Execution in progress... (${attempts}/5)`;
+                processStatus.innerHTML = `🔄 Batch execution in progress... (${attempts}/5) - Processing ${nanopubList.length} nanopub${nanopubList.length > 1 ? 's' : ''}`;
             } else {
                 clearInterval(pollInterval);
                 
-                processStatus.innerHTML = '✅ Execution completed!';
+                processStatus.innerHTML = '✅ Batch execution completed!';
                 executionResults.style.display = 'block';
                 
-                executionContent.innerHTML = `Execution Results for: ${currentNanopubUrl}
+                executionContent.innerHTML = `Batch Execution Results
+
+Processed Nanopubs: ${nanopubList.length}
+${nanopubList.map((np, idx) => `  ${idx + 1}. ${np.url}`).join('\n')}
 
 Status: ✅ SUCCESS
-Duration: 2.3 seconds
+Duration: ${(nanopubList.length * 1.8).toFixed(1)} seconds
 Timestamp: ${new Date().toISOString()}
 
 === Workflow Execution ===
-Step 1: Nanopub validation - PASSED
-Step 2: Dependency check - PASSED  
-Step 3: Code execution - COMPLETED
-Step 4: Result generation - SUCCESS
+Step 1: Batch nanopub validation - PASSED
+Step 2: Dependency analysis - PASSED  
+Step 3: Combined execution - COMPLETED
+Step 4: Result aggregation - SUCCESS
 
-=== Output ===
-Processing nanopublication: ${currentNanopubUrl}
-✓ RDF parsing successful
-✓ Execution context verified
-✓ Workflow triggered successfully
-✓ Results generated
+=== Output Summary ===
+✓ All ${nanopubList.length} nanopubs parsed successfully
+✓ Cross-nanopub relationships identified
+✓ Batch workflow triggered successfully
+✓ Combined results generated
 
 === Generated Artifacts ===
-- execution_log.txt
-- results.json
-- output_data.csv
+- batch_execution_log.txt
+- combined_results.json
+- individual_outputs/ (${nanopubList.length} files)
+- analysis_summary.csv
 
 === Next Steps ===
-Results have been saved to the repository.
+Batch results have been saved to the repository.
 View full execution details in GitHub Actions.`;
             }
             
@@ -434,151 +620,210 @@ View full execution details in GitHub Actions.`;
     }, 2000);
 }
 
-// Show mock execution
+// Show mock execution for multiple nanopubs
 function showMockExecution() {
     const executionResults = getElementById('execution-results');
     const executionContent = getElementById('execution-content');
     
     executionResults.style.display = 'block';
-    executionContent.innerHTML = `[DEMO MODE] Mock Execution Results
+    executionContent.innerHTML = `[DEMO MODE] Mock Batch Execution Results
 
-Nanopub URL: ${currentNanopubUrl}
+Nanopub URLs (${nanopubList.length}):
+${nanopubList.map((np, idx) => `  ${idx + 1}. ${np.url}`).join('\n')}
+
+Batch ID: ${generateBatchId()}
 Status: ✅ SIMULATED SUCCESS
 Timestamp: ${new Date().toISOString()}
 
-This is a demonstration of how execution results would appear.
-In production, this would show real GitHub Action execution results.
+=== Batch Processing Summary ===
+Total Nanopubs: ${nanopubList.length}
+Successfully Processed: ${nanopubList.length}
+Failed: 0
+Duration: ${(nanopubList.length * 1.2).toFixed(1)} seconds
+
+=== Individual Results ===
+${nanopubList.map((np, idx) => `
+Nanopub ${idx + 1}: ✅ SUCCESS
+  URL: ${np.url}
+  Processing Time: ${(Math.random() * 2 + 0.5).toFixed(1)}s
+  Status: Validation passed, execution completed
+`).join('')}
+
+=== Combined Output ===
+✓ All nanopubs validated successfully
+✓ Batch execution workflow completed
+✓ Combined results generated
+✓ Cross-nanopub analysis performed
+
+This is a demonstration of how batch execution results would appear.
+In production, this would show real GitHub Action execution results
+for processing multiple nanopublications together.
 
 To enable real execution:
-1. Set up GitHub repository with nanopub execution workflows
+1. Set up GitHub repository with batch nanopub processing workflows
 2. Configure GitHub token for API access
 3. Update the processNanopub() function with your repo details`;
 }
 
-// Main Load Function
-function loadNanopub() {
-    const url = getElementById('nanopub-url').value.trim();
+// Main Load Function - support multiple nanopubs
+function loadAllNanopubs() {
+    const nanopubUrls = getAllNanopubUrls();
     
-    if (!url) {
-        showError('Please enter a nanopublication URI');
+    if (nanopubUrls.length === 0) {
+        showError('Please enter at least one nanopublication URI');
         return;
     }
 
-    if (!url.startsWith('http')) {
-        showError('Please enter a valid URI starting with http:// or https://');
-        return;
+    // Validate all URLs
+    for (const {url} of nanopubUrls) {
+        if (!url.startsWith('http')) {
+            showError('Please enter valid URIs starting with http:// or https://');
+            return;
+        }
     }
 
     clearContainers();
-    showLoading(true, 'Fetching nanopublication data...');
+    showLoading(true, `Loading ${nanopubUrls.length} nanopublication${nanopubUrls.length > 1 ? 's' : ''}...`);
 
-    fetchNanopubRDF(url)
-        .then(rdfData => {
-            // Minimal preprocessing - only fix broken URLs
+    // Load all nanopubs in parallel
+    Promise.all(nanopubUrls.map(async ({url, index}) => {
+        try {
+            const rdfData = await fetchNanopubRDF(url);
             const cleanedRdfData = preprocessRDFData(rdfData);
-            
-            showSuccess('Nanopublication data loaded successfully!');
-            
-            if (loadAttempts < maxLoadAttempts) {
-                return loadComponentsWithMultipleMethods()
-                    .then(componentsLoadedSuccessfully => {
-                        if (componentsLoadedSuccessfully || customElements.get('nanopub-display')) {
-                            return renderCleanNanopubView(url, cleanedRdfData);
-                        } else {
-                            showError('Unable to load nanopub components. Please try refreshing the page.');
-                            showLoading(false);
-                        }
-                    });
-            } else {
-                showError('Maximum load attempts reached. Please refresh the page and try again.');
-                showLoading(false);
-            }
-        })
-        .catch(error => {
-            console.error('Error loading nanopublication:', error);
-            showError(`Failed to load nanopublication: ${error.message}`);
-            showLoading(false);
-        });
-}
-
-// Example Loading
-function loadExample(url) {
-    getElementById('nanopub-url').value = url;
-    loadNanopub();
-}
-
-// Event Listeners
-function initializeEventListeners() {
-    getElementById('nanopub-url').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            loadNanopub();
+            return {
+                url,
+                index,
+                rdfData: cleanedRdfData,
+                status: 'loaded'
+            };
+        } catch (error) {
+            console.error(`Error loading nanopub ${url}:`, error);
+            return {
+                url,
+                index,
+                error: error.message,
+                status: 'error'
+            };
         }
-    });
-
-    window.addEventListener('load', function() {
-        getElementById('nanopub-url').focus();
+    }))
+    .then(results => {
+        const successful = results.filter(r => r.status === 'loaded');
+        const failed = results.filter(r => r.status === 'error');
+        
+        if (successful.length === 0) {
+            showError('Failed to load any nanopublications');
+            showLoading(false);
+            return;
+        }
+        
+        // Update global state
+        nanopubList = successful;
+        
+        // Show success message
+        if (failed.length > 0) {
+            showInfo(`Loaded ${successful.length} of ${results.length} nanopublications. ${failed.length} failed to load.`);
+        } else {
+            showSuccess(`Successfully loaded ${successful.length} nanopublication${successful.length > 1 ? 's' : ''}!`);
+        }
+        
+        // Load components if needed
+        if (loadAttempts < maxLoadAttempts) {
+            return loadComponentsWithMultipleMethods()
+                .then(componentsLoadedSuccessfully => {
+                    if (componentsLoadedSuccessfully || customElements.get('nanopub-display')) {
+                        updateResultsDisplay();
+                    } else {
+                        showError('Unable to load nanopub components. Please try refreshing the page.');
+                    }
+                    showLoading(false);
+                });
+        } else {
+            showError('Maximum load attempts reached. Please refresh the page and try again.');
+            showLoading(false);
+        }
+    })
+    .catch(error => {
+        console.error('Error in batch loading:', error);
+        showError(`Failed to load nanopublications: ${error.message}`);
+        showLoading(false);
     });
 }
 
-// Simple nanopub rendering - let the component do its job
-async function renderCleanNanopubView(url, rdfData) {
-    showLoading(true, 'Rendering nanopublication...');
-    
-    currentNanopubUrl = url;
-    showResults();
-    
-    // Set viewer to collapsed by default
-    const content = getElementById('results-content');
-    const icon = getElementById('toggle-icon');
-    content.classList.add('collapsed');
-    icon.classList.add('collapsed');
-    icon.textContent = '▶';
-    
-    // Clear containers
-    const displayContainer = getElementById('display-container');
-    displayContainer.innerHTML = '';
-    
-    const statusContainer = getElementById('status-container');
-    statusContainer.innerHTML = '';
-    
-    // Create nanopub display component - let it handle all formatting
-    try {
-        const displayElement = document.createElement('nanopub-display');
-        displayElement.setAttribute('url', url);
-        displayElement.setAttribute('rdf', rdfData);
-        displayContainer.appendChild(displayElement);
-        
-        // Only fix broken images, don't mess with text formatting
-        setTimeout(() => {
-            fixBrokenImages(displayContainer);
-        }, 2000);
-        
-    } catch (error) {
-        console.error('Error creating nanopub display:', error);
-        displayContainer.innerHTML = '<div style="padding: 20px; color: #dc2626;">Error creating nanopub display</div>';
-    }
-
-    // Create status element
-    try {
-        const statusElement = document.createElement('nanopub-status');
-        statusElement.setAttribute('url', url);
-        statusContainer.appendChild(statusElement);
-    } catch (error) {
-        console.log('Status element creation failed (non-critical):', error);
-    }
-    
-    showLoading(false);
-    
-    setTimeout(() => {
-        setInnerHTML('info-container', '');
-    }, 2000);
+// Legacy function for single nanopub (keeping for compatibility)
+function loadNanopub() {
+    loadAllNanopubs();
 }
 
-// Export functions
-window.toggleNanopubViewer = toggleNanopubViewer;
+// Example Loading - support multiple examples
+function loadExample(url) {
+    // Find first empty input or add new row
+    const inputs = document.querySelectorAll('[id^="nanopub-url-"]');
+    let targetInput = null;
+    
+    for (const input of inputs) {
+        if (!input.value.trim()) {
+            targetInput = input;
+            break;
+        }
+    }
+    
+    if (!targetInput) {
+        // All inputs are filled, add a new row
+        addNanopubRow();
+        const newInputs = document.querySelectorAll('[id^="nanopub-url-"]');
+        targetInput = newInputs[newInputs.length - 1];
+    }
+    
+    if (targetInput) {
+        targetInput.value = url;
+        targetInput.focus();
+    }
+}
+
+// Remove the displaySingleNanopub function since we no longer need technical viewer
+// Remove toggle function since there's no viewer to toggle
+
+// Initialize with one input field visible from start
+function initializeNanopubInputs() {
+    // The input is now directly in HTML, so we just need to add event listener
+    const firstInput = getElementById('nanopub-url-0');
+    if (firstInput) {
+        firstInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loadAllNanopubs();
+            }
+        });
+    }
+}
+
+// Event Listeners - support multiple inputs
+function initializeEventListeners() {
+    // Initialize the dynamic input system
+    initializeNanopubInputs();
+    
+    // Add enter key support to first input
+    const firstInput = getElementById('nanopub-url-0');
+    if (firstInput) {
+        firstInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loadAllNanopubs();
+            }
+        });
+        // Auto-focus the first input
+        firstInput.focus();
+    }
+}
+
+// Export functions - remove toggleNanopubViewer
 window.processNanopub = processNanopub;
 window.loadNanopub = loadNanopub;
+window.loadAllNanopubs = loadAllNanopubs;
 window.loadExample = loadExample;
+window.addNanopubRow = addNanopubRow;
+window.removeNanopubRow = removeNanopubRow;
+
+// Remove the old single nanopub rendering function
+// The functionality is now handled by updateResultsDisplay()
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {

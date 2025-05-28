@@ -24,20 +24,27 @@
                 </div>
                 <div class="search-description">
                     Discover and visualize machine-readable scientific statements with proper attribution and provenance. 
-                    Enter a nanopublication URI to explore its structured content and metadata.
+                    Enter one or more nanopublication URIs to explore their structured content and execute batch workflows.
                 </div>
                 
                 <div class="input-group">
-                    <div class="input-wrapper">
-                        <input 
-                            type="url" 
-                            id="nanopub-url" 
-                            placeholder="Enter nanopublication URI (e.g., https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4)"
-                            value=""
-                        >
+                    <div id="nanopub-inputs-container">
+                        <div class="nanopub-input-row" data-index="0">
+                            <div class="input-wrapper">
+                                <input 
+                                    type="url" 
+                                    id="nanopub-url-0" 
+                                    placeholder="Enter nanopublication URI (e.g., https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4)"
+                                    value=""
+                                >
+                            </div>
+                            <button class="add-button" onclick="addNanopubRow()" title="Add another nanopublication">
+                                ➕
+                            </button>
+                        </div>
                     </div>
-                    <button class="load-button" onclick="loadNanopub()">
-                        Load Nanopublication
+                    <button class="load-button" onclick="loadAllNanopubs()">
+                        Load Nanopublications
                     </button>
                 </div>
                 
@@ -64,18 +71,16 @@
             <div id="info-container"></div>
             
             <div class="results-section" id="results-section" style="display: none;">
-
-                
                 <!-- Process Nanopublication Section -->
                 <div class="process-section">
                     <div class="process-header">
-                        <h3>🚀 Execute Nanopublication</h3>
-                        <p>Process this nanopublication to check if it's executable and run any associated workflows.</p>
+                        <h3>🚀 Execute Nanopublications</h3>
+                        <p>Process the loaded nanopublications to check if they're executable and run any associated workflows.</p>
                     </div>
                     <div class="process-controls">
                         <button class="process-button" onclick="processNanopub()" id="process-btn">
                             <span class="process-icon">▶️</span>
-                            Process Nanopublication
+                            Process Nanopublications
                         </button>
                         <div class="process-status" id="process-status" style="display: none;"></div>
                     </div>
@@ -83,16 +88,6 @@
                         <h4>📋 Execution Results</h4>
                         <div id="execution-content"></div>
                     </div>
-                </div>
-                                <div class="results-header" onclick="toggleNanopubViewer()">
-                    <div class="results-title">
-                        📊 Interactive Nanopublication Viewer
-                        <span id="toggle-icon" class="toggle-icon">▼</span>
-                    </div>
-                </div>
-                <div class="results-content" id="results-content">
-                    <div class="status-container" id="status-container"></div>
-                    <div class="display-container" id="display-container"></div>
                 </div>
             </div>
         </div>
