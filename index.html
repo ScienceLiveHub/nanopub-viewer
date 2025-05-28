@@ -11,7 +11,7 @@
     <div class="container">
         <div class="header">
             <div class="logo">
-                <img src="./ScienceLiveLogoWhite.png" alt="Science Live Logo" class="logo-image">
+                <img src="./logo.png" alt="Science Live Logo" class="logo-image">
             </div>
             <h1>SCIENCE LIVE</h1>
             <div class="subtitle">Connecting science through knowledge graphs</div>
@@ -64,12 +64,33 @@
             <div id="info-container"></div>
             
             <div class="results-section" id="results-section" style="display: none;">
-                <div class="results-header">
-                    <div class="results-title">
-                        📊 Interactive Nanopublication Viewer
+
+                
+                <!-- Process Nanopublication Section -->
+                <div class="process-section">
+                    <div class="process-header">
+                        <h3>🚀 Execute Nanopublication</h3>
+                        <p>Process this nanopublication to check if it's executable and run any associated workflows.</p>
+                    </div>
+                    <div class="process-controls">
+                        <button class="process-button" onclick="processNanopub()" id="process-btn">
+                            <span class="process-icon">▶️</span>
+                            Process Nanopublication
+                        </button>
+                        <div class="process-status" id="process-status" style="display: none;"></div>
+                    </div>
+                    <div class="execution-results" id="execution-results" style="display: none;">
+                        <h4>📋 Execution Results</h4>
+                        <div id="execution-content"></div>
                     </div>
                 </div>
-                <div class="results-content">
+                                <div class="results-header" onclick="toggleNanopubViewer()">
+                    <div class="results-title">
+                        📊 Interactive Nanopublication Viewer
+                        <span id="toggle-icon" class="toggle-icon">▼</span>
+                    </div>
+                </div>
+                <div class="results-content" id="results-content">
                     <div class="status-container" id="status-container"></div>
                     <div class="display-container" id="display-container"></div>
                 </div>

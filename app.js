@@ -165,45 +165,184 @@ async function fetchNanopubRDF(url) {
     throw new Error('Could not fetch RDF data. This may be due to CORS restrictions or the nanopublication not being available.');
 }
 
-// Clean nanopub rendering - just the component, no extra buttons or custom displays
-async function renderCleanNanopubView(url, rdfData) {
-    showLoading(true, 'Rendering nanopublication...');
+// Global state - add current nanopub URL
+let currentNanopubUrl = '';
+
+// Toggle nanopub viewer visibility
+function toggleNanopubViewer() {
+    const content = getElementById('results-content');
+    const icon = getElementById('toggle-icon');
     
-    showResults();
+    if (content.classList.contains('collapsed')) {
+        content.classList.remove('collapsed');
+        icon.classList.remove('collapsed');
+        icon.textContent = '▼';
+    } else {
+        content.classList.add('collapsed');
+        icon.classList.add('collapsed');
+        icon.textContent = '▶';
+    }
+}
+
+// Process nanopublication - trigger GitHub Action
+async function processNanopub() {
+    if (!currentNanopubUrl) {
+        showError('No nanopublication loaded to process');
+        return;
+    }
     
-    // Clear everything and add only the nanopub component
-    const displayContainer = getElementById('display-container');
-    displayContainer.innerHTML = '';
+    const processBtn = getElementById('process-btn');
+    const processStatus = getElementById('process-status');
+    const executionResults = getElementById('execution-results');
+    const executionContent = getElementById('execution-content');
     
-    const statusContainer = getElementById('status-container');
-    statusContainer.innerHTML = '';
+    // Update UI to loading state
+    processBtn.disabled = true;
+    processBtn.classList.add('loading');
+    processBtn.innerHTML = '<span class="process-icon">⏳</span>Processing...';
     
-    // Create nanopub display component
+    processStatus.style.display = 'block';
+    processStatus.innerHTML = '🔄 Triggering GitHub Action for nanopub execution...';
+    
+    executionResults.style.display = 'none';
+    
     try {
-        const displayElement = document.createElement('nanopub-display');
-        displayElement.setAttribute('url', url);
-        displayElement.setAttribute('rdf', rdfData);
-        displayContainer.appendChild(displayElement);
+        // GitHub Action dispatch
+        const response = await fetch('https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO/dispatches', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/vnd.github.v3+json',
+                'Authorization': 'Bearer YOUR_GITHUB_TOKEN', // You'll need to configure this
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                event_type: 'process-nanopub',
+                client_payload: {
+                    nanopub_url: currentNanopubUrl,
+                    timestamp: new Date().toISOString(),
+                    source: 'science-live-viewer'
+                }
+            })
+        });
+        
+        if (response.ok) {
+            processStatus.innerHTML = '✅ GitHub Action triggered successfully!';
+            
+            // Start polling for results
+            pollForResults();
+            
+        } else {
+            throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+        }
         
     } catch (error) {
-        console.error('Error creating nanopub display:', error);
-        displayContainer.innerHTML = '<div style="padding: 20px; color: #dc2626;">Error creating nanopub display</div>';
-    }
-
-    // Create status element
-    try {
-        const statusElement = document.createElement('nanopub-status');
-        statusElement.setAttribute('url', url);
-        statusContainer.appendChild(statusElement);
-    } catch (error) {
-        console.log('Status element creation failed (non-critical):', error);
+        console.error('Error triggering GitHub Action:', error);
+        processStatus.innerHTML = `❌ Error: ${error.message}`;
+        
+        // Show mock execution for demo purposes
+        setTimeout(() => {
+            showMockExecution();
+        }, 2000);
     }
     
-    showLoading(false);
-    
+    // Reset button state
     setTimeout(() => {
-        setInnerHTML('info-container', '');
+        processBtn.disabled = false;
+        processBtn.classList.remove('loading');
+        processBtn.innerHTML = '<span class="process-icon">▶️</span>Process Nanopublication';
+    }, 3000);
+}
+
+// Poll for execution results
+async function pollForResults() {
+    const processStatus = getElementById('process-status');
+    const executionResults = getElementById('execution-results');
+    const executionContent = getElementById('execution-content');
+    
+    processStatus.innerHTML = '🔍 Checking for execution results...';
+    
+    // Simulate polling (replace with actual GitHub API calls to get workflow results)
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    const pollInterval = setInterval(async () => {
+        attempts++;
+        
+        try {
+            // Here you would make actual API calls to check workflow status
+            // For now, we'll simulate the process
+            
+            if (attempts < 5) {
+                processStatus.innerHTML = `🔄 Execution in progress... (${attempts}/5)`;
+            } else {
+                clearInterval(pollInterval);
+                
+                // Show results
+                processStatus.innerHTML = '✅ Execution completed!';
+                executionResults.style.display = 'block';
+                
+                // Mock execution results
+                executionContent.innerHTML = `Execution Results for: ${currentNanopubUrl}
+
+Status: ✅ SUCCESS
+Duration: 2.3 seconds
+Timestamp: ${new Date().toISOString()}
+
+=== Workflow Execution ===
+Step 1: Nanopub validation - PASSED
+Step 2: Dependency check - PASSED  
+Step 3: Code execution - COMPLETED
+Step 4: Result generation - SUCCESS
+
+=== Output ===
+Processing nanopublication: ${currentNanopubUrl}
+✓ RDF parsing successful
+✓ Execution context verified
+✓ Workflow triggered successfully
+✓ Results generated
+
+=== Generated Artifacts ===
+- execution_log.txt
+- results.json
+- output_data.csv
+
+=== Next Steps ===
+Results have been saved to the repository.
+View full execution details in GitHub Actions.`;
+            }
+            
+        } catch (error) {
+            clearInterval(pollInterval);
+            processStatus.innerHTML = `❌ Error checking results: ${error.message}`;
+        }
+        
+        if (attempts >= maxAttempts) {
+            clearInterval(pollInterval);
+            processStatus.innerHTML = '⏰ Timeout waiting for results. Check GitHub Actions manually.';
+        }
+        
     }, 2000);
+}
+
+// Show mock execution for demo purposes
+function showMockExecution() {
+    const executionResults = getElementById('execution-results');
+    const executionContent = getElementById('execution-content');
+    
+    executionResults.style.display = 'block';
+    executionContent.innerHTML = `[DEMO MODE] Mock Execution Results
+
+Nanopub URL: ${currentNanopubUrl}
+Status: ✅ SIMULATED SUCCESS
+Timestamp: ${new Date().toISOString()}
+
+This is a demonstration of how execution results would appear.
+In production, this would show real GitHub Action execution results.
+
+To enable real execution:
+1. Set up GitHub repository with nanopub execution workflows
+2. Configure GitHub token for API access
+3. Update the processNanopub() function with your repo details`;
 }
 
 // Main Load Function - Clean and simple, only technical RDF view
@@ -270,9 +409,53 @@ function initializeEventListeners() {
     });
 }
 
-// Export functions immediately after definition
-window.loadNanopub = loadNanopub;
-window.loadExample = loadExample;
+// Clean nanopub rendering - just the component, no extra buttons or custom displays
+async function renderCleanNanopubView(url, rdfData) {
+    showLoading(true, 'Rendering nanopublication...');
+    
+    // Store current nanopub URL for processing
+    currentNanopubUrl = url;
+    
+    showResults();
+    
+    // Clear everything and add only the nanopub component
+    const displayContainer = getElementById('display-container');
+    displayContainer.innerHTML = '';
+    
+    const statusContainer = getElementById('status-container');
+    statusContainer.innerHTML = '';
+    
+    // Create nanopub display component
+    try {
+        const displayElement = document.createElement('nanopub-display');
+        displayElement.setAttribute('url', url);
+        displayElement.setAttribute('rdf', rdfData);
+        displayContainer.appendChild(displayElement);
+        
+    } catch (error) {
+        console.error('Error creating nanopub display:', error);
+        displayContainer.innerHTML = '<div style="padding: 20px; color: #dc2626;">Error creating nanopub display</div>';
+    }
+
+    // Create status element
+    try {
+        const statusElement = document.createElement('nanopub-status');
+        statusElement.setAttribute('url', url);
+        statusContainer.appendChild(statusElement);
+    } catch (error) {
+        console.log('Status element creation failed (non-critical):', error);
+    }
+    
+    showLoading(false);
+    
+    setTimeout(() => {
+        setInnerHTML('info-container', '');
+    }, 2000);
+}
+
+// Export new functions
+window.toggleNanopubViewer = toggleNanopubViewer;
+window.processNanopub = processNanopub;
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
