@@ -38,12 +38,12 @@
                                     value=""
                                 >
                             </div>
-                            <button class="add-button" onclick="addNanopubRow()" title="Add another nanopublication">
+                            <button class="add-button" type="button" title="Add another nanopublication">
                                 ➕
                             </button>
                         </div>
                     </div>
-                    <button class="load-button" onclick="loadAllNanopubs()">
+                    <button class="load-button" type="button">
                         Load Nanopublications
                     </button>
                 </div>
@@ -53,13 +53,13 @@
                         ⚡ Featured Examples
                     </div>
                     <div class="example-links">
-                        <a class="example-link" onclick="loadExample('https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4')">
+                        <a class="example-link" data-url="https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4">
                             🖥️ HPC Interconnects
                         </a>
-                        <a class="example-link" onclick="loadExample('https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4')">
+                        <a class="example-link" data-url="https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4">
                             🌦️ Weather Alert
                         </a>
-                        <a class="example-link" onclick="loadExample('https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q')">
+                        <a class="example-link" data-url="https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q">
                             📚 Research Citation
                         </a>
                     </div>
@@ -78,7 +78,7 @@
                         <p>Process the loaded nanopublications to check if they're executable and run any associated workflows.</p>
                     </div>
                     <div class="process-controls">
-                        <button class="process-button" onclick="processNanopub()" id="process-btn">
+                        <button class="process-button" id="process-btn" type="button">
                             <span class="process-icon">▶️</span>
                             Process Nanopublications
                         </button>

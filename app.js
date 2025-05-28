@@ -69,10 +69,10 @@ function clearContainers() {
     }
 }
 
-// Component Loading Logic
+// Component Loading Logic - Safari compatible
 async function loadComponentsWithMultipleMethods() {
     // Check if components are already loaded and registered
-    if (customElements.get('nanopub-display') && customElements.get('nanopub-status')) {
+    if (window.customElements && window.customElements.get('nanopub-display') && window.customElements.get('nanopub-status')) {
         componentsLoaded = true;
         return true;
     }
@@ -88,16 +88,32 @@ async function loadComponentsWithMultipleMethods() {
         {
             name: 'unpkg CDN',
             load: async () => {
-                if (!customElements.get('nanopub-display')) {
-                    await import(NANOPUB_COMPONENTS_URLS[0]);
+                if (!window.customElements || !window.customElements.get('nanopub-display')) {
+                    // Safari-compatible script loading
+                    return new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.type = 'module';
+                        script.src = NANOPUB_COMPONENTS_URLS[0];
+                        script.onload = () => resolve();
+                        script.onerror = () => reject(new Error('Failed to load script'));
+                        document.head.appendChild(script);
+                    });
                 }
             }
         },
         {
             name: 'jsDelivr CDN',
             load: async () => {
-                if (!customElements.get('nanopub-display')) {
-                    await import(NANOPUB_COMPONENTS_URLS[1]);
+                if (!window.customElements || !window.customElements.get('nanopub-display')) {
+                    // Safari-compatible script loading
+                    return new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.type = 'module';
+                        script.src = NANOPUB_COMPONENTS_URLS[1];
+                        script.onload = () => resolve();
+                        script.onerror = () => reject(new Error('Failed to load script'));
+                        document.head.appendChild(script);
+                    });
                 }
             }
         }
@@ -107,17 +123,17 @@ async function loadComponentsWithMultipleMethods() {
         try {
             showLoading(true, `Loading visualization components via ${method.name}...`);
             
-            if (customElements.get('nanopub-display') && customElements.get('nanopub-status')) {
+            if (window.customElements && window.customElements.get('nanopub-display') && window.customElements.get('nanopub-status')) {
                 componentsLoaded = true;
                 return true;
             }
             
             await method.load();
             
-            // Wait for components to register
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Wait for components to register - longer wait for Safari
+            await new Promise(resolve => setTimeout(resolve, 2000));
             
-            if (customElements.get('nanopub-display') && customElements.get('nanopub-status')) {
+            if (window.customElements && window.customElements.get('nanopub-display') && window.customElements.get('nanopub-status')) {
                 componentsLoaded = true;
                 return true;
             }
@@ -261,7 +277,7 @@ function preprocessRDFData(rdfData) {
     return cleanedData;
 }
 
-// RDF Fetching Logic
+// Safari-compatible fetch with better error handling
 async function fetchNanopubRDF(url) {
     const attempts = [
         { url: url + '.trig', headers: { 'Accept': 'application/trig' } },
@@ -272,14 +288,22 @@ async function fetchNanopubRDF(url) {
 
     for (const attempt of attempts) {
         try {
-            const response = await fetch(attempt.url, {
+            // Safari-compatible fetch options
+            const fetchOptions = {
                 headers: attempt.headers,
                 mode: 'cors'
-            });
+            };
+            
+            // Add Safari-specific options if needed
+            if (window.safari) {
+                fetchOptions.credentials = 'omit';
+            }
+            
+            const response = await fetch(attempt.url, fetchOptions);
             
             if (response.ok) {
                 const text = await response.text();
-                if (!text.trim().startsWith('<!DOCTYPE') && !text.trim().startsWith('<html')) {
+                if (text && text.trim() && !text.trim().startsWith('<!DOCTYPE') && !text.trim().startsWith('<html')) {
                     return text;
                 }
             }
@@ -295,6 +319,7 @@ async function fetchNanopubRDF(url) {
 let nanopubList = [];
 
 // Multiple nanopub management functions
+// Safari-compatible createNanopubInputRow function
 function createNanopubInputRow(index = 0, url = '') {
     return `
         <div class="nanopub-input-row" data-index="${index}">
@@ -306,14 +331,15 @@ function createNanopubInputRow(index = 0, url = '') {
                     value="${url}"
                 >
             </div>
-            <button class="add-button" onclick="addNanopubRow()" title="Add another nanopublication">
+            <button class="add-button" type="button" title="Add another nanopublication">
                 ➕
             </button>
-            ${index > 0 ? `<button class="remove-button" onclick="removeNanopubRow(${index})" title="Remove this nanopublication">❌</button>` : ''}
+            ${index > 0 ? `<button class="remove-button" type="button" title="Remove this nanopublication">❌</button>` : ''}
         </div>
     `;
 }
 
+// Safari-compatible add/remove row functions
 function addNanopubRow() {
     const container = getElementById('nanopub-inputs-container');
     if (!container) return;
@@ -326,12 +352,33 @@ function addNanopubRow() {
     // Focus the new input
     const newInput = getElementById(`nanopub-url-${newIndex}`);
     if (newInput) {
-        newInput.focus();
+        setTimeout(() => {
+            newInput.focus();
+        }, 100);
+        
         // Add enter key support
         newInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 loadAllNanopubs();
             }
+        });
+    }
+    
+    // Add event listeners to new buttons for Safari
+    const newAddButton = container.querySelector(`[data-index="${newIndex}"] .add-button`);
+    const newRemoveButton = container.querySelector(`[data-index="${newIndex}"] .remove-button`);
+    
+    if (newAddButton) {
+        newAddButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            addNanopubRow();
+        });
+    }
+    
+    if (newRemoveButton) {
+        newRemoveButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            removeNanopubRow(newIndex);
         });
     }
 }
@@ -665,7 +712,7 @@ To enable real execution:
 3. Update the processNanopub() function with your repo details`;
 }
 
-// Main Load Function - support multiple nanopubs
+// Safari-compatible Promise.all with better error handling
 function loadAllNanopubs() {
     const nanopubUrls = getAllNanopubUrls();
     
@@ -685,68 +732,77 @@ function loadAllNanopubs() {
     clearContainers();
     showLoading(true, `Loading ${nanopubUrls.length} nanopublication${nanopubUrls.length > 1 ? 's' : ''}...`);
 
-    // Load all nanopubs in parallel
-    Promise.all(nanopubUrls.map(async ({url, index}) => {
+    // Safari-compatible sequential loading instead of Promise.all
+    const loadNanopubSequentially = async (urls, index = 0, results = []) => {
+        if (index >= urls.length) {
+            return results;
+        }
+        
+        const {url, index: urlIndex} = urls[index];
         try {
             const rdfData = await fetchNanopubRDF(url);
             const cleanedRdfData = preprocessRDFData(rdfData);
-            return {
+            results.push({
                 url,
-                index,
+                index: urlIndex,
                 rdfData: cleanedRdfData,
                 status: 'loaded'
-            };
+            });
         } catch (error) {
             console.error(`Error loading nanopub ${url}:`, error);
-            return {
+            results.push({
                 url,
-                index,
+                index: urlIndex,
                 error: error.message,
                 status: 'error'
-            };
+            });
         }
-    }))
-    .then(results => {
-        const successful = results.filter(r => r.status === 'loaded');
-        const failed = results.filter(r => r.status === 'error');
         
-        if (successful.length === 0) {
-            showError('Failed to load any nanopublications');
+        return loadNanopubSequentially(urls, index + 1, results);
+    };
+
+    loadNanopubSequentially(nanopubUrls)
+        .then(results => {
+            const successful = results.filter(r => r.status === 'loaded');
+            const failed = results.filter(r => r.status === 'error');
+            
+            if (successful.length === 0) {
+                showError('Failed to load any nanopublications');
+                showLoading(false);
+                return;
+            }
+            
+            // Update global state
+            nanopubList = successful;
+            
+            // Show success message
+            if (failed.length > 0) {
+                showInfo(`Loaded ${successful.length} of ${results.length} nanopublications. ${failed.length} failed to load.`);
+            } else {
+                showSuccess(`Successfully loaded ${successful.length} nanopublication${successful.length > 1 ? 's' : ''}!`);
+            }
+            
+            // Load components if needed
+            if (loadAttempts < maxLoadAttempts) {
+                return loadComponentsWithMultipleMethods()
+                    .then(componentsLoadedSuccessfully => {
+                        if (componentsLoadedSuccessfully || (window.customElements && window.customElements.get('nanopub-display'))) {
+                            updateResultsDisplay();
+                        } else {
+                            showError('Unable to load nanopub components. Please try refreshing the page.');
+                        }
+                        showLoading(false);
+                    });
+            } else {
+                showError('Maximum load attempts reached. Please refresh the page and try again.');
+                showLoading(false);
+            }
+        })
+        .catch(error => {
+            console.error('Error in batch loading:', error);
+            showError(`Failed to load nanopublications: ${error.message}`);
             showLoading(false);
-            return;
-        }
-        
-        // Update global state
-        nanopubList = successful;
-        
-        // Show success message
-        if (failed.length > 0) {
-            showInfo(`Loaded ${successful.length} of ${results.length} nanopublications. ${failed.length} failed to load.`);
-        } else {
-            showSuccess(`Successfully loaded ${successful.length} nanopublication${successful.length > 1 ? 's' : ''}!`);
-        }
-        
-        // Load components if needed
-        if (loadAttempts < maxLoadAttempts) {
-            return loadComponentsWithMultipleMethods()
-                .then(componentsLoadedSuccessfully => {
-                    if (componentsLoadedSuccessfully || customElements.get('nanopub-display')) {
-                        updateResultsDisplay();
-                    } else {
-                        showError('Unable to load nanopub components. Please try refreshing the page.');
-                    }
-                    showLoading(false);
-                });
-        } else {
-            showError('Maximum load attempts reached. Please refresh the page and try again.');
-            showLoading(false);
-        }
-    })
-    .catch(error => {
-        console.error('Error in batch loading:', error);
-        showError(`Failed to load nanopublications: ${error.message}`);
-        showLoading(false);
-    });
+        });
 }
 
 // Legacy function for single nanopub (keeping for compatibility)
@@ -796,22 +852,59 @@ function initializeNanopubInputs() {
     }
 }
 
-// Event Listeners - support multiple inputs
+// Event Listeners - Safari compatible with explicit event binding
 function initializeEventListeners() {
-    // Initialize the dynamic input system
+    // Initialize the input system
     initializeNanopubInputs();
     
-    // Add enter key support to first input
+    // Add explicit event listeners for Safari compatibility
     const firstInput = getElementById('nanopub-url-0');
     if (firstInput) {
-        firstInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                loadAllNanopubs();
+        // Focus the first input
+        setTimeout(() => {
+            firstInput.focus();
+        }, 100);
+    }
+    
+    // Ensure all buttons work in Safari by adding explicit event listeners
+    const loadButton = document.querySelector('.load-button');
+    if (loadButton) {
+        loadButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            loadAllNanopubs();
+        });
+    }
+    
+    // Add event listeners to existing add/remove buttons
+    const addButtons = document.querySelectorAll('.add-button');
+    addButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            addNanopubRow();
+        });
+    });
+    
+    // Process button
+    const processButton = getElementById('process-btn');
+    if (processButton) {
+        processButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            processNanopub();
+        });
+    }
+    
+    // Example links
+    const exampleLinks = document.querySelectorAll('.example-link');
+    exampleLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = this.getAttribute('data-url') || 
+                       this.getAttribute('onclick')?.match(/loadExample\('([^']+)'\)/)?.[1];
+            if (url) {
+                loadExample(url);
             }
         });
-        // Auto-focus the first input
-        firstInput.focus();
-    }
+    });
 }
 
 // Export functions - remove toggleNanopubViewer
