@@ -1,6 +1,10 @@
 # .github/workflows/process-nanopubs.yml
 name: Process Nanopublications
 
+# Configuration - Change these values to control behavior
+env:
+  COMMIT_RESULTS_TO_REPO: 'true'  # Set to 'true' to commit results, 'false' to only create artifacts
+
 on:
   repository_dispatch:
     types: [process-nanopubs-direct]
@@ -76,10 +80,11 @@ jobs:
         PROCESSING_SOURCE: ${{ steps.params.outputs.source }}
       run: |
         echo "🔬 Executing nanopub processor..."
-        python scripts/process_nanopubs.py
+        cd scripts
+        python process_nanopubs.py
         echo "📁 Checking generated files..."
-        ls -la results/ 2>/dev/null || echo "No results directory found"
-        ls -la logs/ 2>/dev/null || echo "No logs directory found"
+        ls -la ../results/ 2>/dev/null || echo "No results directory found"
+        ls -la ../logs/ 2>/dev/null || echo "No logs directory found"
     
     - name: Ensure directories exist for artifacts
       run: |
@@ -151,26 +156,78 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "📥 **Download Results:** Check the artifacts section above" >> $GITHUB_STEP_SUMMARY
     
-    - name: Commit results to repository (optional)
-      if: success() && github.event.client_payload.commit_results == 'true'
+    - name: Debug commit conditions
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        echo "🔍 Checking commit conditions:"
+        echo "- Workflow success: ${{ success() }}"
+        echo "- COMMIT_RESULTS_TO_REPO: '${{ env.COMMIT_RESULTS_TO_REPO }}'"
+        echo "- Should commit: ${{ success() && env.COMMIT_RESULTS_TO_REPO == 'true' }}"
+    
+    - name: Commit results to repository (optional)
+      if: success() && env.COMMIT_RESULTS_TO_REPO == 'true'
+      run: |
+        echo "🔄 Committing results to repository..."
+        echo "📊 Commit condition met - commit_results: ${{ github.event.client_payload.commit_results }}"
         
-        # Create results branch if it doesn't exist
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Actions - Nanopub Processor"
+        
+        # Create or switch to results branch
+        git fetch origin results 2>/dev/null || echo "Results branch doesn't exist yet"
         git checkout -b results 2>/dev/null || git checkout results
         
-        # Copy results to a permanent location
-        mkdir -p processing-results/${{ steps.params.outputs.batch_id }}
-        cp -r results/* processing-results/${{ steps.params.outputs.batch_id }}/
-        cp -r logs/* processing-results/${{ steps.params.outputs.batch_id }}/
+        # Merge any changes from main if needed
+        git merge origin/main --no-edit --allow-unrelated-histories 2>/dev/null || echo "No merge needed"
         
-        # Commit if there are changes
+        # Create results directory structure
+        mkdir -p processing-results/${{ steps.params.outputs.batch_id }}
+        
+        # Copy results to permanent location
+        if [ -d "results" ]; then
+          cp -r results/* processing-results/${{ steps.params.outputs.batch_id }}/
+          echo "✅ Copied results files"
+        fi
+        
+        if [ -d "logs" ]; then
+          cp -r logs/* processing-results/${{ steps.params.outputs.batch_id }}/
+          echo "✅ Copied log files"
+        fi
+        
+        # Create an index file for this batch
+        cat > processing-results/${{ steps.params.outputs.batch_id }}/README.md << EOF
+        # Nanopub Processing Results - ${{ steps.params.outputs.batch_id }}
+        
+        **Processed:** $(date -u)
+        **Nanopubs:** ${{ steps.params.outputs.nanopub_count }}
+        **Source:** ${{ steps.params.outputs.source }}
+        **Workflow Run:** [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+        
+        ## Files Generated
+        - \`batch_results.json\` - Main processing results
+        - \`combined_analysis.json\` - Cross-nanopub analysis
+        - \`processing_summary.txt\` - Human-readable summary
+        - \`individual/\` - Individual nanopub analyses
+        - \`web/\` - Web display data
+        
+        ## Processed URLs
+        ${{ steps.params.outputs.nanopub_urls }}
+        EOF
+        
+        # Add and commit files
         git add processing-results/
-        if ! git diff --staged --quiet; then
-          git commit -m "Add processing results for batch ${{ steps.params.outputs.batch_id }}"
+        
+        if ! git diff --cached --quiet; then
+          git commit -m "Add processing results for batch ${{ steps.params.outputs.batch_id }}
+
+          - Processed ${{ steps.params.outputs.nanopub_count }} nanopublications
+          - Source: ${{ steps.params.outputs.source }}
+          - Workflow: ${{ github.run_id }}
+          - Timestamp: $(date -u)"
+          
+          # Push to results branch
           git push origin results
-          echo "✅ Results committed to results branch"
+          echo "✅ Results committed and pushed to results branch"
+          echo "🔗 View results: ${{ github.server_url }}/${{ github.repository }}/tree/results/processing-results/${{ steps.params.outputs.batch_id }}"
         else
           echo "ℹ️ No new results to commit"
         fi

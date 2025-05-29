@@ -286,6 +286,49 @@ function displayActualResults(resultData, batchId) {
     
     executionResults.style.display = 'block';
     
+    // Try to get full results from the workflow logs
+    fetchFullResults(batchId, resultData.workflow_run?.id)
+        .then(fullResultsData => {
+            if (fullResultsData && fullResultsData.full_results) {
+                // Display the actual processing results from Python script
+                executionContent.textContent = fullResultsData.full_results;
+            } else {
+                // Fallback to summary display
+                displayResultsSummary(resultData, batchId, executionContent);
+            }
+        })
+        .catch(error => {
+            console.warn('Could not fetch full results:', error);
+            displayResultsSummary(resultData, batchId, executionContent);
+        });
+}
+
+// Fetch full results from workflow logs
+async function fetchFullResults(batchId, workflowRunId) {
+    try {
+        const queryParams = new URLSearchParams({
+            batch_id: batchId
+        });
+        
+        if (workflowRunId) {
+            queryParams.append('workflow_run_id', workflowRunId);
+        }
+        
+        const response = await fetch(`/.netlify/functions/get-full-results?${queryParams}`);
+        
+        if (response.ok) {
+            return await response.json();
+        } else {
+            throw new Error(`HTTP ${response.status}`);
+        }
+    } catch (error) {
+        console.warn('Error fetching full results:', error);
+        return null;
+    }
+}
+
+// Fallback summary display
+function displayResultsSummary(resultData, batchId, executionContent) {
     let resultsDisplay = `=== SCIENCE LIVE PROCESSING RESULTS ===
 
 Batch ID: ${batchId}
@@ -307,7 +350,7 @@ View Details: ${resultData.workflow_run.html_url}
 📊 Size: ${formatBytes(resultData.artifacts.size_in_bytes)}
 📅 Generated: ${new Date(resultData.artifacts.created_at).toLocaleString()}
 
-⬇️ Download Results: 
+⬇️ Download Full Results: 
 ${resultData.artifacts.download_url}
 
 The processing results include:
@@ -327,7 +370,7 @@ Check the workflow run for detailed results and logs.`;
 ${getAllNanopubUrls().map((url, idx) => `${idx + 1}. ${url}`).join('\n')}
 
 === NEXT STEPS ===
-✓ View detailed results in GitHub Actions
+✓ View detailed results in GitHub Actions above
 ✓ Download processing artifacts if available
 ✓ Review individual nanopub analyses
 ✓ Explore cross-nanopub relationships
