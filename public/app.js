@@ -553,25 +553,19 @@ async function processNanopub() {
     
     try {
         // GitHub Action dispatch with multiple nanopubs
-        const response = await fetch('https://api.github.com/repos/ScienceLiveHub/nanopub-viewer/dispatches', {
+        const response = await fetch('/.netlify/functions/process-nanopubs', {
             method: 'POST',
             headers: {
-                'Accept': 'application/vnd.github.v3+json',
-                'Authorization': 'Bearer YOUR_PERSONAL_ACCESS_TOKEN_HERE', // Replace with your token
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                event_type: 'process-nanopubs',
-                client_payload: {
-                    nanopub_urls: nanopubList.map(np => np.url),
-                    nanopub_count: nanopubList.length,
-                    batch_id: generateBatchId(),
-                    timestamp: new Date().toISOString(),
-                    source: 'science-live-viewer'
-                }
+                nanopub_urls: nanopubList.map(np => np.url),
+                nanopub_count: nanopubList.length,
+                batch_id: generateBatchId(),
+                timestamp: new Date().toISOString(),
+                source: 'science-live-viewer'
             })
-        });
-        
+        }); 
         if (response.ok) {
             processStatus.innerHTML = '✅ GitHub Action triggered successfully!';
             pollForResults();
