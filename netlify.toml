@@ -4,8 +4,13 @@
   functions = "netlify/functions"
 
 [build.environment]
-  # Node.js version
-  NODE_VERSION = "18"
+  # Node.js version - Updated for May 2025
+  NODE_VERSION = "20"
+
+# Function settings
+[functions]
+  # Set timeout for functions
+  timeout = 30
 
 # Redirect rules
 [[redirects]]
