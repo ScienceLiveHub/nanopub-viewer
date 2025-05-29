@@ -1,0 +1,36 @@
+
+=== SCIENCE LIVE NANOPUB PROCESSING REPORT ===
+Generated: 2025-05-29 13:06:33 UTC
+Batch ID: batch_1748523952743_1ftgcha47
+
+=== PROCESSING SUMMARY ===
+Total Nanopublications: 1
+Successfully Processed: 1
+Failed: 0
+Success Rate: 100.0%
+Total Triples Analyzed: 26
+Processing Time: 1.24 seconds
+
+=== PROCESSED NANOPUBLICATIONS ===
+
+1. https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4
+   Status: ✅ Success
+   URI: https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4
+   Triples: 26
+   Graphs: assertion, provenance, pubinfo
+   Author: Anne Fouilloux
+
+=== GRAPH DISTRIBUTION ===
+  - assertion: 1 nanopubs (100.0%)
+  - provenance: 1 nanopubs (100.0%)
+  - pubinfo: 1 nanopubs (100.0%)
+
+=== AUTHOR NETWORK ===
+  - Anne Fouilloux: 1 nanopub(s)
+
+=== FILES GENERATED ===
+- results/batch_results.json (detailed processing results)
+- results/combined_analysis.json (cross-nanopub analysis)
+- results/web/display_data.json (web display data)
+- results/individual/*.json (1 individual analyses)
+- logs/processing_summary.txt (this report)
