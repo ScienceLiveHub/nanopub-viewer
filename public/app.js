@@ -173,7 +173,12 @@ async function executeNanopubs() {
         if (response.ok) {
             const result = await response.json();
             showStatus('✅ Processing started successfully!', 'success');
-            pollForResults(result.batch_id);
+            
+            // Store the workflow run ID for tracking
+            const workflowRunId = result.workflow_run_id;
+            console.log(`🎯 Tracking workflow run: ${workflowRunId || 'unknown'}`);
+            
+            pollForResults(result.batch_id, workflowRunId);
         } else {
             const errorData = await response.json();
             throw new Error(errorData.error || `Server error: ${response.status}`);
@@ -200,7 +205,7 @@ async function executeNanopubs() {
 }
 
 // Poll for execution results
-async function pollForResults(batchId) {
+async function pollForResults(batchId, workflowRunId = null) {
     showStatus('🔄 Checking execution status...');
     
     let attempts = 0;
@@ -210,9 +215,19 @@ async function pollForResults(batchId) {
         attempts++;
         
         try {
-            // Check for actual results from GitHub
-            const response = await fetch(`/.netlify/functions/get-results?batch_id=${batchId}`);
+            // Check for actual results from the specific GitHub workflow run
+            const queryParams = new URLSearchParams({
+                batch_id: batchId
+            });
+            
+            if (workflowRunId) {
+                queryParams.append('workflow_run_id', workflowRunId);
+            }
+            
+            const response = await fetch(`/.netlify/functions/get-results?${queryParams}`);
             const resultData = await response.json();
+            
+            console.log(`📊 Poll attempt ${attempts}:`, resultData.status, workflowRunId ? `(Run: ${workflowRunId})` : '');
             
             if (response.ok) {
                 if (resultData.status === 'completed') {
@@ -225,8 +240,11 @@ async function pollForResults(batchId) {
                     showError('Processing failed - check GitHub Actions for details');
                     displayFailureInfo(resultData);
                     return;
+                } else if (resultData.status === 'processing') {
+                    const runInfo = workflowRunId ? ` (Run: ${workflowRunId})` : '';
+                    showStatus(`🔄 ${resultData.message || 'Processing in progress'}... (${attempts}/${maxAttempts})${runInfo}`);
                 } else {
-                    showStatus(`🔄 Processing in progress... (${attempts}/${maxAttempts})`);
+                    showStatus(`🔄 Status: ${resultData.status} (${attempts}/${maxAttempts})`);
                 }
             } else {
                 throw new Error(resultData.error || 'Unknown error');
@@ -235,11 +253,12 @@ async function pollForResults(batchId) {
         } catch (error) {
             console.warn(`Attempt ${attempts}: ${error.message}`);
             if (attempts < 10) {
-                showStatus(`🔄 Processing in progress... (${attempts}/${maxAttempts})`);
+                const runInfo = workflowRunId ? ` (Run: ${workflowRunId})` : '';
+                showStatus(`🔄 Checking status... (${attempts}/${maxAttempts})${runInfo}`);
             } else {
                 // Fall back to demo results after 10 attempts
                 clearInterval(pollInterval);
-                showStatus('⏰ Using demo results (GitHub API unavailable)', 'info');
+                showStatus('⏰ Using demo results (GitHub API temporarily unavailable)', 'info');
                 showDemoResults(getAllNanopubUrls());
                 return;
             }
@@ -247,7 +266,10 @@ async function pollForResults(batchId) {
         
         if (attempts >= maxAttempts) {
             clearInterval(pollInterval);
-            showStatus('⏰ Processing taking longer than expected. Check GitHub Actions.', 'info');
+            const actionUrl = workflowRunId ? 
+                `https://github.com/ScienceLiveHub/nanopub-viewer/actions/runs/${workflowRunId}` :
+                'https://github.com/ScienceLiveHub/nanopub-viewer/actions';
+            showStatus(`⏰ Processing taking longer than expected. <a href="${actionUrl}" target="_blank">Check GitHub Actions</a>`, 'info');
             // Show demo results as fallback
             showDemoResults(getAllNanopubUrls());
         }
