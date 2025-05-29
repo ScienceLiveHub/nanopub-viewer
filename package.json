@@ -1,0 +1,30 @@
+{
+  "name": "science-live-nanopub-viewer",
+  "version": "1.0.0",
+  "description": "Science Live Nanopublication Viewer with GitHub Actions integration",
+  "main": "public/index.html",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'Static site - no build needed'",
+    "deploy": "netlify deploy --prod"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ScienceLiveHub/nanopub-viewer.git"
+  },
+  "keywords": [
+    "nanopublications",
+    "rdf",
+    "science",
+    "github-actions",
+    "netlify"
+  ],
+  "author": "Science Live Hub",
+  "license": "MIT",
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

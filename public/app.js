@@ -557,7 +557,7 @@ async function processNanopub() {
             method: 'POST',
             headers: {
                 'Accept': 'application/vnd.github.v3+json',
-                'Authorization': 'Bearer YOUR_GITHUB_TOKEN',
+                'Authorization': 'Bearer YOUR_PERSONAL_ACCESS_TOKEN_HERE', // Replace with your token
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
