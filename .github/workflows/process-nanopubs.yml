@@ -154,6 +154,13 @@ jobs:
         
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "📥 **Download Results:** Check the artifacts section above" >> $GITHUB_STEP_SUMMARY
+        
+        # Add results branch information if commit is enabled
+        if [ "${{ env.COMMIT_RESULTS_TO_REPO }}" = "true" ]; then
+          echo "🌿 **Results Branch:** \`results-${{ github.run_id }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **View Results:** [Browse Files](https://github.com/${{ github.repository }}/tree/results-${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          echo "📦 **Download ZIP:** [Download All Results](https://github.com/${{ github.repository }}/archive/refs/heads/results-${{ github.run_id }}.zip)" >> $GITHUB_STEP_SUMMARY
+        fi
     
     - name: Debug commit conditions
       if: always()
@@ -167,17 +174,18 @@ jobs:
       if: env.COMMIT_RESULTS_TO_REPO == 'true'
       run: |
         echo "🔄 Committing results to repository..."
-        echo "📊 Commit condition met - commit_results: ${{ github.event.client_payload.commit_results }}"
+        echo "📊 Commit condition met - COMMIT_RESULTS_TO_REPO: ${{ env.COMMIT_RESULTS_TO_REPO }}"
+        
+        # Create unique branch name using workflow run ID
+        RESULTS_BRANCH="results-${{ github.run_id }}"
+        echo "🌿 Creating unique results branch: $RESULTS_BRANCH"
         
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Actions - Nanopub Processor"
         
-        # Create or switch to results branch
-        git fetch origin results 2>/dev/null || echo "Results branch doesn't exist yet"
-        git checkout -b results 2>/dev/null || git checkout results
-        
-        # Merge any changes from main if needed
-        git merge origin/main --no-edit --allow-unrelated-histories 2>/dev/null || echo "No merge needed"
+        # Create new branch from current state (main/master)
+        git checkout -b "$RESULTS_BRANCH"
+        echo "✅ Created branch $RESULTS_BRANCH"
         
         # Create results directory structure
         mkdir -p processing-results/${{ steps.params.outputs.batch_id }}
@@ -186,11 +194,15 @@ jobs:
         if [ -d "results" ]; then
           cp -r results/* processing-results/${{ steps.params.outputs.batch_id }}/
           echo "✅ Copied results files"
+        else
+          echo "⚠️  No results directory found"
         fi
         
         if [ -d "logs" ]; then
           cp -r logs/* processing-results/${{ steps.params.outputs.batch_id }}/
           echo "✅ Copied log files"
+        else
+          echo "⚠️  No logs directory found"
         fi
         
         # Create an index file for this batch
@@ -201,6 +213,7 @@ jobs:
         **Nanopubs:** ${{ steps.params.outputs.nanopub_count }}
         **Source:** ${{ steps.params.outputs.source }}
         **Workflow Run:** [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+        **Results Branch:** [\`$RESULTS_BRANCH\`](${{ github.server_url }}/${{ github.repository }}/tree/$RESULTS_BRANCH)
         
         ## Files Generated
         - \`batch_results.json\` - Main processing results
@@ -211,23 +224,62 @@ jobs:
         
         ## Processed URLs
         ${{ steps.params.outputs.nanopub_urls }}
+        
+        ## Quick Access
+        - [View Results](${{ github.server_url }}/${{ github.repository }}/tree/$RESULTS_BRANCH/processing-results/${{ steps.params.outputs.batch_id }})
+        - [Download ZIP](${{ github.server_url }}/${{ github.repository }}/archive/refs/heads/$RESULTS_BRANCH.zip)
+        - [Workflow Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+        EOF
+        
+        # Create a summary file in the root for easy discovery
+        cat > PROCESSING_SUMMARY.md << EOF
+        # Processing Summary
+        
+        **Batch ID:** ${{ steps.params.outputs.batch_id }}
+        **Workflow Run:** ${{ github.run_id }}
+        **Branch:** $RESULTS_BRANCH
+        **Timestamp:** $(date -u)
+        
+        This branch contains the complete processing results for nanopublication analysis.
+        
+        ## Contents
+        - \`processing-results/${{ steps.params.outputs.batch_id }}/\` - All generated files
+        - Individual nanopub analyses
+        - Cross-nanopub relationship analysis
+        - Processing logs and summaries
+        
+        ## Original Workflow
+        View the original workflow run: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
         EOF
         
         # Add and commit files
-        git add processing-results/
+        git add processing-results/ PROCESSING_SUMMARY.md
         
+        # Check if there are any changes to commit
         if ! git diff --cached --quiet; then
-          git commit -m "Add processing results for batch ${{ steps.params.outputs.batch_id }}
+          echo "📝 Committing results to branch $RESULTS_BRANCH..."
+          git commit -m "Add nanopub processing results for batch ${{ steps.params.outputs.batch_id }}
 
-          - Processed ${{ steps.params.outputs.nanopub_count }} nanopublications
-          - Source: ${{ steps.params.outputs.source }}
-          - Workflow: ${{ github.run_id }}
-          - Timestamp: $(date -u)"
+          Workflow Run: ${{ github.run_id }}
+          Batch ID: ${{ steps.params.outputs.batch_id }}
+          Processed: ${{ steps.params.outputs.nanopub_count }} nanopublications
+          Source: ${{ steps.params.outputs.source }}
+          Timestamp: $(date -u)
           
-          # Push to results branch
-          git push origin results
-          echo "✅ Results committed and pushed to results branch"
-          echo "🔗 View results: ${{ github.server_url }}/${{ github.repository }}/tree/results/processing-results/${{ steps.params.outputs.batch_id }}"
+          Files generated:
+          - batch_results.json (main processing results)
+          - combined_analysis.json (cross-nanopub analysis)
+          - processing_summary.txt (human-readable summary)
+          - individual/ (individual nanopub analyses)
+          - web/ (web display data)"
+          
+          # Push the new branch - no conflicts possible since it's unique
+          echo "📤 Pushing new branch $RESULTS_BRANCH..."
+          git push origin "$RESULTS_BRANCH"
+          
+          echo "✅ Results committed and pushed to branch: $RESULTS_BRANCH"
+          echo "🔗 View results: ${{ github.server_url }}/${{ github.repository }}/tree/$RESULTS_BRANCH/processing-results/${{ steps.params.outputs.batch_id }}"
+          echo "📦 Download ZIP: ${{ github.server_url }}/${{ github.repository }}/archive/refs/heads/$RESULTS_BRANCH.zip"
         else
           echo "ℹ️ No new results to commit"
         fi
