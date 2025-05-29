@@ -109,23 +109,17 @@ exports.handler = async (event, context) => {
             }
         };
 
-        console.log('🚀 Making GitHub API request with:', {
-            url: 'https://api.github.com/repos/ScienceLiveHub/nanopub-viewer/dispatches',
-            method: 'POST',
-            tokenLength: githubToken.length,
-            tokenPrefix: githubToken.substring(0, 8) + '...',
-            payloadSize: JSON.stringify(payload).length,
-            userAgent: 'ScienceLive-Netlify/1.0'
-        });
+        console.log('🚀 Making GitHub API request...');
+        console.log('Payload:', JSON.stringify(payload, null, 2));
 
-        // Make the secure call to GitHub API - ORGANIZATION REPO
+        // Use the exact same working code from test-github function
         const response = await fetch('https://api.github.com/repos/ScienceLiveHub/nanopub-viewer/dispatches', {
             method: 'POST',
             headers: {
-                'Accept': 'application/vnd.github.v3+json',
                 'Authorization': `Bearer ${githubToken}`,
+                'Accept': 'application/vnd.github.v3+json',
                 'Content-Type': 'application/json',
-                'User-Agent': 'ScienceLive-Netlify/1.0'
+                'User-Agent': 'ScienceLive-Test/1.0'  // Same as working test
             },
             body: JSON.stringify(payload)
         });
@@ -133,7 +127,7 @@ exports.handler = async (event, context) => {
         console.log('📡 GitHub API response:', {
             status: response.status,
             statusText: response.statusText,
-            headers: Object.fromEntries(response.headers.entries())
+            ok: response.ok
         });
             method: 'POST',
             headers: {
