@@ -286,12 +286,12 @@ function displayActualResults(resultData, batchId) {
     
     executionResults.style.display = 'block';
     
-    console.log('🔍 Attempting to fetch full results...', {
+    console.log('🔍 Fetching full results from branch...', {
         batchId: batchId,
         workflowRunId: resultData.workflow_run?.id
     });
     
-    // Try to get full results from the committed files in the results branch
+    // Get full results from the committed files in the results branch
     fetchBranchResults(batchId, resultData.workflow_run?.id)
         .then(branchResultsData => {
             console.log('📊 Branch results response:', branchResultsData);
@@ -360,39 +360,13 @@ ${branchResultsData.individual_files.map(file => `- ${file.name} (${formatBytes(
                 executionContent.textContent = fullDisplay;
                 
             } else {
-                console.log('⚠️  No processing summary in branch results, trying log approach...');
-                // Fallback to the original log-based approach
-                fetchFullResults(batchId, resultData.workflow_run?.id)
-                    .then(fullResultsData => {
-                        if (fullResultsData && fullResultsData.full_results) {
-                            console.log('✅ Got full results from logs, displaying...');
-                            executionContent.textContent = fullResultsData.full_results;
-                        } else {
-                            console.log('⚠️  No full results available, showing summary');
-                            displayResultsSummary(resultData, batchId, executionContent);
-                        }
-                    })
-                    .catch(error => {
-                        console.warn('❌ Could not fetch results from logs either:', error);
-                        displayResultsSummary(resultData, batchId, executionContent);
-                    });
+                console.log('⚠️  No processing summary available in branch');
+                displayResultsSummary(resultData, batchId, executionContent);
             }
         })
         .catch(error => {
             console.warn('❌ Could not fetch branch results:', error);
-            // Fallback to log approach
-            fetchFullResults(batchId, resultData.workflow_run?.id)
-                .then(fullResultsData => {
-                    if (fullResultsData && fullResultsData.full_results) {
-                        executionContent.textContent = fullResultsData.full_results;
-                    } else {
-                        displayResultsSummary(resultData, batchId, executionContent);
-                    }
-                })
-                .catch(logError => {
-                    console.warn('❌ Both branch and log approaches failed:', logError);
-                    displayResultsSummary(resultData, batchId, executionContent);
-                });
+            displayResultsSummary(resultData, batchId, executionContent);
         });
 }
 
@@ -419,30 +393,6 @@ async function fetchBranchResults(batchId, workflowRunId) {
     } catch (error) {
         console.warn('Error fetching branch results:', error);
         throw error;
-    }
-}
-
-// Fetch full results from workflow logs
-async function fetchFullResults(batchId, workflowRunId) {
-    try {
-        const queryParams = new URLSearchParams({
-            batch_id: batchId
-        });
-        
-        if (workflowRunId) {
-            queryParams.append('workflow_run_id', workflowRunId);
-        }
-        
-        const response = await fetch(`/.netlify/functions/get-full-results?${queryParams}`);
-        
-        if (response.ok) {
-            return await response.json();
-        } else {
-            throw new Error(`HTTP ${response.status}`);
-        }
-    } catch (error) {
-        console.warn('Error fetching full results:', error);
-        return null;
     }
 }
 

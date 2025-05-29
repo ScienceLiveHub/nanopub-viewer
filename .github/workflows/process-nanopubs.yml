@@ -1,9 +1,9 @@
 # .github/workflows/process-nanopubs.yml
 name: Process Nanopublications
 
-# Configuration - Change these values to control behavior
+# Results are always committed to a unique branch for web display
 env:
-  COMMIT_RESULTS_TO_REPO: 'true'  # Set to 'true' to commit results, 'false' to only create artifacts
+  COMMIT_RESULTS_TO_REPO: 'true'  # Always true - required for web display
 
 on:
   repository_dispatch:
@@ -154,27 +154,14 @@ jobs:
         
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "📥 **Download Results:** Check the artifacts section above" >> $GITHUB_STEP_SUMMARY
-        
-        # Add results branch information if commit is enabled
-        if [ "${{ env.COMMIT_RESULTS_TO_REPO }}" = "true" ]; then
-          echo "🌿 **Results Branch:** \`results-${{ github.run_id }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 **View Results:** [Browse Files](https://github.com/${{ github.repository }}/tree/results-${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
-          echo "📦 **Download ZIP:** [Download All Results](https://github.com/${{ github.repository }}/archive/refs/heads/results-${{ github.run_id }}.zip)" >> $GITHUB_STEP_SUMMARY
-        fi
+        echo "🌿 **Results Branch:** \`results-${{ github.run_id }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "🔗 **View Results:** [Browse Files](https://github.com/${{ github.repository }}/tree/results-${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+        echo "📦 **Download ZIP:** [Download All Results](https://github.com/${{ github.repository }}/archive/refs/heads/results-${{ github.run_id }}.zip)" >> $GITHUB_STEP_SUMMARY
     
-    - name: Debug commit conditions
-      if: always()
-      run: |
-        echo "🔍 Checking commit conditions:"
-        echo "- Job status: ${{ job.status }}"
-        echo "- COMMIT_RESULTS_TO_REPO: '${{ env.COMMIT_RESULTS_TO_REPO }}'"
-        echo "- Should commit: ${{ env.COMMIT_RESULTS_TO_REPO == 'true' }}"
-    
-    - name: Commit results to repository (optional)
-      if: env.COMMIT_RESULTS_TO_REPO == 'true'
+    - name: Commit results to repository
       run: |
         echo "🔄 Committing results to repository..."
-        echo "📊 Commit condition met - COMMIT_RESULTS_TO_REPO: ${{ env.COMMIT_RESULTS_TO_REPO }}"
+        echo "📊 Results will be committed to unique branch for web display"
         
         # Create unique branch name using workflow run ID
         RESULTS_BRANCH="results-${{ github.run_id }}"

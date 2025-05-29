@@ -32,13 +32,14 @@ User Input → Netlify Function → GitHub Actions → Python Processor → Resu
 ```
 public/                     # Frontend files (served by Netlify)
 ├── index.html             # Simplified main interface
-├── app.js                 # Enhanced JavaScript with results display
+├── app.js                 # JavaScript with branch-based results display
 ├── styles.css             # Updated styles
 └── logo.png              
 
 netlify/functions/          # Serverless functions
 ├── process-nanopubs.js    # Triggers GitHub Actions processing
-└── get-results.js         # Fetches results from GitHub
+├── get-results.js         # Status polling during processing
+└── get-branch-results.js  # Fetches results from committed branch files
 
 scripts/                   # Backend processing
 └── process_nanopubs.py    # Enhanced processor using nanopub library
@@ -104,9 +105,9 @@ Set in Netlify dashboard:
 GITHUB_TOKEN=your_github_personal_access_token
 ```
 
-### File Placement
+### **File Placement**
 - Place `index.html`, `app.js`, `styles.css` in `public/` folder
-- Place `process-nanopubs.js` in `netlify/functions/` folder  
+- Place `process-nanopubs.js`, `get-results.js`, `get-branch-results.js` in `netlify/functions/` folder  
 - Place `process_nanopubs.py` in `scripts/` folder
 - Place `requirements.txt` in root folder (for Python dependencies)
 - Place `process-nanopubs.yml` in `.github/workflows/` folder
