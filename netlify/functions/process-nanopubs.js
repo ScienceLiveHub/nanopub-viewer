@@ -50,9 +50,7 @@ exports.handler = async (event, context) => {
         console.log('🔐 Token debug info:', {
             tokenExists: !!githubToken,
             tokenLength: githubToken ? githubToken.length : 0,
-            tokenPrefix: githubToken ? githubToken.substring(0, 8) + '...' : 'none',
-            tokenSuffix: githubToken ? '...' + githubToken.substring(githubToken.length - 4) : 'none',
-            envVarNames: Object.keys(process.env).filter(key => key.includes('GITHUB') || key.includes('TOKEN'))
+            tokenPrefix: githubToken ? githubToken.substring(0, 8) + '...' : 'none'
         });
         
         if (!githubToken) {
@@ -61,9 +59,7 @@ exports.handler = async (event, context) => {
                 statusCode: 500,
                 headers,
                 body: JSON.stringify({ 
-                    error: 'GitHub token not configured on server',
-                    debug: 'GITHUB_TOKEN environment variable is missing',
-                    availableEnvVars: Object.keys(process.env).filter(key => key.includes('GITHUB') || key.includes('TOKEN'))
+                    error: 'GitHub token not configured on server'
                 })
             };
         }
@@ -74,9 +70,7 @@ exports.handler = async (event, context) => {
                 statusCode: 500,
                 headers,
                 body: JSON.stringify({ 
-                    error: 'Invalid GitHub token format',
-                    debug: `Token should start with ghp_, got: ${githubToken.substring(0, 4)}...`,
-                    tokenLength: githubToken.length
+                    error: 'Invalid GitHub token format'
                 })
             };
         }
@@ -112,14 +106,14 @@ exports.handler = async (event, context) => {
         console.log('🚀 Making GitHub API request...');
         console.log('Payload:', JSON.stringify(payload, null, 2));
 
-        // Use the exact same working code from test-github function
+        // Make the GitHub API call using the same working pattern as test-github
         const response = await fetch('https://api.github.com/repos/ScienceLiveHub/nanopub-viewer/dispatches', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${githubToken}`,
                 'Accept': 'application/vnd.github.v3+json',
                 'Content-Type': 'application/json',
-                'User-Agent': 'ScienceLive-Test/1.0'  // Same as working test
+                'User-Agent': 'ScienceLive-Netlify/1.0'
             },
             body: JSON.stringify(payload)
         });
@@ -128,15 +122,6 @@ exports.handler = async (event, context) => {
             status: response.status,
             statusText: response.statusText,
             ok: response.ok
-        });
-            method: 'POST',
-            headers: {
-                'Accept': 'application/vnd.github.v3+json',
-                'Authorization': `Bearer ${githubToken}`,
-                'Content-Type': 'application/json',
-                'User-Agent': 'ScienceLive-Netlify/1.0'
-            },
-            body: JSON.stringify(payload)
         });
 
         if (response.ok) {
@@ -158,18 +143,17 @@ exports.handler = async (event, context) => {
             console.error('❌ GitHub API error:', {
                 status: response.status,
                 statusText: response.statusText,
-                headers: Object.fromEntries(response.headers.entries()),
                 body: errorText
             });
             
             // More specific error messages
             let errorMessage = `GitHub API error: ${response.status}`;
             if (response.status === 401) {
-                errorMessage = 'Authentication failed - check GitHub token permissions for organization';
+                errorMessage = 'Authentication failed - check GitHub token permissions';
             } else if (response.status === 403) {
-                errorMessage = 'Permission denied - token may lack organization access or workflow permissions';
+                errorMessage = 'Permission denied - token may lack required permissions';
             } else if (response.status === 404) {
-                errorMessage = 'Repository not found - check organization/repository name or token access';
+                errorMessage = 'Repository not found - check repository name or token access';
             }
             
             return {
@@ -178,12 +162,7 @@ exports.handler = async (event, context) => {
                 body: JSON.stringify({
                     error: errorMessage,
                     details: errorText,
-                    batch_id: payload.client_payload.batch_id,
-                    debug: {
-                        org: 'ScienceLiveHub',
-                        repo: 'nanopub-viewer',
-                        status: response.status
-                    }
+                    batch_id: payload.client_payload.batch_id
                 })
             };
         }
