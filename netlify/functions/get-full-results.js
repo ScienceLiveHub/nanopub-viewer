@@ -116,26 +116,42 @@ exports.handler = async (event, context) => {
 
             if (logsResponse.ok) {
                 const logsData = await logsResponse.text();
+                console.log(`📋 Retrieved ${logsData.length} characters of logs`);
                 
-                // Extract the Python script output from logs
+                // Extract the Python script output from logs - more flexible approach
                 const lines = logsData.split('\n');
-                let processingStarted = false;
                 let processingResults = [];
+                let inProcessingSection = false;
                 
                 for (const line of lines) {
-                    // Look for our processing output markers
-                    if (line.includes('=== SCIENCE LIVE NANOPUB PROCESSING REPORT ===')) {
-                        processingStarted = true;
+                    // Clean up GitHub Actions log formatting first
+                    let cleanLine = line
+                        .replace(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z\s+/, '') // Remove timestamp
+                        .replace(/^##\[.*?\]/, '') // Remove GitHub Actions commands
+                        .replace(/^.*?(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)\s+/, '') // Remove other timestamps
+                        .trim();
+                    
+                    // Look for various processing markers
+                    if (cleanLine.includes('🚀 === SCIENCE LIVE NANOPUB PROCESSOR STARTING ===') ||
+                        cleanLine.includes('=== SCIENCE LIVE NANOPUB PROCESSING REPORT ===') ||
+                        cleanLine.includes('📊 Processing') && cleanLine.includes('nanopublications')) {
+                        inProcessingSection = true;
+                        console.log('📍 Found processing section start');
                     }
                     
-                    if (processingStarted) {
-                        // Clean up GitHub Actions log formatting
-                        const cleanLine = line.replace(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z\s+/, '')
-                                            .replace(/^.*?(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)\s+/, '');
-                        processingResults.push(cleanLine);
+                    if (inProcessingSection) {
+                        // Include meaningful lines (skip empty ones and GitHub Actions noise)
+                        if (cleanLine && 
+                            !cleanLine.startsWith('##[') && 
+                            !cleanLine.match(/^\d{4}-\d{2}-\d{2}T/) &&
+                            !cleanLine.includes('pythonLocation:') &&
+                            !cleanLine.includes('PKG_CONFIG_PATH:')) {
+                            processingResults.push(cleanLine);
+                        }
                         
                         // Stop at the end marker
-                        if (line.includes('=== PROCESSING COMPLETE ===')) {
+                        if (cleanLine.includes('✅ === PROCESSING COMPLETE ===')) {
+                            console.log('📍 Found processing section end');
                             break;
                         }
                     }
@@ -143,7 +159,31 @@ exports.handler = async (event, context) => {
                 
                 if (processingResults.length > 0) {
                     fullResults = processingResults.join('\n');
+                    console.log(`✅ Extracted ${processingResults.length} lines of processing results`);
+                } else {
+                    console.log('⚠️  No processing results found in logs');
+                    
+                    // Fallback: try to find ANY meaningful Python output
+                    const pythonOutput = [];
+                    for (const line of lines) {
+                        let cleanLine = line
+                            .replace(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z\s+/, '')
+                            .replace(/^##\[.*?\]/, '')
+                            .trim();
+                        
+                        // Look for our Python script's emoji markers
+                        if (cleanLine.match(/^[🚀📊🏷️⏰✅📋🔗📥📦📋🔍📄💾📁]/)) {
+                            pythonOutput.push(cleanLine);
+                        }
+                    }
+                    
+                    if (pythonOutput.length > 0) {
+                        fullResults = pythonOutput.join('\n');
+                        console.log(`✅ Extracted ${pythonOutput.length} lines of Python output as fallback`);
+                    }
                 }
+            } else {
+                console.log(`⚠️  Logs response not OK: ${logsResponse.status}`);
             }
         } catch (error) {
             console.warn('⚠️  Could not fetch workflow logs:', error.message);

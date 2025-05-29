@@ -286,20 +286,45 @@ function displayActualResults(resultData, batchId) {
     
     executionResults.style.display = 'block';
     
+    console.log('🔍 Attempting to fetch full results...', {
+        batchId: batchId,
+        workflowRunId: resultData.workflow_run?.id
+    });
+    
     // Try to get full results from the workflow logs
     fetchFullResults(batchId, resultData.workflow_run?.id)
         .then(fullResultsData => {
+            console.log('📊 Full results response:', fullResultsData);
+            
             if (fullResultsData && fullResultsData.full_results) {
+                console.log('✅ Got full results, displaying...');
+                console.log('📄 Results length:', fullResultsData.full_results.length);
+                
                 // Display the actual processing results from Python script
                 executionContent.textContent = fullResultsData.full_results;
+                
+                // Add a header to show this is the full output
+                const header = `=== FULL PROCESSING RESULTS ===
+Retrieved from GitHub Actions workflow run ${fullResultsData.workflow_run?.id}
+
+${fullResultsData.full_results}`;
+                
+                executionContent.textContent = header;
             } else {
+                console.log('⚠️  No full results available, showing summary');
                 // Fallback to summary display
                 displayResultsSummary(resultData, batchId, executionContent);
             }
         })
         .catch(error => {
-            console.warn('Could not fetch full results:', error);
-            displayResultsSummary(resultData, batchId, executionContent);
+            console.warn('❌ Could not fetch full results:', error);
+            executionContent.textContent = `=== RESULTS FETCH ERROR ===
+
+Could not retrieve full processing results: ${error.message}
+
+Falling back to summary display...
+
+${displayResultsSummary(resultData, batchId, executionContent)}`;
         });
 }
 
@@ -340,7 +365,17 @@ Processing Duration: ${calculateDuration(resultData.workflow_run.created_at, res
 GitHub Actions Run ID: ${resultData.workflow_run.id}
 Workflow Status: ${resultData.workflow_run.status}
 Conclusion: ${resultData.workflow_run.conclusion}
-View Details: ${resultData.workflow_run.html_url}
+View Details: ${resultData.workflow_run.html_url}`;
+
+    // Add results branch information if available
+    if (resultData.workflow_run?.id) {
+        resultsDisplay += `
+Results Branch: results-${resultData.workflow_run.id}
+Browse Results: https://github.com/ScienceLiveHub/nanopub-viewer/tree/results-${resultData.workflow_run.id}
+Download ZIP: https://github.com/ScienceLiveHub/nanopub-viewer/archive/refs/heads/results-${resultData.workflow_run.id}.zip`;
+    }
+
+    resultsDisplay += `
 
 === RESULTS AVAILABLE ===`;
 
@@ -361,7 +396,7 @@ The processing results include:
     } else {
         resultsDisplay += `
 
-Check the workflow run for detailed results and logs.`;
+Check the workflow run or results branch for detailed results and logs.`;
     }
 
     resultsDisplay += `
@@ -370,15 +405,24 @@ Check the workflow run for detailed results and logs.`;
 ${getAllNanopubUrls().map((url, idx) => `${idx + 1}. ${url}`).join('\n')}
 
 === NEXT STEPS ===
-✓ View detailed results in GitHub Actions above
+✓ View detailed results in the results branch above
 ✓ Download processing artifacts if available
 ✓ Review individual nanopub analyses
 ✓ Explore cross-nanopub relationships
 
+=== FULL PROCESSING OUTPUT ===
+The complete processing output should be displayed above.
+If not available, check the GitHub Actions workflow logs directly:
+${resultData.workflow_run.html_url}
+
 This processing used the nanopub Python library for proper
 nanopublication parsing and semantic analysis.`;
 
-    executionContent.textContent = resultsDisplay;
+    if (executionContent) {
+        executionContent.textContent = resultsDisplay;
+    }
+    
+    return resultsDisplay;
 }
 
 // Display failure information
