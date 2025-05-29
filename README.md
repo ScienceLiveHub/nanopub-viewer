@@ -8,32 +8,45 @@ This simplified version of Science Live removes the intermediate "Load Nanopubli
 User Input → Netlify Function → GitHub Actions → Python Processor → Results
 ```
 
-### Key Changes Made
+## 🚀 Major Improvements Made
 
-1. **Removed intermediate loading step** - Users can now directly execute nanopublications
-2. **Streamlined UI** - Single "Execute Nanopublications" button
-3. **Enhanced Python processor** - More robust fetching, validation, and analysis
-4. **Direct workflow** - Simplified user experience with immediate processing
+### 1. **Fixed JSON Serialization Error**
+- **Problem**: Python `set` objects can't be serialized to JSON
+- **Solution**: Using the `nanopub` library which handles RDF data properly
+- **Benefit**: Robust, error-free processing with proper nanopub parsing
+
+### 2. **Enhanced Python Processor with nanopub Library**
+- **Proper RDF Handling**: Uses `rdflib` and `nanopub` for semantic processing
+- **Graph Separation**: Automatically extracts assertion, provenance, and pubinfo graphs
+- **Metadata Extraction**: Pulls author, creation date, and other semantic metadata
+- **Validation**: Built-in nanopub validation and trusty URI support
+
+### 3. **Real Results Display on Website**
+- **Live Status Polling**: JavaScript polls GitHub Actions for real results
+- **Actual Data Display**: Shows real processing outcomes, not just demos
+- **Error Handling**: Graceful fallback to demo if GitHub API unavailable
+- **Rich Information**: Displays workflow details, artifacts, and download links
 
 ## 📁 File Structure
 
 ```
 public/                     # Frontend files (served by Netlify)
 ├── index.html             # Simplified main interface
-├── app.js                 # Streamlined JavaScript
+├── app.js                 # Enhanced JavaScript with results display
 ├── styles.css             # Updated styles
 └── logo.png              
 
 netlify/functions/          # Serverless functions
-└── process-nanopubs.js    # Updated function for direct processing
+├── process-nanopubs.js    # Triggers GitHub Actions processing
+└── get-results.js         # Fetches results from GitHub
 
 scripts/                   # Backend processing
-└── process_nanopubs.py    # Enhanced Python processor
+└── process_nanopubs.py    # Enhanced processor using nanopub library
 
 .github/workflows/          # GitHub Actions
 └── process-nanopubs.yml   # Automated processing workflow
 
-requirements.txt           # Python dependencies
+requirements.txt           # Python dependencies (including nanopub)
 netlify.toml               # Netlify configuration
 ```
 

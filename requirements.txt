@@ -1,11 +1,18 @@
-# Minimal requirements for Science Live Nanopublication Processor
-# Only essential dependencies needed for basic functionality
+# Science Live Nanopublication Processor Dependencies
+# Using nanopub library for proper nanopublication handling
 
-# HTTP requests for fetching nanopublications
+# Nanopublication handling
+nanopub>=1.4.0
+
+# HTTP requests (dependency of nanopub, but good to be explicit)
 requests>=2.31.0
 
-# RDF parsing for nanopublication analysis
+# RDF handling (dependency of nanopub)
 rdflib>=7.0.0
 
-# Data analysis (optional but recommended)
+# Data processing and analysis
 pandas>=2.1.0
+numpy>=1.24.0
+
+# Optional: Enhanced analysis
+networkx>=3.1
