@@ -1,12 +1,24 @@
+# .github/workflows/process-nanopubs.yml
 name: Process Nanopublications
 
 on:
   repository_dispatch:
-    types: [process-nanopubs]
+    types: [process-nanopubs-direct]
+  workflow_dispatch:
+    inputs:
+      nanopub_urls:
+        description: 'Comma-separated nanopub URLs'
+        required: true
+        type: string
+      batch_id:
+        description: 'Batch ID for this processing run'
+        required: false
+        type: string
 
 jobs:
   process-nanopubs:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     
     steps:
     - name: Checkout repository
@@ -15,41 +27,108 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
-        
-    - name: Install dependencies
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install requests rdflib pandas
-        
-    - name: Extract nanopub data
+        pip install requests pathlib
+    
+    - name: Extract processing parameters
+      id: params
       run: |
-        echo "Nanopub URLs: ${{ github.event.client_payload.nanopub_urls }}"
-        echo "Nanopub Count: ${{ github.event.client_payload.nanopub_count }}"
-        echo "Batch ID: ${{ github.event.client_payload.batch_id }}"
-        echo "Timestamp: ${{ github.event.client_payload.timestamp }}"
-        
-    - name: Process nanopublications
+        if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+          echo "nanopub_urls=${{ github.event.client_payload.nanopub_urls_string }}" >> $GITHUB_OUTPUT
+          echo "batch_id=${{ github.event.client_payload.batch_id }}" >> $GITHUB_OUTPUT
+          echo "nanopub_count=${{ github.event.client_payload.nanopub_count }}" >> $GITHUB_OUTPUT
+          echo "source=${{ github.event.client_payload.source }}" >> $GITHUB_OUTPUT
+        else
+          echo "nanopub_urls=${{ github.event.inputs.nanopub_urls }}" >> $GITHUB_OUTPUT
+          echo "batch_id=${{ github.event.inputs.batch_id }}" >> $GITHUB_OUTPUT
+          echo "nanopub_count=$(echo '${{ github.event.inputs.nanopub_urls }}' | tr ',' '\n' | wc -l)" >> $GITHUB_OUTPUT
+          echo "source=manual" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Display processing info
+      run: |
+        echo "🚀 Starting nanopub processing"
+        echo "📊 Batch ID: ${{ steps.params.outputs.batch_id }}"
+        echo "🔢 Count: ${{ steps.params.outputs.nanopub_count }} nanopubs"
+        echo "📋 Source: ${{ steps.params.outputs.source }}"
+        echo "⏰ Started: $(date -u)"
+    
+    - name: Run nanopub processing
       env:
-        NANOPUB_URLS: ${{ join(github.event.client_payload.nanopub_urls, ',') }}
-        NANOPUB_COUNT: ${{ github.event.client_payload.nanopub_count }}
-        BATCH_ID: ${{ github.event.client_payload.batch_id }}
+        NANOPUB_URLS: ${{ steps.params.outputs.nanopub_urls }}
+        NANOPUB_COUNT: ${{ steps.params.outputs.nanopub_count }}
+        BATCH_ID: ${{ steps.params.outputs.batch_id }}
+        PROCESSING_SOURCE: ${{ steps.params.outputs.source }}
       run: |
-        python scripts/process_nanopubs.py
-        
-    - name: Upload results
-      uses: actions/upload-artifact@v3
+        echo "🔬 Executing nanopub processor..."
+        cd scripts
+        python process_nanopubs.py
+    
+    - name: Upload processing results
+      uses: actions/upload-artifact@v4
+      if: always()
       with:
-        name: nanopub-processing-results-${{ github.event.client_payload.batch_id }}
+        name: nanopub-processing-results-${{ steps.params.outputs.batch_id }}
         path: |
           results/
           logs/
         retention-days: 30
-        
-    - name: Create summary
+    
+    - name: Create results summary
+      if: always()
       run: |
-        echo "## Nanopub Processing Results" >> $GITHUB_STEP_SUMMARY
-        echo "- **Batch ID**: ${{ github.event.client_payload.batch_id }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Processed**: ${{ github.event.client_payload.nanopub_count }} nanopublications" >> $GITHUB_STEP_SUMMARY
-        echo "- **Status**: ✅ Completed successfully" >> $GITHUB_STEP_SUMMARY
-        echo "- **Timestamp**: ${{ github.event.client_payload.timestamp }}" >> $GITHUB_STEP_SUMMARY
+        echo "## 📊 Nanopub Processing Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Batch ID:** \`${{ steps.params.outputs.batch_id }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Nanopubs Processed:** ${{ steps.params.outputs.nanopub_count }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Processing Time:** $(date -d @$SECONDS -u +%H:%M:%S)" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -f "logs/processing_summary.txt" ]; then
+          echo "### 📋 Processing Summary" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          head -50 logs/processing_summary.txt >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ -f "results/batch_results.json" ]; then
+          echo "### 📈 Quick Stats" >> $GITHUB_STEP_SUMMARY
+          PROCESSED=$(jq -r '.processed' results/batch_results.json)
+          FAILED=$(jq -r '.failed' results/batch_results.json)
+          TOTAL_TIME=$(jq -r '.processing_time_seconds' results/batch_results.json)
+          echo "- ✅ Successfully processed: $PROCESSED" >> $GITHUB_STEP_SUMMARY
+          echo "- ❌ Failed: $FAILED" >> $GITHUB_STEP_SUMMARY
+          echo "- ⏱️ Total time: ${TOTAL_TIME}s" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "📥 **Download Results:** Check the artifacts section above" >> $GITHUB_STEP_SUMMARY
+    
+    - name: Commit results to repository (optional)
+      if: success() && github.event.client_payload.commit_results == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Create results branch if it doesn't exist
+        git checkout -b results 2>/dev/null || git checkout results
+        
+        # Copy results to a permanent location
+        mkdir -p processing-results/${{ steps.params.outputs.batch_id }}
+        cp -r results/* processing-results/${{ steps.params.outputs.batch_id }}/
+        cp -r logs/* processing-results/${{ steps.params.outputs.batch_id }}/
+        
+        # Commit if there are changes
+        git add processing-results/
+        if ! git diff --staged --quiet; then
+          git commit -m "Add processing results for batch ${{ steps.params.outputs.batch_id }}"
+          git push origin results
+          echo "✅ Results committed to results branch"
+        else
+          echo "ℹ️ No new results to commit"
+        fi

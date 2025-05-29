@@ -1,5 +1,5 @@
 // netlify/functions/process-nanopubs.js
-// Serverless function to securely trigger GitHub Actions
+// Simplified function for direct nanopub processing
 
 exports.handler = async (event, context) => {
     // Set CORS headers for all responses
@@ -29,29 +29,48 @@ exports.handler = async (event, context) => {
     }
 
     try {
-        console.log('🔄 Processing nanopub request...');
+        console.log('🚀 Starting nanopub processing request...');
         
         // Parse request body
         const requestData = JSON.parse(event.body);
-        console.log(`📊 Received ${requestData.nanopub_count} nanopubs for processing`);
+        console.log(`📊 Received request for ${requestData.nanopub_count} nanopubs`);
         
         // Validate request data
         if (!requestData.nanopub_urls || !Array.isArray(requestData.nanopub_urls)) {
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: 'Invalid request: nanopub_urls is required' })
+                body: JSON.stringify({ error: 'Invalid request: nanopub_urls array is required' })
             };
         }
 
-        // Get GitHub token from environment variables (secure!)
-        const githubToken = process.env.GITHUB_TOKEN;
-        
-        console.log('🔐 Token debug info:', {
-            tokenExists: !!githubToken,
-            tokenLength: githubToken ? githubToken.length : 0,
-            tokenPrefix: githubToken ? githubToken.substring(0, 8) + '...' : 'none'
+        if (requestData.nanopub_urls.length === 0) {
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'At least one nanopub URL is required' })
+            };
+        }
+
+        // Validate URLs
+        const validUrls = requestData.nanopub_urls.filter(url => {
+            if (!url || typeof url !== 'string') return false;
+            if (!url.startsWith('http://') && !url.startsWith('https://')) return false;
+            return true;
         });
+
+        if (validUrls.length === 0) {
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'No valid HTTP/HTTPS URLs provided' })
+            };
+        }
+
+        console.log(`✅ Validated ${validUrls.length} URLs`);
+
+        // Get GitHub token from environment
+        const githubToken = process.env.GITHUB_TOKEN;
         
         if (!githubToken) {
             console.error('❌ GitHub token not configured');
@@ -64,7 +83,7 @@ exports.handler = async (event, context) => {
             };
         }
 
-        if (!githubToken.startsWith('ghp_')) {
+        if (!githubToken.startsWith('ghp_') && !githubToken.startsWith('github_pat_')) {
             console.error('❌ Invalid token format');
             return {
                 statusCode: 500,
@@ -75,45 +94,36 @@ exports.handler = async (event, context) => {
             };
         }
 
-        // Add some server-side validation
-        const validUrls = requestData.nanopub_urls.filter(url => 
-            url && typeof url === 'string' && url.startsWith('http')
-        );
-
-        if (validUrls.length === 0) {
-            return {
-                statusCode: 400,
-                headers,
-                body: JSON.stringify({ error: 'No valid nanopub URLs provided' })
-            };
-        }
-
-        console.log(`✅ Validated ${validUrls.length} URLs`);
-
         // Prepare payload for GitHub Actions
+        const batchId = requestData.batch_id || `batch_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+        
         const payload = {
-            event_type: 'process-nanopubs',
+            event_type: 'process-nanopubs-direct',
             client_payload: {
                 nanopub_urls: validUrls,
                 nanopub_count: validUrls.length,
-                batch_id: requestData.batch_id || `batch_${Date.now()}`,
+                batch_id: batchId,
                 timestamp: new Date().toISOString(),
-                source: 'science-live-netlify',
-                user_agent: event.headers['user-agent'] || 'Unknown'
+                source: requestData.source || 'science-live-direct',
+                processing_mode: 'direct',
+                user_agent: event.headers['user-agent'] || 'Unknown',
+                // Pass URLs as environment variable format for Python script
+                nanopub_urls_string: validUrls.join(',')
             }
         };
 
-        console.log('🚀 Making GitHub API request...');
-        console.log('Payload:', JSON.stringify(payload, null, 2));
+        console.log('🚀 Triggering GitHub Action...');
+        console.log(`📋 Batch ID: ${batchId}`);
+        console.log(`🔗 URLs: ${validUrls.length}`);
 
-        // Make the GitHub API call using the same working pattern as test-github
+        // Trigger GitHub Action
         const response = await fetch('https://api.github.com/repos/ScienceLiveHub/nanopub-viewer/dispatches', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${githubToken}`,
                 'Accept': 'application/vnd.github.v3+json',
                 'Content-Type': 'application/json',
-                'User-Agent': 'ScienceLive-Netlify/1.0'
+                'User-Agent': 'ScienceLive-Netlify/2.0'
             },
             body: JSON.stringify(payload)
         });
@@ -132,10 +142,12 @@ exports.handler = async (event, context) => {
                 headers,
                 body: JSON.stringify({
                     success: true,
-                    message: 'GitHub Action triggered successfully',
-                    batch_id: payload.client_payload.batch_id,
+                    message: 'Nanopub processing started successfully',
+                    batch_id: batchId,
                     processed_urls: validUrls.length,
-                    timestamp: payload.client_payload.timestamp
+                    timestamp: payload.client_payload.timestamp,
+                    status_url: `https://github.com/ScienceLiveHub/nanopub-viewer/actions`,
+                    estimated_completion: new Date(Date.now() + validUrls.length * 5000).toISOString() // Rough estimate
                 })
             };
         } else {
@@ -146,23 +158,26 @@ exports.handler = async (event, context) => {
                 body: errorText
             });
             
-            // More specific error messages
+            // Provide specific error messages
             let errorMessage = `GitHub API error: ${response.status}`;
             if (response.status === 401) {
-                errorMessage = 'Authentication failed - check GitHub token permissions';
+                errorMessage = 'Authentication failed - GitHub token may be invalid';
             } else if (response.status === 403) {
                 errorMessage = 'Permission denied - token may lack required permissions';
             } else if (response.status === 404) {
-                errorMessage = 'Repository not found - check repository name or token access';
+                errorMessage = 'Repository not found - check configuration';
+            } else if (response.status === 422) {
+                errorMessage = 'Invalid workflow trigger - check GitHub Actions setup';
             }
             
             return {
-                statusCode: response.status,
+                statusCode: response.status >= 500 ? 500 : 400,
                 headers,
                 body: JSON.stringify({
                     error: errorMessage,
                     details: errorText,
-                    batch_id: payload.client_payload.batch_id
+                    batch_id: batchId,
+                    github_status: response.status
                 })
             };
         }
@@ -176,7 +191,8 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({
                 error: 'Internal server error',
                 message: error.message,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                type: error.name || 'UnknownError'
             })
         };
     }

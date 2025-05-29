@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Science Live - Nanopublication Viewer</title>
+    <title>Science Live - Nanopublication Processor</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css">
 </head>
@@ -20,11 +20,11 @@
         <div class="main-content">
             <div class="search-section">
                 <div class="search-title">
-                    🔬 Explore Nanopublications
+                    🔬 Process Nanopublications
                 </div>
                 <div class="search-description">
-                    Discover and visualize machine-readable scientific statements with proper attribution and provenance. 
-                    Enter one or more nanopublication URIs to explore their structured content and execute batch workflows.
+                    Enter nanopublication URIs to analyze their structured content and execute batch workflows. 
+                    The system will automatically fetch, validate, and process the nanopublications.
                 </div>
                 
                 <div class="input-group">
@@ -43,8 +43,9 @@
                             </button>
                         </div>
                     </div>
-                    <button class="load-button" type="button">
-                        Load Nanopublications
+                    <button class="execute-button" type="button">
+                        <span class="execute-icon">🚀</span>
+                        Execute Nanopublications
                     </button>
                 </div>
                 
@@ -67,27 +68,14 @@
             </div>
 
             <div id="error-container"></div>
-            <div id="loading-container"></div>
-            <div id="info-container"></div>
+            <div id="status-container"></div>
             
-            <div class="results-section" id="results-section" style="display: none;">
-                <!-- Process Nanopublication Section -->
-                <div class="process-section">
-                    <div class="process-header">
-                        <h3>🚀 Execute Nanopublications</h3>
-                        <p>Process the loaded nanopublications to check if they're executable and run any associated workflows.</p>
-                    </div>
-                    <div class="process-controls">
-                        <button class="process-button" id="process-btn" type="button">
-                            <span class="process-icon">▶️</span>
-                            Process Nanopublications
-                        </button>
-                        <div class="process-status" id="process-status" style="display: none;"></div>
-                    </div>
-                    <div class="execution-results" id="execution-results" style="display: none;">
-                        <h4>📋 Execution Results</h4>
-                        <div id="execution-content"></div>
-                    </div>
+            <div class="execution-results" id="execution-results" style="display: none;">
+                <div class="results-header">
+                    <h3>📋 Processing Results</h3>
+                </div>
+                <div class="results-content">
+                    <div id="execution-content"></div>
                 </div>
             </div>
         </div>
