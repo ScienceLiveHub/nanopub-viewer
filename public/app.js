@@ -291,41 +291,135 @@ function displayActualResults(resultData, batchId) {
         workflowRunId: resultData.workflow_run?.id
     });
     
-    // Try to get full results from the workflow logs
-    fetchFullResults(batchId, resultData.workflow_run?.id)
-        .then(fullResultsData => {
-            console.log('📊 Full results response:', fullResultsData);
+    // Try to get full results from the committed files in the results branch
+    fetchBranchResults(batchId, resultData.workflow_run?.id)
+        .then(branchResultsData => {
+            console.log('📊 Branch results response:', branchResultsData);
             
-            if (fullResultsData && fullResultsData.full_results) {
-                console.log('✅ Got full results, displaying...');
-                console.log('📄 Results length:', fullResultsData.full_results.length);
+            if (branchResultsData && branchResultsData.processing_summary) {
+                console.log('✅ Got processing summary from branch, displaying...');
                 
-                // Display the actual processing results from Python script
-                executionContent.textContent = fullResultsData.full_results;
-                
-                // Add a header to show this is the full output
-                const header = `=== FULL PROCESSING RESULTS ===
-Retrieved from GitHub Actions workflow run ${fullResultsData.workflow_run?.id}
+                // Display the full processing summary
+                let fullDisplay = `=== FULL PROCESSING RESULTS FROM BRANCH ===
+Retrieved from results branch: ${branchResultsData.results_branch}
+Branch URL: ${branchResultsData.branch_url}
 
-${fullResultsData.full_results}`;
+${branchResultsData.processing_summary}
+
+=== ADDITIONAL ANALYSIS DATA ===`;
+
+                // Add batch results summary if available
+                if (branchResultsData.batch_results) {
+                    const br = branchResultsData.batch_results;
+                    fullDisplay += `
+
+BATCH PROCESSING SUMMARY:
+- Total nanopubs: ${br.total_nanopubs}
+- Successfully processed: ${br.processed}
+- Failed: ${br.failed}
+- Success rate: ${((br.processed / br.total_nanopubs) * 100).toFixed(1)}%
+- Processing time: ${br.processing_time_seconds}s`;
+                }
+
+                // Add combined analysis if available
+                if (branchResultsData.combined_analysis) {
+                    const ca = branchResultsData.combined_analysis;
+                    fullDisplay += `
+
+CROSS-NANOPUB ANALYSIS:
+- Total nanopubs analyzed: ${ca.total_nanopubs}
+- Successfully processed: ${ca.successful_processing}
+- Total triples: ${ca.total_triples}`;
+
+                    if (ca.graph_distribution) {
+                        fullDisplay += `
+- Graph distribution: ${Object.entries(ca.graph_distribution).map(([k,v]) => `${k}(${v})`).join(', ')}`;
+                    }
+
+                    if (ca.author_network && Object.keys(ca.author_network).length > 0) {
+                        fullDisplay += `
+- Authors: ${Object.entries(ca.author_network).map(([k,v]) => `${k}(${v})`).join(', ')}`;
+                    }
+                }
+
+                // Add individual files info
+                if (branchResultsData.individual_files?.length > 0) {
+                    fullDisplay += `
+
+INDIVIDUAL RESULT FILES (${branchResultsData.individual_files.length}):
+${branchResultsData.individual_files.map(file => `- ${file.name} (${formatBytes(file.size)})`).join('\n')}`;
+                }
+
+                fullDisplay += `
+
+=== ACCESS RESULTS ===
+🌿 Results Branch: ${branchResultsData.results_branch}
+🔗 Browse Files: ${branchResultsData.branch_url}
+📦 Download ZIP: https://github.com/ScienceLiveHub/nanopub-viewer/archive/refs/heads/${branchResultsData.results_branch}.zip`;
+
+                executionContent.textContent = fullDisplay;
                 
-                executionContent.textContent = header;
             } else {
-                console.log('⚠️  No full results available, showing summary');
-                // Fallback to summary display
-                displayResultsSummary(resultData, batchId, executionContent);
+                console.log('⚠️  No processing summary in branch results, trying log approach...');
+                // Fallback to the original log-based approach
+                fetchFullResults(batchId, resultData.workflow_run?.id)
+                    .then(fullResultsData => {
+                        if (fullResultsData && fullResultsData.full_results) {
+                            console.log('✅ Got full results from logs, displaying...');
+                            executionContent.textContent = fullResultsData.full_results;
+                        } else {
+                            console.log('⚠️  No full results available, showing summary');
+                            displayResultsSummary(resultData, batchId, executionContent);
+                        }
+                    })
+                    .catch(error => {
+                        console.warn('❌ Could not fetch results from logs either:', error);
+                        displayResultsSummary(resultData, batchId, executionContent);
+                    });
             }
         })
         .catch(error => {
-            console.warn('❌ Could not fetch full results:', error);
-            executionContent.textContent = `=== RESULTS FETCH ERROR ===
-
-Could not retrieve full processing results: ${error.message}
-
-Falling back to summary display...
-
-${displayResultsSummary(resultData, batchId, executionContent)}`;
+            console.warn('❌ Could not fetch branch results:', error);
+            // Fallback to log approach
+            fetchFullResults(batchId, resultData.workflow_run?.id)
+                .then(fullResultsData => {
+                    if (fullResultsData && fullResultsData.full_results) {
+                        executionContent.textContent = fullResultsData.full_results;
+                    } else {
+                        displayResultsSummary(resultData, batchId, executionContent);
+                    }
+                })
+                .catch(logError => {
+                    console.warn('❌ Both branch and log approaches failed:', logError);
+                    displayResultsSummary(resultData, batchId, executionContent);
+                });
         });
+}
+
+// Fetch full results from committed branch files
+async function fetchBranchResults(batchId, workflowRunId) {
+    try {
+        if (!workflowRunId) {
+            throw new Error('No workflow run ID available');
+        }
+        
+        const queryParams = new URLSearchParams({
+            batch_id: batchId,
+            workflow_run_id: workflowRunId
+        });
+        
+        const response = await fetch(`/.netlify/functions/get-branch-results?${queryParams}`);
+        
+        if (response.ok) {
+            return await response.json();
+        } else {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP ${response.status}`);
+        }
+    } catch (error) {
+        console.warn('Error fetching branch results:', error);
+        throw error;
+    }
 }
 
 // Fetch full results from workflow logs
