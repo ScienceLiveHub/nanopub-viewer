@@ -47,12 +47,33 @@ exports.handler = async (event, context) => {
         // Get GitHub token from environment variables (secure!)
         const githubToken = process.env.GITHUB_TOKEN;
         
+        console.log('🔐 Token check:', {
+            tokenExists: !!githubToken,
+            tokenLength: githubToken ? githubToken.length : 0,
+            tokenPrefix: githubToken ? githubToken.substring(0, 4) + '...' : 'none'
+        });
+        
         if (!githubToken) {
             console.error('❌ GitHub token not configured');
             return {
                 statusCode: 500,
                 headers,
-                body: JSON.stringify({ error: 'GitHub token not configured on server' })
+                body: JSON.stringify({ 
+                    error: 'GitHub token not configured on server',
+                    debug: 'GITHUB_TOKEN environment variable is missing'
+                })
+            };
+        }
+
+        if (!githubToken.startsWith('ghp_')) {
+            console.error('❌ Invalid token format');
+            return {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({ 
+                    error: 'Invalid GitHub token format',
+                    debug: 'Token should start with ghp_'
+                })
             };
         }
 
@@ -86,7 +107,7 @@ exports.handler = async (event, context) => {
 
         console.log('🚀 Triggering GitHub Action...');
 
-        // Make the secure call to GitHub API
+        // Make the secure call to GitHub API - ORGANIZATION REPO
         const response = await fetch('https://api.github.com/repos/ScienceLiveHub/nanopub-viewer/dispatches', {
             method: 'POST',
             headers: {
