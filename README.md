@@ -33,6 +33,7 @@ scripts/                   # Backend processing
 .github/workflows/          # GitHub Actions
 └── process-nanopubs.yml   # Automated processing workflow
 
+requirements.txt           # Python dependencies
 netlify.toml               # Netlify configuration
 ```
 
@@ -94,16 +95,33 @@ GITHUB_TOKEN=your_github_personal_access_token
 - Place `index.html`, `app.js`, `styles.css` in `public/` folder
 - Place `process-nanopubs.js` in `netlify/functions/` folder  
 - Place `process_nanopubs.py` in `scripts/` folder
+- Place `requirements.txt` in root folder (for Python dependencies)
 - Place `process-nanopubs.yml` in `.github/workflows/` folder
 
 ### GitHub Actions Setup
 The workflow automatically:
 1. Sets up Python environment
-2. Installs required dependencies
+2. Installs dependencies from `requirements.txt`
 3. Runs the nanopub processor
 4. Uploads results as artifacts
 5. Creates processing summaries
 6. Optionally commits results to repository
+
+### Python Dependencies
+The system requires several Python packages defined in `requirements.txt`:
+
+**Essential Dependencies:**
+- `requests` - HTTP requests for fetching nanopublications
+- `rdflib` - RDF parsing and semantic web processing
+- `pandas` - Data analysis and processing
+
+**Optional Dependencies:**
+- `owlrl` - Enhanced OWL reasoning
+- `SPARQLWrapper` - SPARQL query support
+- `networkx` - Graph analysis capabilities
+- `nltk` - Natural language processing
+
+The Python script gracefully handles missing optional dependencies.
 
 ## 📊 Processing Outputs
 

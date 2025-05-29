@@ -16,6 +16,22 @@ import re
 from collections import Counter
 from urllib.parse import urlparse
 
+# Optional imports with fallbacks
+try:
+    import pandas as pd
+    HAS_PANDAS = True
+except ImportError:
+    HAS_PANDAS = False
+    print("⚠️  pandas not available - some analysis features will be limited")
+
+try:
+    import rdflib
+    from rdflib import Graph, URIRef, Literal, Namespace
+    HAS_RDFLIB = True
+except ImportError:
+    HAS_RDFLIB = False
+    print("⚠️  rdflib not available - RDF parsing will be basic")
+
 def setup_directories():
     """Create necessary directories for output"""
     directories = ["results", "logs", "results/individual", "results/analysis", "cache"]
