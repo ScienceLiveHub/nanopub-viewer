@@ -76,8 +76,39 @@ jobs:
         PROCESSING_SOURCE: ${{ steps.params.outputs.source }}
       run: |
         echo "🔬 Executing nanopub processor..."
-        cd scripts
-        python process_nanopubs.py
+        python scripts/process_nanopubs.py
+        echo "📁 Checking generated files..."
+        ls -la results/ 2>/dev/null || echo "No results directory found"
+        ls -la logs/ 2>/dev/null || echo "No logs directory found"
+    
+    - name: Ensure directories exist for artifacts
+      run: |
+        echo "📁 Current directory structure before ensuring directories:"
+        find . -name "results" -o -name "logs" -type d 2>/dev/null || echo "No results/logs directories found"
+        
+        mkdir -p results logs
+        echo "📁 Created base directories"
+        
+        # List what files exist
+        echo "📄 Files in results directory:"
+        find results -type f 2>/dev/null || echo "No files in results directory"
+        
+        echo "📄 Files in logs directory:"
+        find logs -type f 2>/dev/null || echo "No files in logs directory"
+        
+        # Create a basic summary file if processing failed
+        if [ ! -f "logs/processing_summary.txt" ]; then
+          echo "⚠️ No processing summary found - creating error file"
+          echo "Processing may have failed - no summary file generated at $(date -u)" > logs/error_summary.txt
+        fi
+        
+        if [ ! -f "results/batch_results.json" ]; then
+          echo "⚠️ No batch results found - creating error file"
+          echo '{"error": "No batch results generated", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'", "batch_id": "${{ steps.params.outputs.batch_id }}"}' > results/error_results.json
+        fi
+        
+        echo "📄 Final file check before artifact upload:"
+        find results logs -type f 2>/dev/null || echo "Still no files found"
     
     - name: Upload processing results
       uses: actions/upload-artifact@v4
@@ -85,9 +116,10 @@ jobs:
       with:
         name: nanopub-processing-results-${{ steps.params.outputs.batch_id }}
         path: |
-          results/
-          logs/
+          results/**/*
+          logs/**/*
         retention-days: 30
+        if-no-files-found: warn
     
     - name: Create results summary
       if: always()
