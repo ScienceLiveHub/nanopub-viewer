@@ -80,11 +80,10 @@ jobs:
         PROCESSING_SOURCE: ${{ steps.params.outputs.source }}
       run: |
         echo "🔬 Executing nanopub processor..."
-        cd scripts
-        python process_nanopubs.py
+        python scripts/process_nanopubs.py
         echo "📁 Checking generated files..."
-        ls -la ../results/ 2>/dev/null || echo "No results directory found"
-        ls -la ../logs/ 2>/dev/null || echo "No logs directory found"
+        ls -la ./results/ 2>/dev/null || echo "No results directory found"
+        ls -la ./logs/ 2>/dev/null || echo "No logs directory found"
     
     - name: Ensure directories exist for artifacts
       run: |
