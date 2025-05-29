@@ -157,14 +157,15 @@ jobs:
         echo "📥 **Download Results:** Check the artifacts section above" >> $GITHUB_STEP_SUMMARY
     
     - name: Debug commit conditions
+      if: always()
       run: |
         echo "🔍 Checking commit conditions:"
-        echo "- Workflow success: ${{ success() }}"
+        echo "- Job status: ${{ job.status }}"
         echo "- COMMIT_RESULTS_TO_REPO: '${{ env.COMMIT_RESULTS_TO_REPO }}'"
-        echo "- Should commit: ${{ success() && env.COMMIT_RESULTS_TO_REPO == 'true' }}"
+        echo "- Should commit: ${{ env.COMMIT_RESULTS_TO_REPO == 'true' }}"
     
     - name: Commit results to repository (optional)
-      if: success() && env.COMMIT_RESULTS_TO_REPO == 'true'
+      if: env.COMMIT_RESULTS_TO_REPO == 'true'
       run: |
         echo "🔄 Committing results to repository..."
         echo "📊 Commit condition met - commit_results: ${{ github.event.client_payload.commit_results }}"
