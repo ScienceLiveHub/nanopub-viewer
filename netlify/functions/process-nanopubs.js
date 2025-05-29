@@ -47,10 +47,12 @@ exports.handler = async (event, context) => {
         // Get GitHub token from environment variables (secure!)
         const githubToken = process.env.GITHUB_TOKEN;
         
-        console.log('🔐 Token check:', {
+        console.log('🔐 Token debug info:', {
             tokenExists: !!githubToken,
             tokenLength: githubToken ? githubToken.length : 0,
-            tokenPrefix: githubToken ? githubToken.substring(0, 4) + '...' : 'none'
+            tokenPrefix: githubToken ? githubToken.substring(0, 8) + '...' : 'none',
+            tokenSuffix: githubToken ? '...' + githubToken.substring(githubToken.length - 4) : 'none',
+            envVarNames: Object.keys(process.env).filter(key => key.includes('GITHUB') || key.includes('TOKEN'))
         });
         
         if (!githubToken) {
@@ -60,7 +62,8 @@ exports.handler = async (event, context) => {
                 headers,
                 body: JSON.stringify({ 
                     error: 'GitHub token not configured on server',
-                    debug: 'GITHUB_TOKEN environment variable is missing'
+                    debug: 'GITHUB_TOKEN environment variable is missing',
+                    availableEnvVars: Object.keys(process.env).filter(key => key.includes('GITHUB') || key.includes('TOKEN'))
                 })
             };
         }
@@ -72,7 +75,8 @@ exports.handler = async (event, context) => {
                 headers,
                 body: JSON.stringify({ 
                     error: 'Invalid GitHub token format',
-                    debug: 'Token should start with ghp_'
+                    debug: `Token should start with ghp_, got: ${githubToken.substring(0, 4)}...`,
+                    tokenLength: githubToken.length
                 })
             };
         }
@@ -105,10 +109,32 @@ exports.handler = async (event, context) => {
             }
         };
 
-        console.log('🚀 Triggering GitHub Action...');
+        console.log('🚀 Making GitHub API request with:', {
+            url: 'https://api.github.com/repos/ScienceLiveHub/nanopub-viewer/dispatches',
+            method: 'POST',
+            tokenLength: githubToken.length,
+            tokenPrefix: githubToken.substring(0, 8) + '...',
+            payloadSize: JSON.stringify(payload).length,
+            userAgent: 'ScienceLive-Netlify/1.0'
+        });
 
         // Make the secure call to GitHub API - ORGANIZATION REPO
         const response = await fetch('https://api.github.com/repos/ScienceLiveHub/nanopub-viewer/dispatches', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/vnd.github.v3+json',
+                'Authorization': `Bearer ${githubToken}`,
+                'Content-Type': 'application/json',
+                'User-Agent': 'ScienceLive-Netlify/1.0'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        console.log('📡 GitHub API response:', {
+            status: response.status,
+            statusText: response.statusText,
+            headers: Object.fromEntries(response.headers.entries())
+        });
             method: 'POST',
             headers: {
                 'Accept': 'application/vnd.github.v3+json',
@@ -135,15 +161,35 @@ exports.handler = async (event, context) => {
             };
         } else {
             const errorText = await response.text();
-            console.error('❌ GitHub API error:', response.status, errorText);
+            console.error('❌ GitHub API error:', {
+                status: response.status,
+                statusText: response.statusText,
+                headers: Object.fromEntries(response.headers.entries()),
+                body: errorText
+            });
+            
+            // More specific error messages
+            let errorMessage = `GitHub API error: ${response.status}`;
+            if (response.status === 401) {
+                errorMessage = 'Authentication failed - check GitHub token permissions for organization';
+            } else if (response.status === 403) {
+                errorMessage = 'Permission denied - token may lack organization access or workflow permissions';
+            } else if (response.status === 404) {
+                errorMessage = 'Repository not found - check organization/repository name or token access';
+            }
             
             return {
                 statusCode: response.status,
                 headers,
                 body: JSON.stringify({
-                    error: `GitHub API error: ${response.status}`,
+                    error: errorMessage,
                     details: errorText,
-                    batch_id: payload.client_payload.batch_id
+                    batch_id: payload.client_payload.batch_id,
+                    debug: {
+                        org: 'ScienceLiveHub',
+                        repo: 'nanopub-viewer',
+                        status: response.status
+                    }
                 })
             };
         }
