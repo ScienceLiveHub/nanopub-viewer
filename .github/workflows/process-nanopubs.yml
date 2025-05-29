@@ -1,0 +1,55 @@
+name: Process Nanopublications
+
+on:
+  repository_dispatch:
+    types: [process-nanopubs]
+
+jobs:
+  process-nanopubs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests rdflib pandas
+        
+    - name: Extract nanopub data
+      run: |
+        echo "Nanopub URLs: ${{ github.event.client_payload.nanopub_urls }}"
+        echo "Nanopub Count: ${{ github.event.client_payload.nanopub_count }}"
+        echo "Batch ID: ${{ github.event.client_payload.batch_id }}"
+        echo "Timestamp: ${{ github.event.client_payload.timestamp }}"
+        
+    - name: Process nanopublications
+      env:
+        NANOPUB_URLS: ${{ join(github.event.client_payload.nanopub_urls, ',') }}
+        NANOPUB_COUNT: ${{ github.event.client_payload.nanopub_count }}
+        BATCH_ID: ${{ github.event.client_payload.batch_id }}
+      run: |
+        python scripts/process_nanopubs.py
+        
+    - name: Upload results
+      uses: actions/upload-artifact@v3
+      with:
+        name: nanopub-processing-results-${{ github.event.client_payload.batch_id }}
+        path: |
+          results/
+          logs/
+        retention-days: 30
+        
+    - name: Create summary
+      run: |
+        echo "## Nanopub Processing Results" >> $GITHUB_STEP_SUMMARY
+        echo "- **Batch ID**: ${{ github.event.client_payload.batch_id }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Processed**: ${{ github.event.client_payload.nanopub_count }} nanopublications" >> $GITHUB_STEP_SUMMARY
+        echo "- **Status**: ✅ Completed successfully" >> $GITHUB_STEP_SUMMARY
+        echo "- **Timestamp**: ${{ github.event.client_payload.timestamp }}" >> $GITHUB_STEP_SUMMARY
