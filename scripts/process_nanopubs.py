@@ -13,20 +13,8 @@ import sys
 from collections import Counter
 
 # Import nanopub library
-try:
-    from nanopub import NanopubClient
-    HAS_NANOPUB = True
-except ImportError:
-    HAS_NANOPUB = False
-    print("❌ ERROR: nanopub library not available")
-    print("Please install: pip install nanopub")
-    sys.exit(1)
-
-try:
-    import rdflib
-    HAS_RDFLIB = True
-except ImportError:
-    HAS_RDFLIB = False
+from nanopub import Nanopub, NanopubConf
+import rdflib
 
 def setup_directories():
     """Create necessary directories for output"""
@@ -34,16 +22,6 @@ def setup_directories():
     for directory in directories:
         Path(directory).mkdir(exist_ok=True)
     print("✅ Output directories created")
-
-def validate_nanopub_url(url):
-    """Validate nanopublication URL format"""
-    if not url.startswith(('http://', 'https://')):
-        return False, "URL must start with http:// or https://"
-    
-    if 'w3id.org/np/' not in url and 'nanopub' not in url.lower():
-        return False, "URL doesn't appear to be a nanopublication"
-    
-    return True, "Valid"
 
 def extract_nanopub_info(nanopub_obj, url):
     """Extract information from nanopub object using nanopub library"""
@@ -226,14 +204,6 @@ def process_nanopubs():
     
     setup_directories()
     
-    # Initialize nanopub client
-    try:
-        client = NanopubClient()
-        print("✅ Nanopub client initialized")
-    except Exception as e:
-        print(f"❌ Failed to initialize nanopub client: {e}")
-        sys.exit(1)
-    
     # Initialize results
     results = {
         'batch_id': batch_id,
@@ -252,27 +222,16 @@ def process_nanopubs():
         print(f"\n📋 --- Processing nanopub {i}/{len(nanopub_urls)} ---")
         print(f"🔗 URL: {url}")
         
-        # Validate URL
-        is_valid, validation_msg = validate_nanopub_url(url)
-        if not is_valid:
-            print(f"❌ URL validation failed: {validation_msg}")
-            error_result = {
-                'url': url,
-                'timestamp': datetime.now().isoformat(),
-                'status': 'error',
-                'error': f"URL validation failed: {validation_msg}"
-            }
-            results['results'].append(error_result)
-            nanopub_analyses.append(error_result)
-            results['failed'] += 1
-            continue
-        
         try:
             # Fetch nanopub using nanopub library
             fetch_start = time.time()
             print("📥 Fetching nanopub...")
             
-            nanopub_obj = client.fetch(url)
+            np = Nanopub(
+              source_uri=url,
+              conf=NanopubConf(use_test_server=False)
+            )
+            nanopub_obj = np
             fetch_time = time.time() - fetch_start
             
             print(f"✅ Fetched nanopub in {fetch_time:.2f}s")
