@@ -1,0 +1,98 @@
+{
+  "url": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q",
+  "timestamp": "2025-06-03T16:44:22.627723",
+  "status": "processed",
+  "graphs": {
+    "assertion": true,
+    "provenance": true,
+    "pubinfo": true
+  },
+  "triples_count": 20,
+  "metadata": {
+    "created": "https://w3id.org/np/RA7lSq6MuK_TIC6JMSHvLtee3lpLoZDOqLJCLXevnrPoU",
+    "creator": "https://orcid.org/0000-0002-1784-2920",
+    "author_name": "Anne Fouilloux"
+  },
+  "content": {
+    "assertion_triples": [
+      {
+        "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q/assertion",
+        "predicate": "http://purl.org/dc/terms/creator",
+        "object": "https://orcid.org/0000-0002-1784-2920"
+      },
+      {
+        "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q/assertion",
+        "predicate": "http://www.w3.org/2000/01/rdf-schema#comment",
+        "object": "In abstract: \"On the test data, we achieved top-1 and top-5 error rates of 37.5% and 17.0% which is considerably better than the previous state-of-the-art. The neural network, which has 60 million parameters and 650,000 neurons, consists of five convolutional layers, some of which are followed by max-pooling layers, and three fully-connected layers with a final 1000-way softmax.\""
+      },
+      {
+        "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q/assertion",
+        "predicate": "http://purl.org/spar/cito/includesQuotationFrom",
+        "object": "https://dblp.org/rec/conf/nips/KrizhevskySH12"
+      }
+    ],
+    "provenance_triples": [
+      {
+        "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q/assertion",
+        "predicate": "http://www.w3.org/ns/prov#wasAttributedTo",
+        "object": "https://orcid.org/0000-0002-1784-2920"
+      }
+    ],
+    "pubinfo_triples": [
+      {
+        "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q",
+        "predicate": "http://purl.org/nanopub/x/hasNanopubType",
+        "object": "http://purl.org/spar/cito/cites"
+      },
+      {
+        "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q/sig",
+        "predicate": "http://purl.org/nanopub/x/hasPublicKey",
+        "object": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDWv2pJnmDsBOq8OlT1aSvYXSuWT34WOp4FYqEzdnn2F0kqzcFevBqWGZDxJWC0lqCrDEuNfp2QFyPe/+nES9dlHGYIhqPi68fwK6ZiNUotRFxXou+rjFznVvUxtCL8Ede79EBHwWN61QtwSIcU12bLoZsNPFlqQASQ93BJuKlihwIDAQAB"
+      },
+      {
+        "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q/sig",
+        "predicate": "http://purl.org/nanopub/x/hasAlgorithm",
+        "object": "RSA"
+      },
+      {
+        "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q",
+        "predicate": "http://purl.org/nanopub/x/wasCreatedAt",
+        "object": "https://nanodash.knowledgepixels.com/"
+      },
+      {
+        "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q/sig",
+        "predicate": "http://purl.org/nanopub/x/signedBy",
+        "object": "https://orcid.org/0000-0002-1784-2920"
+      },
+      {
+        "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q",
+        "predicate": "http://purl.org/dc/terms/creator",
+        "object": "https://orcid.org/0000-0002-1784-2920"
+      },
+      {
+        "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q",
+        "predicate": "http://purl.org/dc/terms/license",
+        "object": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      {
+        "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q",
+        "predicate": "https://w3id.org/np/o/ntemplate/wasCreatedFromPubinfoTemplate",
+        "object": "https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI"
+      },
+      {
+        "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q",
+        "predicate": "https://w3id.org/np/o/ntemplate/wasCreatedFromTemplate",
+        "object": "http://purl.org/np/RAVEpTdLrX5XrhNl_gnvTaBcjRRSDu_hhZix8gu2HO7jI"
+      },
+      {
+        "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q",
+        "predicate": "http://www.w3.org/2000/01/rdf-schema#label",
+        "object": "includes quotation from KrizhevskySH12"
+      }
+    ]
+  },
+  "uri": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q",
+  "rdf_turtle": "@prefix dcterms: <http://purl.org/dc/terms/> .\n@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n@prefix np: <http://www.nanopub.org/nschema#> .\n@prefix npx: <http://purl.org/nanopub/x/> .\n@prefix ns1: <http://purl.org/np/> .\n@prefix ns2: <http://purl.org/spar/cito/> .\n@prefix nt: <https://w3id.org/np/o/ntemplate/> .\n@prefix orcid: <https://orcid.org/> .\n@prefix prov: <http://www.w3.org/ns/prov#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix sub: <https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q/> .\n@prefix this: <https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n\nsub:sig npx:hasAlgorithm \"RSA\" ;\n    npx:hasPublicKey \"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDWv2pJnmDsBOq8OlT1aSvYXSuWT34WOp4FYqEzdnn2F0kqzcFevBqWGZDxJWC0lqCrDEuNfp2QFyPe/+nES9dlHGYIhqPi68fwK6ZiNUotRFxXou+rjFznVvUxtCL8Ede79EBHwWN61QtwSIcU12bLoZsNPFlqQASQ93BJuKlihwIDAQAB\" ;\n    npx:hasSignature \"gfT49NDrHPmjU7EPw+zjLEJ2+iyG9DMftj4DC3g7zXsdktgDUz/bxzosx7dXJSmN2IJ3GHiJZ8heiLVBAPB6LVoUVSnCLbIpiqsZZ5C7CwKppTxXeXwZr34KqE/BAbTFRcqChLNJZ1hVli6deeN/Pfa6g9ta8vbrN08zCm1TExY=\" ;\n    npx:hasSignatureTarget this: ;\n    npx:signedBy orcid:0000-0002-1784-2920 .\n\nthis: a np:Nanopublication ;\n    rdfs:label \"includes quotation from KrizhevskySH12\" ;\n    dcterms:created \"2025-05-22T10:58:43.659Z\"^^xsd:dateTime ;\n    dcterms:creator orcid:0000-0002-1784-2920 ;\n    dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;\n    npx:hasNanopubType ns2:cites ;\n    npx:wasCreatedAt <https://nanodash.knowledgepixels.com/> ;\n    np:hasAssertion sub:assertion ;\n    np:hasProvenance sub:provenance ;\n    np:hasPublicationInfo sub:pubinfo ;\n    nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA7lSq6MuK_TIC6JMSHvLtee3lpLoZDOqLJCLXevnrPoU> ;\n    nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RA0J4vUn_dekg-U1kK3AOEt02p9mT2WO03uGxLDec1jLw>,\n        <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;\n",
+  "fetch_time_seconds": 0.3775660991668701,
+  "analysis_time_seconds": 0.0013916492462158203
+}

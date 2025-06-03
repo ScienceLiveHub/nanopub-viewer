@@ -1,0 +1,57 @@
+
+=== SCIENCE LIVE NANOPUB PROCESSING REPORT ===
+Generated: 2025-06-03 16:44:23 UTC
+Batch ID: batch_1748969030886_c7ilfjvzm
+
+=== PROCESSING SUMMARY ===
+Total Nanopublications: 4
+Successfully Processed: 4
+Failed: 0
+Success Rate: 100.0%
+Total Triples Analyzed: 113
+Processing Time: 2.16 seconds
+
+=== PROCESSED NANOPUBLICATIONS ===
+
+1. https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4
+   Status: ✅ Success
+   URI: https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4
+   Triples: 41
+   Graphs: assertion, provenance, pubinfo
+   Author: Anne Fouilloux
+
+2. https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4
+   Status: ✅ Success
+   URI: https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4
+   Triples: 26
+   Graphs: assertion, provenance, pubinfo
+   Author: Anne Fouilloux
+
+3. https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q
+   Status: ✅ Success
+   URI: https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q
+   Triples: 20
+   Graphs: assertion, provenance, pubinfo
+   Author: Anne Fouilloux
+
+4. https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4
+   Status: ✅ Success
+   URI: https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4
+   Triples: 26
+   Graphs: assertion, provenance, pubinfo
+   Author: Anne Fouilloux
+
+=== GRAPH DISTRIBUTION ===
+  - assertion: 4 nanopubs (100.0%)
+  - provenance: 4 nanopubs (100.0%)
+  - pubinfo: 4 nanopubs (100.0%)
+
+=== AUTHOR NETWORK ===
+  - Anne Fouilloux: 4 nanopub(s)
+
+=== FILES GENERATED ===
+- results/batch_results.json (detailed processing results)
+- results/combined_analysis.json (cross-nanopub analysis)
+- results/web/display_data.json (web display data)
+- results/individual/*.json (4 individual analyses)
+- logs/processing_summary.txt (this report)

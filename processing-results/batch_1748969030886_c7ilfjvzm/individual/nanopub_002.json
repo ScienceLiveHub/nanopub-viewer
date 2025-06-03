@@ -1,0 +1,118 @@
+{
+  "url": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+  "timestamp": "2025-06-03T16:44:22.248078",
+  "status": "processed",
+  "graphs": {
+    "assertion": true,
+    "provenance": true,
+    "pubinfo": true
+  },
+  "triples_count": 26,
+  "metadata": {
+    "created": "https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI",
+    "creator": "https://orcid.org/0000-0002-1784-2920",
+    "author_name": "Anne Fouilloux"
+  },
+  "content": {
+    "assertion_triples": [
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/result",
+        "predicate": "http://www.w3.org/2000/01/rdf-schema#seeAlso",
+        "object": "https://x.com/DWD_presse/status/1791356767525351444"
+      },
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/result",
+        "predicate": "http://purl.org/dc/terms/description",
+        "object": "<p>\r\nA <b>tweet</b> posted by the Deutscher Wetterdienst (DWD) regarding an ongoing severe weather and flood situation in Southwest Germany (May 2024). The content was saved for documentation and educational purposes.\r\n </p>\r\n<p>\r\n<img src=\"https://zenodo.org/records/15391804/files/Sarland_17May2024_Germany_DWD.png\" style=\"width:300px\" />\r\n<br>\r\nImage © Deutscher Wetterdienst (DWD) \r\n<p>\r\n\r\n@DWD_presse\r\n</p>\r\n \r\n<p>Anhaltende #Unwetter-Situation im Südwesten! In den letzten 12 Stunden fielen verbreitet 30-40, stellenweise aber auch bis zu 70 ℓ/m². Es besteht Gefahr von Überschwemmungen und #Hochwasser! Beachten Sie dazu auch die Hinweise der jeweiligen Hochwasservorhersagezentralen! /V\r\n \r\nSource: Deutscher Wetterdienst (DWD), via @DWD_presse on X, Tweet dated 17 May 2024 \r\n</p>\r\n\r\n<p>Please refer to DWD for original media and usage rights.</p>\r\n\r\n\r\n<p><b>Translated from German by Google</b></p>\r\n<p>\r\nPersistent #Unwetter situation in the southwest! In the last 12 hours, 30-40, but in some places up to 70 ℓ /m² fell. There is a risk of flooding and #Hochwasser ! Please also follow the advice of the respective flood forecasting centers! /V</p>"
+      },
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/result",
+        "predicate": "http://www.w3.org/2000/01/rdf-schema#label",
+        "object": "Severe Weather Alert: Heavy Rain and Flood Risk in Southwest Germany"
+      },
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/result",
+        "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "object": "https://w3id.org/kpxl/gen/terms/Evidence"
+      },
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/result",
+        "predicate": "http://www.w3.org/2000/01/rdf-schema#seeAlso",
+        "object": "https://doi.org/10.5281/zenodo.15391803"
+      }
+    ],
+    "provenance_triples": [
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/assertion",
+        "predicate": "http://www.w3.org/ns/prov#wasAttributedTo",
+        "object": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/@DWD_presse"
+      },
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/assertion",
+        "predicate": "http://www.w3.org/ns/prov#wasAttributedTo",
+        "object": "https://ror.org/02nrqs528"
+      },
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/assertion",
+        "predicate": "http://www.w3.org/ns/prov#wasAttributedTo",
+        "object": "https://orcid.org/0000-0002-1784-2920"
+      }
+    ],
+    "pubinfo_triples": [
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+        "predicate": "https://w3id.org/np/o/ntemplate/wasCreatedFromPubinfoTemplate",
+        "object": "https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw"
+      },
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+        "predicate": "https://w3id.org/np/o/ntemplate/wasCreatedFromPubinfoTemplate",
+        "object": "https://w3id.org/np/RA0J4vUn_dekg-U1kK3AOEt02p9mT2WO03uGxLDec1jLw"
+      },
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+        "predicate": "http://purl.org/nanopub/x/wasCreatedAt",
+        "object": "https://nanodash.knowledgepixels.com/"
+      },
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+        "predicate": "http://purl.org/dc/terms/created",
+        "object": "2025-05-13T06:39:33.169Z"
+      },
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+        "predicate": "https://w3id.org/np/o/ntemplate/wasCreatedFromProvenanceTemplate",
+        "object": "https://w3id.org/np/RAUN36daH1cvP7EpwEfc7ZqAGWNe8q2YgDSr81mFaGcWo"
+      },
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+        "predicate": "https://w3id.org/np/o/ntemplate/wasCreatedFromTemplate",
+        "object": "https://w3id.org/np/RA8YNLP1gwzeBgEcRo5fQl9AeM334XMd89zbbnOGYYIyw"
+      },
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/sig",
+        "predicate": "http://purl.org/nanopub/x/hasPublicKey",
+        "object": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDWv2pJnmDsBOq8OlT1aSvYXSuWT34WOp4FYqEzdnn2F0kqzcFevBqWGZDxJWC0lqCrDEuNfp2QFyPe/+nES9dlHGYIhqPi68fwK6ZiNUotRFxXou+rjFznVvUxtCL8Ede79EBHwWN61QtwSIcU12bLoZsNPFlqQASQ93BJuKlihwIDAQAB"
+      },
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/sig",
+        "predicate": "http://purl.org/nanopub/x/signedBy",
+        "object": "https://orcid.org/0000-0002-1784-2920"
+      },
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+        "predicate": "http://purl.org/nanopub/x/hasNanopubType",
+        "object": "https://w3id.org/kpxl/gen/terms/ClaimsAndEvidences"
+      },
+      {
+        "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+        "predicate": "http://purl.org/dc/terms/creator",
+        "object": "https://orcid.org/0000-0002-1784-2920"
+      }
+    ]
+  },
+  "uri": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+  "rdf_turtle": "@prefix dcterms: <http://purl.org/dc/terms/> .\n@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n@prefix np: <http://www.nanopub.org/nschema#> .\n@prefix npx: <http://purl.org/nanopub/x/> .\n@prefix nt: <https://w3id.org/np/o/ntemplate/> .\n@prefix orcid: <https://orcid.org/> .\n@prefix prov: <http://www.w3.org/ns/prov#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix sub: <https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/> .\n@prefix this: <https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n\nsub:sig npx:hasAlgorithm \"RSA\" ;\n    npx:hasPublicKey \"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDWv2pJnmDsBOq8OlT1aSvYXSuWT34WOp4FYqEzdnn2F0kqzcFevBqWGZDxJWC0lqCrDEuNfp2QFyPe/+nES9dlHGYIhqPi68fwK6ZiNUotRFxXou+rjFznVvUxtCL8Ede79EBHwWN61QtwSIcU12bLoZsNPFlqQASQ93BJuKlihwIDAQAB\" ;\n    npx:hasSignature \"tkSB0RRRe5xp4yoTWzuWrrO6SGOxKJw0jgCsFHmHhXPeO7aRsVYbT1ujffps8RifunRmaYmSlm3yqoBU3a3j+iVHyjatiqi0WHiMOmYbVylFyg1TrgWaW8BwUYrf9FuipceCvuCASy44fg0sklu8CthSU9YiGnKxWGFrkOlrmQA=\" ;\n    npx:hasSignatureTarget this: ;\n    npx:signedBy orcid:0000-0002-1784-2920 .\n\nthis: a np:Nanopublication ;\n    dcterms:created \"2025-05-13T06:39:33.169Z\"^^xsd:dateTime ;\n    dcterms:creator orcid:0000-0002-1784-2920 ;\n    dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;\n    npx:hasNanopubType <https://w3id.org/kpxl/gen/terms/ClaimsAndEvidences> ;\n    npx:introduces sub:result ;\n    npx:supersedes <https://w3id.org/np/RANuyrMa5Fo2De7vDEIeQP6ohwcp47NobVM6Z8QJuicic> ;\n    npx:wasCreatedAt <https://nanodash.knowledgepixels.com/> ;\n    np:hasAssertion sub:assertion ;\n    np:hasProvenance sub:provenance ;\n    np:hasPublicationInfo sub:pubinfo ;\n    nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAUN36daH1cvP7EpwEfc7ZqAGWNe8q2YgDSr81mFaGcWo> ;\n    nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RA0J4vUn_dekg-U1kK3AOEt02p9mT2WO03uGxLDec1jLw>,\n        <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1",
+  "fetch_time_seconds": 0.4029881954193115,
+  "analysis_time_seconds": 0.0017852783203125
+}
