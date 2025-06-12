@@ -1,0 +1,17 @@
+{
+  "total_nanopubs": 2,
+  "successful_processing": 2,
+  "total_triples": 82,
+  "graph_distribution": {
+    "assertion": 2,
+    "provenance": 2,
+    "pubinfo": 2
+  },
+  "author_network": {
+    "Anne Fouilloux": 2
+  },
+  "uri_patterns": {
+    "w3id.org": 2
+  },
+  "processing_summary": {}
+}

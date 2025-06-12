@@ -1,0 +1,291 @@
+{
+  "batch_id": "batch_1749760011767_a3libwp2v",
+  "timestamp": "2025-06-12T20:27:20.004397",
+  "summary": {
+    "total": 2,
+    "successful": 2,
+    "failed": 0,
+    "total_triples": 82
+  },
+  "nanopubs": [
+    {
+      "index": 1,
+      "url": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+      "uri": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+      "status": "processed",
+      "triples_count": 41,
+      "graphs": {
+        "assertion": true,
+        "provenance": true,
+        "pubinfo": true
+      },
+      "metadata": {
+        "created": "https://w3id.org/np/RA7lSq6MuK_TIC6JMSHvLtee3lpLoZDOqLJCLXevnrPoU",
+        "creator": "https://orcid.org/0000-0002-1784-2920",
+        "author_name": "Anne Fouilloux"
+      },
+      "error": null,
+      "sample_content": {
+        "assertion_triples": [
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "object": "http://purl.org/petapico/o/hycl#AIDA-Sentence"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://www.w3.org/2004/02/skos/core#related",
+            "object": "https://doi.org/10.1007/978-3-031-86240-3_4"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q11945244"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q1190465"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q727490"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q1197550"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q922437"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q79984"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q68232326"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q131322632"
+          }
+        ],
+        "provenance_triples": [
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4/assertion",
+            "predicate": "http://www.w3.org/ns/prov#wasAttributedTo",
+            "object": "https://orcid.org/0000-0002-1784-2920"
+          }
+        ],
+        "pubinfo_triples": [
+          {
+            "subject": "http://www.wikidata.org/entity/Q1190465",
+            "predicate": "https://w3id.org/np/o/ntemplate/hasLabelFromApi",
+            "object": "high-performance computing - includes all computing tasks whose processing requires high computing power or storage capacity"
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+            "predicate": "http://purl.org/nanopub/x/hasNanopubType",
+            "object": "http://purl.org/petapico/o/hycl"
+          },
+          {
+            "subject": "http://www.wikidata.org/entity/Q727490",
+            "predicate": "https://w3id.org/np/o/ntemplate/hasLabelFromApi",
+            "object": "scalability - property of a system to handle a growing amount of work by adding resources to the system"
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+            "predicate": "http://purl.org/dc/terms/created",
+            "object": "2025-04-21T12:16:39.130Z"
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+            "predicate": "https://w3id.org/np/o/ntemplate/wasCreatedFromPubinfoTemplate",
+            "object": "https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI"
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+            "predicate": "http://purl.org/dc/terms/creator",
+            "object": "https://orcid.org/0000-0002-1784-2920"
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+            "predicate": "http://purl.org/nanopub/x/introduces",
+            "object": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential."
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+            "predicate": "http://purl.org/dc/terms/license",
+            "object": "https://creativecommons.org/licenses/by/4.0/"
+          },
+          {
+            "subject": "http://www.wikidata.org/entity/Q68232326",
+            "predicate": "https://w3id.org/np/o/ntemplate/hasLabelFromApi",
+            "object": "interconnect - bus class for supercomputer nodes"
+          },
+          {
+            "subject": "http://www.wikidata.org/entity/Q131322632",
+            "predicate": "https://w3id.org/np/o/ntemplate/hasLabelFromApi",
+            "object": "Slingshot-11 - supercomputer interconnector type"
+          }
+        ]
+      }
+    },
+    {
+      "index": 2,
+      "url": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+      "uri": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+      "status": "processed",
+      "triples_count": 41,
+      "graphs": {
+        "assertion": true,
+        "provenance": true,
+        "pubinfo": true
+      },
+      "metadata": {
+        "created": "https://w3id.org/np/RA7lSq6MuK_TIC6JMSHvLtee3lpLoZDOqLJCLXevnrPoU",
+        "creator": "https://orcid.org/0000-0002-1784-2920",
+        "author_name": "Anne Fouilloux"
+      },
+      "error": null,
+      "sample_content": {
+        "assertion_triples": [
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "object": "http://purl.org/petapico/o/hycl#AIDA-Sentence"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://www.w3.org/2004/02/skos/core#related",
+            "object": "https://doi.org/10.1007/978-3-031-86240-3_4"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q11945244"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q1190465"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q727490"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q1197550"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q922437"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q79984"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q68232326"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q131322632"
+          }
+        ],
+        "provenance_triples": [
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4/assertion",
+            "predicate": "http://www.w3.org/ns/prov#wasAttributedTo",
+            "object": "https://orcid.org/0000-0002-1784-2920"
+          }
+        ],
+        "pubinfo_triples": [
+          {
+            "subject": "http://www.wikidata.org/entity/Q1190465",
+            "predicate": "https://w3id.org/np/o/ntemplate/hasLabelFromApi",
+            "object": "high-performance computing - includes all computing tasks whose processing requires high computing power or storage capacity"
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+            "predicate": "http://purl.org/nanopub/x/hasNanopubType",
+            "object": "http://purl.org/petapico/o/hycl"
+          },
+          {
+            "subject": "http://www.wikidata.org/entity/Q727490",
+            "predicate": "https://w3id.org/np/o/ntemplate/hasLabelFromApi",
+            "object": "scalability - property of a system to handle a growing amount of work by adding resources to the system"
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+            "predicate": "http://purl.org/dc/terms/created",
+            "object": "2025-04-21T12:16:39.130Z"
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+            "predicate": "https://w3id.org/np/o/ntemplate/wasCreatedFromPubinfoTemplate",
+            "object": "https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI"
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+            "predicate": "http://purl.org/dc/terms/creator",
+            "object": "https://orcid.org/0000-0002-1784-2920"
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+            "predicate": "http://purl.org/nanopub/x/introduces",
+            "object": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential."
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+            "predicate": "http://purl.org/dc/terms/license",
+            "object": "https://creativecommons.org/licenses/by/4.0/"
+          },
+          {
+            "subject": "http://www.wikidata.org/entity/Q68232326",
+            "predicate": "https://w3id.org/np/o/ntemplate/hasLabelFromApi",
+            "object": "interconnect - bus class for supercomputer nodes"
+          },
+          {
+            "subject": "http://www.wikidata.org/entity/Q131322632",
+            "predicate": "https://w3id.org/np/o/ntemplate/hasLabelFromApi",
+            "object": "Slingshot-11 - supercomputer interconnector type"
+          }
+        ]
+      }
+    }
+  ],
+  "batch_analysis": {
+    "total_nanopubs": 2,
+    "successful_processing": 2,
+    "total_triples": 82,
+    "graph_distribution": {
+      "assertion": 2,
+      "provenance": 2,
+      "pubinfo": 2
+    },
+    "author_network": {
+      "Anne Fouilloux": 2
+    },
+    "uri_patterns": {
+      "w3id.org": 2
+    },
+    "processing_summary": {}
+  }
+}
