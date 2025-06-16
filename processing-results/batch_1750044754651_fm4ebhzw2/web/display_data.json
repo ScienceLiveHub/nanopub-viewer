@@ -1,0 +1,372 @@
+{
+  "batch_id": "batch_1750044754651_fm4ebhzw2",
+  "timestamp": "2025-06-16T03:33:03.041873",
+  "summary": {
+    "total": 3,
+    "successful": 3,
+    "failed": 0,
+    "total_triples": 87
+  },
+  "nanopubs": [
+    {
+      "index": 1,
+      "url": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+      "uri": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+      "status": "processed",
+      "triples_count": 41,
+      "graphs": {
+        "assertion": true,
+        "provenance": true,
+        "pubinfo": true
+      },
+      "metadata": {
+        "created": "https://w3id.org/np/RA7lSq6MuK_TIC6JMSHvLtee3lpLoZDOqLJCLXevnrPoU",
+        "creator": "https://orcid.org/0000-0002-1784-2920",
+        "author_name": "Anne Fouilloux"
+      },
+      "error": null,
+      "sample_content": {
+        "assertion_triples": [
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q1190465"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q68232326"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "object": "http://purl.org/petapico/o/hycl#AIDA-Sentence"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q922437"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q131322632"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q11945244"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q79984"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q1197550"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://www.w3.org/2004/02/skos/core#related",
+            "object": "https://doi.org/10.1007/978-3-031-86240-3_4"
+          },
+          {
+            "subject": "http://purl.org/aida/High-performance+computing+systems+depend+on+fast%2C+low-latency+interconnects+like+InfiniBand%2C+Ethernet%2C+and+proprietary+networks+such+as+HPE+Slingshot+and+Cray+Aries.+The+choice+of+interconnect+directly+impacts+system+performance%2C+scalability%2C+and+power+efficiency%2C+making+it+crucial+to+select+the+right+one+to+unlock+maximum+HPC+potential.",
+            "predicate": "http://schema.org/about",
+            "object": "http://www.wikidata.org/entity/Q727490"
+          }
+        ],
+        "provenance_triples": [
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4/assertion",
+            "predicate": "http://www.w3.org/ns/prov#wasAttributedTo",
+            "object": "https://orcid.org/0000-0002-1784-2920"
+          }
+        ],
+        "pubinfo_triples": [
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4/sig",
+            "predicate": "http://purl.org/nanopub/x/hasSignatureTarget",
+            "object": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4"
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+            "predicate": "http://www.w3.org/2000/01/rdf-schema#label",
+            "object": "AIDA sentence: High-performance computing systems depend on fast, low-latency interconnects like InfiniBand, Eth..."
+          },
+          {
+            "subject": "http://www.wikidata.org/entity/Q1197550",
+            "predicate": "https://w3id.org/np/o/ntemplate/hasLabelFromApi",
+            "object": "computer performance - effectiveness of a computer system or component (hardware or software) at performing useful work"
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+            "predicate": "https://w3id.org/np/o/ntemplate/wasCreatedFromPubinfoTemplate",
+            "object": "https://w3id.org/np/RAjvEpLZUE7rMoa8q6mWSsN6utJDp-5FmgO47YGsbgw3w"
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+            "predicate": "http://purl.org/nanopub/x/hasNanopubType",
+            "object": "https://w3id.org/np/RAbrZanVELw9xGL0IgtU5a7jrbdY7JSwBf9dPbT0UJVao"
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4/sig",
+            "predicate": "http://purl.org/nanopub/x/signedBy",
+            "object": "https://orcid.org/0000-0002-1784-2920"
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4/sig",
+            "predicate": "http://purl.org/nanopub/x/hasPublicKey",
+            "object": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDWv2pJnmDsBOq8OlT1aSvYXSuWT34WOp4FYqEzdnn2F0kqzcFevBqWGZDxJWC0lqCrDEuNfp2QFyPe/+nES9dlHGYIhqPi68fwK6ZiNUotRFxXou+rjFznVvUxtCL8Ede79EBHwWN61QtwSIcU12bLoZsNPFlqQASQ93BJuKlihwIDAQAB"
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+            "predicate": "http://purl.org/dc/terms/license",
+            "object": "https://creativecommons.org/licenses/by/4.0/"
+          },
+          {
+            "subject": "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4",
+            "predicate": "http://purl.org/dc/terms/creator",
+            "object": "https://orcid.org/0000-0002-1784-2920"
+          },
+          {
+            "subject": "http://www.wikidata.org/entity/Q922437",
+            "predicate": "https://w3id.org/np/o/ntemplate/hasLabelFromApi",
+            "object": "InfiniBand - high-speed, low-latency computer networking bus"
+          }
+        ]
+      }
+    },
+    {
+      "index": 2,
+      "url": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+      "uri": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+      "status": "processed",
+      "triples_count": 26,
+      "graphs": {
+        "assertion": true,
+        "provenance": true,
+        "pubinfo": true
+      },
+      "metadata": {
+        "created": "https://w3id.org/np/RA0J4vUn_dekg-U1kK3AOEt02p9mT2WO03uGxLDec1jLw",
+        "author_name": "Anne Fouilloux",
+        "creator": "https://orcid.org/0000-0002-1784-2920"
+      },
+      "error": null,
+      "sample_content": {
+        "assertion_triples": [
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/result",
+            "predicate": "http://purl.org/dc/terms/description",
+            "object": "<p>\r\nA <b>tweet</b> posted by the Deutscher Wetterdienst (DWD) regarding an ongoing severe weather and flood situation in Southwest Germany (May 2024). The content was saved for documentation and educational purposes.\r\n </p>\r\n<p>\r\n<img src=\"https://zenodo.org/records/15391804/files/Sarland_17May2024_Germany_DWD.png\" style=\"width:300px\" />\r\n<br>\r\nImage © Deutscher Wetterdienst (DWD) \r\n<p>\r\n\r\n@DWD_presse\r\n</p>\r\n \r\n<p>Anhaltende #Unwetter-Situation im Südwesten! In den letzten 12 Stunden fielen verbreitet 30-40, stellenweise aber auch bis zu 70 ℓ/m². Es besteht Gefahr von Überschwemmungen und #Hochwasser! Beachten Sie dazu auch die Hinweise der jeweiligen Hochwasservorhersagezentralen! /V\r\n \r\nSource: Deutscher Wetterdienst (DWD), via @DWD_presse on X, Tweet dated 17 May 2024 \r\n</p>\r\n\r\n<p>Please refer to DWD for original media and usage rights.</p>\r\n\r\n\r\n<p><b>Translated from German by Google</b></p>\r\n<p>\r\nPersistent #Unwetter situation in the southwest! In the last 12 hours, 30-40, but in some places up to 70 ℓ /m² fell. There is a risk of flooding and #Hochwasser ! Please also follow the advice of the respective flood forecasting centers! /V</p>"
+          },
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/result",
+            "predicate": "http://www.w3.org/2000/01/rdf-schema#seeAlso",
+            "object": "https://x.com/DWD_presse/status/1791356767525351444"
+          },
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/result",
+            "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "object": "https://w3id.org/kpxl/gen/terms/Evidence"
+          },
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/result",
+            "predicate": "http://www.w3.org/2000/01/rdf-schema#label",
+            "object": "Severe Weather Alert: Heavy Rain and Flood Risk in Southwest Germany"
+          },
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/result",
+            "predicate": "http://www.w3.org/2000/01/rdf-schema#seeAlso",
+            "object": "https://doi.org/10.5281/zenodo.15391803"
+          }
+        ],
+        "provenance_triples": [
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/assertion",
+            "predicate": "http://www.w3.org/ns/prov#wasAttributedTo",
+            "object": "https://ror.org/02nrqs528"
+          },
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/assertion",
+            "predicate": "http://www.w3.org/ns/prov#wasAttributedTo",
+            "object": "https://orcid.org/0000-0002-1784-2920"
+          },
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/assertion",
+            "predicate": "http://www.w3.org/ns/prov#wasAttributedTo",
+            "object": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/@DWD_presse"
+          }
+        ],
+        "pubinfo_triples": [
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/sig",
+            "predicate": "http://purl.org/nanopub/x/signedBy",
+            "object": "https://orcid.org/0000-0002-1784-2920"
+          },
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+            "predicate": "http://purl.org/dc/terms/license",
+            "object": "https://creativecommons.org/licenses/by/4.0/"
+          },
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/sig",
+            "predicate": "http://purl.org/nanopub/x/hasPublicKey",
+            "object": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDWv2pJnmDsBOq8OlT1aSvYXSuWT34WOp4FYqEzdnn2F0kqzcFevBqWGZDxJWC0lqCrDEuNfp2QFyPe/+nES9dlHGYIhqPi68fwK6ZiNUotRFxXou+rjFznVvUxtCL8Ede79EBHwWN61QtwSIcU12bLoZsNPFlqQASQ93BJuKlihwIDAQAB"
+          },
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/sig",
+            "predicate": "http://purl.org/nanopub/x/hasSignatureTarget",
+            "object": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4"
+          },
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+            "predicate": "https://w3id.org/np/o/ntemplate/wasCreatedFromProvenanceTemplate",
+            "object": "https://w3id.org/np/RAUN36daH1cvP7EpwEfc7ZqAGWNe8q2YgDSr81mFaGcWo"
+          },
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+            "predicate": "http://purl.org/nanopub/x/introduces",
+            "object": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/result"
+          },
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+            "predicate": "http://purl.org/dc/terms/created",
+            "object": "2025-05-13T06:39:33.169Z"
+          },
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+            "predicate": "https://w3id.org/np/o/ntemplate/wasCreatedFromPubinfoTemplate",
+            "object": "https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw"
+          },
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4",
+            "predicate": "http://purl.org/nanopub/x/wasCreatedAt",
+            "object": "https://nanodash.knowledgepixels.com/"
+          },
+          {
+            "subject": "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4/sig",
+            "predicate": "http://purl.org/nanopub/x/hasSignature",
+            "object": "tkSB0RRRe5xp4yoTWzuWrrO6SGOxKJw0jgCsFHmHhXPeO7aRsVYbT1ujffps8RifunRmaYmSlm3yqoBU3a3j+iVHyjatiqi0WHiMOmYbVylFyg1TrgWaW8BwUYrf9FuipceCvuCASy44fg0sklu8CthSU9YiGnKxWGFrkOlrmQA="
+          }
+        ]
+      }
+    },
+    {
+      "index": 3,
+      "url": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q",
+      "uri": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q",
+      "status": "processed",
+      "triples_count": 20,
+      "graphs": {
+        "assertion": true,
+        "provenance": true,
+        "pubinfo": true
+      },
+      "metadata": {
+        "created": "https://w3id.org/np/RA0J4vUn_dekg-U1kK3AOEt02p9mT2WO03uGxLDec1jLw",
+        "creator": "https://orcid.org/0000-0002-1784-2920",
+        "author_name": "Anne Fouilloux"
+      },
+      "error": null,
+      "sample_content": {
+        "assertion_triples": [
+          {
+            "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q/assertion",
+            "predicate": "http://www.w3.org/2000/01/rdf-schema#comment",
+            "object": "In abstract: \"On the test data, we achieved top-1 and top-5 error rates of 37.5% and 17.0% which is considerably better than the previous state-of-the-art. The neural network, which has 60 million parameters and 650,000 neurons, consists of five convolutional layers, some of which are followed by max-pooling layers, and three fully-connected layers with a final 1000-way softmax.\""
+          },
+          {
+            "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q/assertion",
+            "predicate": "http://purl.org/dc/terms/creator",
+            "object": "https://orcid.org/0000-0002-1784-2920"
+          },
+          {
+            "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q/assertion",
+            "predicate": "http://purl.org/spar/cito/includesQuotationFrom",
+            "object": "https://dblp.org/rec/conf/nips/KrizhevskySH12"
+          }
+        ],
+        "provenance_triples": [
+          {
+            "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q/assertion",
+            "predicate": "http://www.w3.org/ns/prov#wasAttributedTo",
+            "object": "https://orcid.org/0000-0002-1784-2920"
+          }
+        ],
+        "pubinfo_triples": [
+          {
+            "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q",
+            "predicate": "http://purl.org/dc/terms/license",
+            "object": "https://creativecommons.org/licenses/by/4.0/"
+          },
+          {
+            "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q",
+            "predicate": "https://w3id.org/np/o/ntemplate/wasCreatedFromProvenanceTemplate",
+            "object": "https://w3id.org/np/RA7lSq6MuK_TIC6JMSHvLtee3lpLoZDOqLJCLXevnrPoU"
+          },
+          {
+            "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q",
+            "predicate": "http://purl.org/dc/terms/creator",
+            "object": "https://orcid.org/0000-0002-1784-2920"
+          },
+          {
+            "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q",
+            "predicate": "http://www.w3.org/2000/01/rdf-schema#label",
+            "object": "includes quotation from KrizhevskySH12"
+          },
+          {
+            "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q/sig",
+            "predicate": "http://purl.org/nanopub/x/hasSignatureTarget",
+            "object": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q"
+          },
+          {
+            "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q",
+            "predicate": "http://purl.org/dc/terms/created",
+            "object": "2025-05-22T10:58:43.659Z"
+          },
+          {
+            "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q/sig",
+            "predicate": "http://purl.org/nanopub/x/hasPublicKey",
+            "object": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDWv2pJnmDsBOq8OlT1aSvYXSuWT34WOp4FYqEzdnn2F0kqzcFevBqWGZDxJWC0lqCrDEuNfp2QFyPe/+nES9dlHGYIhqPi68fwK6ZiNUotRFxXou+rjFznVvUxtCL8Ede79EBHwWN61QtwSIcU12bLoZsNPFlqQASQ93BJuKlihwIDAQAB"
+          },
+          {
+            "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q/sig",
+            "predicate": "http://purl.org/nanopub/x/signedBy",
+            "object": "https://orcid.org/0000-0002-1784-2920"
+          },
+          {
+            "subject": "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q/sig",
+            "predicate": "http://purl.org/nanopub/x/hasAlgorithm",
+            "object": "RSA"
+          },
+          {
+            "subject": "https://orcid.org/0000-0002-1784-2920",
+            "predicate": "http://xmlns.com/foaf/0.1/name",
+            "object": "Anne Fouilloux"
+          }
+        ]
+      }
+    }
+  ],
+  "batch_analysis": {
+    "total_nanopubs": 3,
+    "successful_processing": 3,
+    "total_triples": 87,
+    "graph_distribution": {
+      "assertion": 3,
+      "provenance": 3,
+      "pubinfo": 3
+    },
+    "author_network": {
+      "Anne Fouilloux": 3
+    },
+    "uri_patterns": {
+      "w3id.org": 3
+    },
+    "processing_summary": {}
+  }
+}
