@@ -199,7 +199,7 @@ async function executeNanopubs() {
         setTimeout(() => {
             executeBtn.disabled = false;
             executeBtn.classList.remove('loading');
-            executeBtn.innerHTML = '<span class="execute-icon">🚀</span>Execute Nanopublications';
+            executeBtn.innerHTML = '<span class="execute-icon">🚀</span>Fetch and process Nanopublications';
         }, 3000);
     }
 }
