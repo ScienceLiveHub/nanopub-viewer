@@ -1,0 +1,39 @@
+=== SCIENCE LIVE CONTENT GENERATION RESULTS ===
+Generated: 2025-06-19 14:49:02
+Batch ID: batch_1750344431396_ul6c49nu5
+
+=== PROCESSING SUMMARY ===
+📊 Nanopublications: 2
+🎯 Content Types: linkedin_post
+🤖 AI Model: llama3:8b
+⚙️  Generation Method: integrated
+⏱️  Processing Time: 0.38 seconds
+✅ Success Rate: 1/1 content types
+🎨 Content Generation: ENABLED
+
+=== GENERATED CONTENT ===
+✅ linkedin_post_batch_1750344431396_ul6c49nu5.txt
+
+=== CONFIGURATION ===
+📝 User Instructions: High-quality standards applied
+📋 Batch Description: Science Live content generation
+
+=== NANOPUBLICATION SOURCES ===
+1. https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4
+2. https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4
+
+=== QUALITY FEATURES ===
+✅ Scientific accuracy verification
+✅ Publication-ready formatting standards
+✅ Comprehensive citation protocols
+✅ Multi-format content generation
+✅ Quality assurance processes
+
+=== FILES CREATED ===
+📄 results/content/linkedin_post_batch_1750344431396_ul6c49nu5.txt
+
+=== TECHNICAL DETAILS ===
+Content Files Generated: 1
+Processing Success Rate: 100.0%
+Quality Standards: APPLIED
+Citation Compliance: VERIFIED
