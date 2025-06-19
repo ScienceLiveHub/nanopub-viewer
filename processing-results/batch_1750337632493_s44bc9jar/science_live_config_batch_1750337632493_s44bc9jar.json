@@ -1,0 +1,21 @@
+{
+  "nanopub_uris": [
+    "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4"
+  ],
+  "template": "linkedin_post",
+  "model": "llama3:8b",
+  "description": "Science Live content generation - Advanced batch processing - 2025-06-19 12:56:20",
+  "user_instructions": "Create engaging, scientifically accurate content that maintains academic rigor while being accessible to the target audience. Ensure comprehensive citation and attribution throughout. Use clear structure, maintain high standards for accuracy and presentation, and optimize for the target platform.",
+  "notes": "Generated configuration for advanced content creation. Processing 1 nanopublications across 1 formats: linkedin_post. Batch ID: batch_1750337632493_s44bc9jar",
+  "batch_processing": {
+    "batch_id": "batch_1750337632493_s44bc9jar",
+    "content_types_requested": [
+      "linkedin_post"
+    ],
+    "ai_model": "llama3:8b",
+    "quality_mode": "high",
+    "advanced_processing": true,
+    "citation_style": "academic",
+    "output_format": "publication_ready"
+  }
+}
