@@ -8,230 +8,256 @@
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">
-                <img src="./logo.png" alt="Science Live Logo" class="logo-image">
+    <div class="page-wrapper">
+        <!-- Header Section -->
+        <header class="site-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <img src="./logo.png" alt="Science Live Logo" class="site-logo">
+                    <div class="brand-text">
+                        <h1 class="site-title">Science Live</h1>
+                        <p class="site-tagline">Nanopublication Content Generator</p>
+                    </div>
+                </div>
             </div>
-            <h1>SCIENCE LIVE</h1>
-            <div class="subtitle">Transform nanopublications into engaging content</div>
-        </div>
-        
-        <div class="main-content">
-            <div class="search-section">
-                <div class="search-title">
-                    🔬 Process & Generate Content from Nanopublications
-                </div>
-                <div class="search-description">
-                    Enter nanopublication URIs and select the types of content you'd like to generate. 
-                    Our AI will transform complex scientific findings into accessible, engaging content for different platforms.
-                </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-container">
+            <div class="content-wrapper">
                 
-                <div class="input-group">
-                    <div id="nanopub-inputs-container">
-                        <div class="nanopub-input-row" data-index="0">
-                            <div class="input-wrapper">
-                                <input 
-                                    type="url" 
-                                    id="nanopub-url-0" 
-                                    placeholder="Enter nanopublication URI (e.g., https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4)"
-                                    value=""
-                                >
-                            </div>
-                            <button class="add-button" type="button" title="Add another nanopublication">
-                                ➕
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Content Type Selection -->
-                    <div class="content-types-section">
-                        <div class="content-types-title">
-                            🎯 Select Content Types to Generate
-                        </div>
-                        <div class="content-types-description">
-                            Choose which formats you'd like us to create from your nanopublications:
-                        </div>
+                <!-- Introduction Section -->
+                <section class="intro-section">
+                    <h2 class="page-title">Transform Research into Accessible Content</h2>
+                    <p class="page-description">
+                        Convert structured nanopublications into publication-ready content formats. 
+                        Our platform transforms complex research findings into accessible, engaging content 
+                        optimized for multiple channels and audiences.
+                    </p>
+                </section>
+
+                <!-- Input Form -->
+                <section class="input-form-section">
+                    <div class="form-container">
                         
-                        <div class="content-types-grid">
-                            <div class="content-type-card" data-type="linkedin_post">
-                                <div class="content-type-header">
-                                    <input type="checkbox" id="linkedin_post" name="content_types" value="linkedin_post" checked>
-                                    <label for="linkedin_post">
-                                        <span class="content-type-icon">💼</span>
-                                        <span class="content-type-name">LinkedIn Post</span>
-                                    </label>
-                                </div>
-                                <div class="content-type-description">
-                                    Professional social media content perfect for LinkedIn. Engaging hooks with key insights and calls to action.
-                                </div>
-                                <div class="content-type-example">
-                                    "Recent research reveals surprising insights about..."
+                        <!-- Nanopub URLs Input -->
+                        <div class="input-group">
+                            <label class="field-label">Nanopublication Sources</label>
+                            <div id="nanopub-inputs-container">
+                                <div class="input-row" data-index="0">
+                                    <input 
+                                        type="url" 
+                                        id="nanopub-url-0" 
+                                        class="url-input"
+                                        placeholder="Enter nanopublication URI (e.g., https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4)"
+                                        value=""
+                                    >
+                                    <button class="btn-secondary btn-add" type="button" title="Add another nanopublication">
+                                        Add
+                                    </button>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Content Types -->
+                        <div class="input-group">
+                            <label class="field-label">Content Generation Options</label>
+                            <p class="field-description">
+                                Select the content formats you require for your nanopublications
+                            </p>
                             
-                            <div class="content-type-card" data-type="bluesky_post">
-                                <div class="content-type-header">
-                                    <input type="checkbox" id="bluesky_post" name="content_types" value="bluesky_post">
-                                    <label for="bluesky_post">
-                                        <span class="content-type-icon">🦋</span>
-                                        <span class="content-type-name">Bluesky Post</span>
-                                    </label>
-                                </div>
-                                <div class="content-type-description">
-                                    Concise, engaging posts under 300 characters. Perfect for quick, accessible science communication.
-                                </div>
-                                <div class="content-type-example">
-                                    "New study shows... 🧬 #ScienceNews"
-                                </div>
-                            </div>
-                            
-                            <div class="content-type-card" data-type="scientific_paper">
-                                <div class="content-type-header">
-                                    <input type="checkbox" id="scientific_paper" name="content_types" value="scientific_paper">
-                                    <label for="scientific_paper">
-                                        <span class="content-type-icon">📄</span>
-                                        <span class="content-type-name">Scientific Paper</span>
-                                    </label>
-                                </div>
-                                <div class="content-type-description">
-                                    Academic format with Introduction, Methods, Results, Discussion, and proper citations.
-                                </div>
-                                <div class="content-type-example">
-                                    "This study investigated... Methods: ... Results showed..."
-                                </div>
-                            </div>
-                            
-                            <div class="content-type-card" data-type="opinion_paper">
-                                <div class="content-type-header">
-                                    <input type="checkbox" id="opinion_paper" name="content_types" value="opinion_paper">
-                                    <label for="opinion_paper">
-                                        <span class="content-type-icon">📝</span>
-                                        <span class="content-type-name">Opinion Piece</span>
-                                    </label>
-                                </div>
-                                <div class="content-type-description">
-                                    Editorial-style content presenting clear positions supported by research evidence.
-                                </div>
-                                <div class="content-type-example">
-                                    "The evidence suggests we should reconsider..."
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="select-all-controls">
-                            <button type="button" class="select-all-btn" onclick="selectAllContentTypes()">
-                                ✅ Select All
-                            </button>
-                            <button type="button" class="select-none-btn" onclick="selectNoContentTypes()">
-                                ❌ Select None
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- AI Model Selection -->
-                    <div class="model-selection-section">
-                        <div class="model-selection-title">
-                            🤖 AI Model Selection
-                        </div>
-                        <div class="model-selection-description">
-                            Choose the AI model for content generation:
-                        </div>
-                        <div class="model-options">
-                            <label class="model-option">
-                                <input type="radio" name="ai_model" value="llama3:8b" checked>
-                                <span class="model-name">Llama 3 8B</span>
-                                <span class="model-description">High quality, balanced speed (Recommended)</span>
-                            </label>
-                            <label class="model-option">
-                                <input type="radio" name="ai_model" value="llama2:7b">
-                                <span class="model-name">Llama 2 7B</span>
-                                <span class="model-description">Faster processing, good quality</span>
-                            </label>
-                            <label class="model-option">
-                                <input type="radio" name="ai_model" value="llama3:70b">
-                                <span class="model-name">Llama 3 70B</span>
-                                <span class="model-description">Highest quality, slower processing</span>
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <!-- Advanced Options -->
-                    <div class="advanced-options-section">
-                        <div class="advanced-toggle" onclick="toggleAdvancedOptions()">
-                            <span class="advanced-icon">⚙️</span>
-                            <span class="advanced-text">Advanced Options</span>
-                            <span class="advanced-arrow" id="advanced-arrow">▼</span>
-                        </div>
-                        
-                        <div class="advanced-content" id="advanced-content" style="display: none;">
-                            <div class="custom-instructions">
-                                <label for="user-instructions">
-                                    <strong>Custom Instructions:</strong>
-                                    <span class="instructions-hint">Optional: Provide specific guidance for content generation</span>
+                            <div class="content-types-grid">
+                                <label class="content-type-option">
+                                    <input type="checkbox" name="content_types" value="linkedin_post" checked>
+                                    <div class="option-content">
+                                        <div class="option-header">
+                                            <h3 class="option-title">LinkedIn Article</h3>
+                                        </div>
+                                        <p class="option-description">
+                                            Business networking content optimized for LinkedIn with strategic messaging 
+                                            and engagement-driven structure.
+                                        </p>
+                                    </div>
                                 </label>
-                                <textarea 
-                                    id="user-instructions" 
-                                    name="user_instructions" 
-                                    placeholder="e.g., Focus on practical applications, use a casual tone, emphasize environmental impact..."
-                                    maxlength="500">
-                                </textarea>
-                                <div class="character-count">
-                                    <span id="char-count">0</span>/500 characters
-                                </div>
-                            </div>
-                            
-                            <div class="batch-description">
-                                <label for="batch-description">
-                                    <strong>Batch Description:</strong>
-                                    <span class="description-hint">Optional: Describe this batch for your records</span>
+                                
+                                <label class="content-type-option">
+                                    <input type="checkbox" name="content_types" value="bluesky_post">
+                                    <div class="option-content">
+                                        <div class="option-header">
+                                            <h3 class="option-title">Social Media Post</h3>
+                                        </div>
+                                        <p class="option-description">
+                                            Concise, engaging posts under 300 characters designed for effective 
+                                            science communication across platforms.
+                                        </p>
+                                    </div>
                                 </label>
-                                <input 
-                                    type="text" 
-                                    id="batch-description" 
-                                    name="batch_description" 
-                                    placeholder="e.g., Climate research for Q1 social media campaign"
-                                    maxlength="200">
+                                
+                                <label class="content-type-option">
+                                    <input type="checkbox" name="content_types" value="scientific_paper">
+                                    <div class="option-content">
+                                        <div class="option-header">
+                                            <h3 class="option-title">Academic Paper</h3>
+                                        </div>
+                                        <p class="option-description">
+                                            Comprehensive academic format with Introduction, Methods, Results, 
+                                            Discussion, and properly formatted citations.
+                                        </p>
+                                    </div>
+                                </label>
+                                
+                                <label class="content-type-option">
+                                    <input type="checkbox" name="content_types" value="opinion_paper">
+                                    <div class="option-content">
+                                        <div class="option-header">
+                                            <h3 class="option-title">Editorial Article</h3>
+                                        </div>
+                                        <p class="option-description">
+                                            Evidence-based editorial content with clear argumentation supported 
+                                            by comprehensive research analysis.
+                                        </p>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="selection-controls">
+                                <button type="button" class="btn-link" onclick="selectAllContentTypes()">
+                                    Select All
+                                </button>
+                                <button type="button" class="btn-link" onclick="selectNoContentTypes()">
+                                    Clear Selection
+                                </button>
                             </div>
                         </div>
+
+                        <!-- AI Model Selection -->
+                        <div class="input-group">
+                            <label class="field-label">AI Model Configuration</label>
+                            <p class="field-description">
+                                Choose the AI model that best fits your content generation requirements
+                            </p>
+                            
+                            <div class="model-options">
+                                <label class="model-option">
+                                    <input type="radio" name="ai_model" value="llama3:8b" checked>
+                                    <div class="model-info">
+                                        <div class="model-name">Llama 3 8B</div>
+                                        <div class="model-description">Optimal balance of quality and speed (Recommended)</div>
+                                    </div>
+                                </label>
+                                
+                                <label class="model-option">
+                                    <input type="radio" name="ai_model" value="llama2:7b">
+                                    <div class="model-info">
+                                        <div class="model-name">Llama 2 7B</div>
+                                        <div class="model-description">Faster processing with reliable output quality</div>
+                                    </div>
+                                </label>
+                                
+                                <label class="model-option">
+                                    <input type="radio" name="ai_model" value="llama3:70b">
+                                    <div class="model-info">
+                                        <div class="model-name">Llama 3 70B</div>
+                                        <div class="model-description">Maximum quality output with extended processing time</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Advanced Options -->
+                        <details class="advanced-options">
+                            <summary class="advanced-summary">
+                                <span>Advanced Configuration</span>
+                            </summary>
+                            <div class="advanced-content">
+                                <div class="field-group">
+                                    <label for="user-instructions" class="field-label">
+                                        Custom Generation Instructions
+                                    </label>
+                                    <p class="field-hint">Provide specific guidance for content generation</p>
+                                    <textarea 
+                                        id="user-instructions" 
+                                        name="user_instructions" 
+                                        class="textarea-input"
+                                        placeholder="Specify tone, focus areas, target audience, or formatting preferences..."
+                                        rows="4"
+                                        maxlength="500">
+                                    </textarea>
+                                    <div class="character-count">
+                                        <span id="char-count">0</span>/500 characters
+                                    </div>
+                                </div>
+                                
+                                <div class="field-group">
+                                    <label for="batch-description" class="field-label">
+                                        Batch Description
+                                    </label>
+                                    <p class="field-hint">Document this processing batch for your records</p>
+                                    <input 
+                                        type="text" 
+                                        id="batch-description" 
+                                        name="batch_description" 
+                                        class="text-input"
+                                        placeholder="e.g., Q1 research communications, climate studies analysis"
+                                        maxlength="200">
+                                </div>
+                            </div>
+                        </details>
+
+                        <!-- Execute Button -->
+                        <div class="action-section">
+                            <button class="btn-primary execute-button" type="button">
+                                Generate Content
+                            </button>
+                        </div>
+
                     </div>
-                    
-                    <button class="execute-button" type="button">
-                        <span class="execute-icon">🚀</span>
-                        Generate Content from Nanopublications
-                    </button>
-                </div>
-                
-                <div class="examples">
-                    <div class="examples-title">
-                        ⚡ Featured Examples
-                    </div>
+                </section>
+
+                <!-- Examples Section -->
+                <section class="examples-section">
+                    <h3 class="section-title">Example Nanopublications</h3>
                     <div class="example-links">
                         <a class="example-link" data-url="https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4">
-                            🖥️ HPC Interconnects
+                            HPC Interconnect Research
                         </a>
                         <a class="example-link" data-url="https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4">
-                            🌦️ Weather Alert
+                            Weather Data Analysis
                         </a>
                         <a class="example-link" data-url="https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q">
-                            📚 Research Citation
+                            Research Citation Study
                         </a>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <div id="error-container"></div>
-            <div id="status-container"></div>
-            
-            <div class="execution-results" id="execution-results" style="display: none;">
-                <div class="results-header">
-                    <h3>📋 Content Generation Results</h3>
-                </div>
-                <div class="results-content">
-                    <div id="execution-content"></div>
-                </div>
+                <!-- Status and Results -->
+                <div id="error-container"></div>
+                <div id="status-container"></div>
+                
+                <section id="execution-results" class="results-section" style="display: none;">
+                    <div class="results-header">
+                        <h3>Content Generation Results</h3>
+                        <div class="results-summary" id="results-summary"></div>
+                    </div>
+                    <div class="results-content">
+                        <div id="execution-content" class="content-display">
+                            <!-- Content will be dynamically inserted here -->
+                        </div>
+                        <div class="results-actions">
+                            <button class="btn-secondary" onclick="downloadAllContent()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7,10 12,15 17,10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Download All Content
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
             </div>
-        </div>
+        </main>
     </div>
 
     <script src="./app.js"></script>
