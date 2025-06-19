@@ -55,7 +55,108 @@ jobs:
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then
+        if [ -f "logs/processing_summary.txt" ]; then
+          echo "### Processing Summary" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          head -30 logs/processing_summary.txt >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Download Results" >> $GITHUB_STEP_SUMMARY
+        echo "- **Artifacts:** Check the artifacts section above" >> $GITHUB_STEP_SUMMARY
+        echo "- **Results Branch:** \`results-${{ github.run_id }}\`" >> $GITHUB_STEP_SUMMARY
+    
+    - name: Commit results to repository
+      if: env.COMMIT_RESULTS_TO_REPO == 'true'
+      run: |
+        echo "Committing results to repository..."
+        
+        # Create unique results branch
+        RESULTS_BRANCH="results-${{ github.run_id }}"
+        echo "Creating results branch: $RESULTS_BRANCH"
+        
+        git config --local user.email "content-generator@sciencelive.com"
+        git config --local user.name "Science Live Content Generator"
+        
+        # Create new branch for results
+        git checkout -b "$RESULTS_BRANCH"
+        echo "Created branch $RESULTS_BRANCH"
+        
+        # Create results directory structure
+        mkdir -p processing-results/${{ steps.params.outputs.batch_id }}
+        
+        # Copy results to permanent location
+        if [ -d "results" ]; then
+          cp -r results/* processing-results/${{ steps.params.outputs.batch_id }}/ 2>/dev/null || echo "No results to copy"
+          echo "Copied results files"
+        fi
+        
+        if [ -d "logs" ]; then
+          cp -r logs/* processing-results/${{ steps.params.outputs.batch_id }}/ 2>/dev/null || echo "No logs to copy"
+          echo "Copied log files"
+        fi
+        
+        if [ -d "config" ]; then
+          cp -r config/* processing-results/${{ steps.params.outputs.batch_id }}/ 2>/dev/null || echo "No config to copy"
+          echo "Copied configuration files"
+        fi
+        
+        # Create README file using simplified approach
+        echo "# Science Live Content Generation Results - ${{ steps.params.outputs.batch_id }}" > processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "**Generated:** $(date -u)" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "**Nanopublications:** ${{ steps.params.outputs.nanopub_count }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "**Source:** ${{ steps.params.outputs.source }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "**Workflow Run:** [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "**Results Branch:** [\`$RESULTS_BRANCH\`](${{ github.server_url }}/${{ github.repository }}/tree/$RESULTS_BRANCH)" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "## Content Generation" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "**Status:** ${{ steps.params.outputs.content_generation_enabled }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "**Content Types:** ${{ steps.params.outputs.content_types }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "**AI Model:** ${{ steps.params.outputs.ai_model }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "**User Instructions:** ${{ steps.params.outputs.user_instructions }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "## Results Structure" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "- \`batch_results.json\` - Processing results" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "- \`processing_summary.txt\` - Processing summary" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "- \`content/\` - Generated content files (if available)" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "- \`config/\` - Configuration files used" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "## Processed Nanopublications" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "${{ steps.params.outputs.nanopub_urls }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "## Access Results" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "- [View Results](${{ github.server_url }}/${{ github.repository }}/tree/$RESULTS_BRANCH/processing-results/${{ steps.params.outputs.batch_id }})" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "- [Download ZIP](${{ github.server_url }}/${{ github.repository }}/archive/refs/heads/$RESULTS_BRANCH.zip)" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "- [Original Workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        
+        # Add and commit files
+        git add processing-results/
+        
+        # Check for changes to commit
+        if ! git diff --cached --quiet; then
+          echo "Committing content generation results..."
+          git commit -m "Add Science Live content generation results for batch ${{ steps.params.outputs.batch_id }}
+
+          Workflow Run: ${{ github.run_id }}
+          Batch ID: ${{ steps.params.outputs.batch_id }}
+          Processed: ${{ steps.params.outputs.nanopub_count }} nanopublications
+          Source: ${{ steps.params.outputs.source }}
+          Content Generation: ${{ steps.params.outputs.content_generation_enabled }}
+          Content Types: ${{ steps.params.outputs.content_types }}
+          AI Model: ${{ steps.params.outputs.ai_model }}
+          Timestamp: $(date -u)"
+          
+          # Push results branch
+          echo "Pushing results branch $RESULTS_BRANCH..."
+          git push origin "$RESULTS_BRANCH"
+          
+          echo "Results committed successfully to branch: $RESULTS_BRANCH"
+          echo "View results: ${{ github.server_url }}/${{ github.repository }}/tree/$RESULTS_BRANCH/processing-results/${{ steps.params.outputs.batch_id }}"
+        else
+          echo "No new results to commit"
+        fi [ -f requirements.txt ]; then
           pip install -r requirements.txt
         else
           # Install core dependencies for content generation
@@ -258,7 +359,7 @@ jobs:
         # Create summary if missing
         if [ ! -f "logs/processing_summary.txt" ]; then
           echo "Creating processing summary..."
-          cat > logs/processing_summary.txt << EOF
+          cat > logs/processing_summary.txt << 'SUMMARY_EOF'
 SCIENCE LIVE CONTENT GENERATION SUMMARY
 =====================================
 Batch ID: ${{ steps.params.outputs.batch_id }}
@@ -278,13 +379,13 @@ NANOPUBLICATION SOURCES:
 ${{ steps.params.outputs.nanopub_urls }}
 
 Generated at: $(date -u)
-EOF
+SUMMARY_EOF
         fi
         
         # Create batch results if missing
         if [ ! -f "results/batch_results.json" ]; then
           echo "Creating batch results..."
-          cat > results/batch_results.json << EOF
+          cat > results/batch_results.json << 'BATCH_EOF'
 {
   "batch_id": "${{ steps.params.outputs.batch_id }}",
   "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
@@ -298,7 +399,7 @@ EOF
   "status": "completed",
   "generated_files": $(find results -type f 2>/dev/null | wc -l)
 }
-EOF
+BATCH_EOF
         fi
         
         echo "Results structure ensured"
@@ -335,107 +436,4 @@ EOF
         
         echo "" >> $GITHUB_STEP_SUMMARY
         
-        if [ -f "logs/processing_summary.txt" ]; then
-          echo "### Processing Summary" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          head -30 logs/processing_summary.txt >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-        fi
-        
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Download Results" >> $GITHUB_STEP_SUMMARY
-        echo "- **Artifacts:** Check the artifacts section above" >> $GITHUB_STEP_SUMMARY
-        echo "- **Results Branch:** \`results-${{ github.run_id }}\`" >> $GITHUB_STEP_SUMMARY
-    
-    - name: Commit results to repository
-      if: env.COMMIT_RESULTS_TO_REPO == 'true'
-      run: |
-        echo "Committing results to repository..."
-        
-        # Create unique results branch
-        RESULTS_BRANCH="results-${{ github.run_id }}"
-        echo "Creating results branch: $RESULTS_BRANCH"
-        
-        git config --local user.email "content-generator@sciencelive.com"
-        git config --local user.name "Science Live Content Generator"
-        
-        # Create new branch for results
-        git checkout -b "$RESULTS_BRANCH"
-        echo "Created branch $RESULTS_BRANCH"
-        
-        # Create results directory structure
-        mkdir -p processing-results/${{ steps.params.outputs.batch_id }}
-        
-        # Copy results to permanent location
-        if [ -d "results" ]; then
-          cp -r results/* processing-results/${{ steps.params.outputs.batch_id }}/ 2>/dev/null || echo "No results to copy"
-          echo "Copied results files"
-        fi
-        
-        if [ -d "logs" ]; then
-          cp -r logs/* processing-results/${{ steps.params.outputs.batch_id }}/ 2>/dev/null || echo "No logs to copy"
-          echo "Copied log files"
-        fi
-        
-        if [ -d "config" ]; then
-          cp -r config/* processing-results/${{ steps.params.outputs.batch_id }}/ 2>/dev/null || echo "No config to copy"
-          echo "Copied configuration files"
-        fi
-        
-        # Create README file
-        cat > processing-results/${{ steps.params.outputs.batch_id }}/README.md << 'EOF'
-# Science Live Content Generation Results - ${{ steps.params.outputs.batch_id }}
-
-**Generated:** $(date -u)
-**Nanopublications:** ${{ steps.params.outputs.nanopub_count }}
-**Source:** ${{ steps.params.outputs.source }}
-**Workflow Run:** [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-**Results Branch:** [`$RESULTS_BRANCH`](${{ github.server_url }}/${{ github.repository }}/tree/$RESULTS_BRANCH)
-
-## Content Generation
-**Status:** ${{ steps.params.outputs.content_generation_enabled }}
-**Content Types:** ${{ steps.params.outputs.content_types }}
-**AI Model:** ${{ steps.params.outputs.ai_model }}
-**User Instructions:** ${{ steps.params.outputs.user_instructions }}
-
-## Results Structure
-- `batch_results.json` - Processing results
-- `processing_summary.txt` - Processing summary
-- `content/` - Generated content files (if available)
-- `config/` - Configuration files used
-
-## Processed Nanopublications
-${{ steps.params.outputs.nanopub_urls }}
-
-## Access Results
-- [View Results](${{ github.server_url }}/${{ github.repository }}/tree/$RESULTS_BRANCH/processing-results/${{ steps.params.outputs.batch_id }})
-- [Download ZIP](${{ github.server_url }}/${{ github.repository }}/archive/refs/heads/$RESULTS_BRANCH.zip)
-- [Original Workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-EOF
-        
-        # Add and commit files
-        git add processing-results/
-        
-        # Check for changes to commit
-        if ! git diff --cached --quiet; then
-          echo "Committing content generation results..."
-          git commit -m "Add Science Live content generation results for batch ${{ steps.params.outputs.batch_id }}
-
-          Workflow Run: ${{ github.run_id }}
-          Batch ID: ${{ steps.params.outputs.batch_id }}
-          Processed: ${{ steps.params.outputs.nanopub_count }} nanopublications
-          Source: ${{ steps.params.outputs.source }}
-          Content Generation: ${{ steps.params.outputs.content_generation_enabled }}
-          Content Types: ${{ steps.params.outputs.content_types }}
-          AI Model: ${{ steps.params.outputs.ai_model }}
-          Timestamp: $(date -u)"
-          
-          # Push results branch
-          echo "Pushing results branch $RESULTS_BRANCH..."
-          git push origin "$RESULTS_BRANCH"
-          
-          echo "Results committed successfully to branch: $RESULTS_BRANCH"
-          echo "View results: ${{ github.server_url }}/${{ github.repository }}/tree/$RESULTS_BRANCH/processing-results/${{ steps.params.outputs.batch_id }}"
-        else
-          echo "No new results to commit"
-        fi
+        if
