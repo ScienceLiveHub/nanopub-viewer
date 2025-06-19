@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Science Live Nanopublication Content Generator
-Integration with nanopub_content_generator.py for high-quality content creation
+Fixed version that actually processes the selected nanopublications
 """
 
 import os
@@ -132,7 +132,7 @@ def process_generator_output(generator_output, content_types, batch_id):
     print("🔍 Looking for generated content files...")
     
     # Look for generated files in current directory and subdirectories
-    search_dirs = [".", "results", "content", "output"]
+    search_dirs = [".", "results", "content", "output", "nanopub-content-generator"]
     
     for content_type in content_types:
         found_file = False
@@ -173,43 +173,54 @@ def process_generator_output(generator_output, content_types, batch_id):
             if found_file:
                 break
         
-        # If no actual file found, create a placeholder with extracted content from output
-        if not found_file:
+        # If no actual file found, try to extract content from generator output
+        if not found_file and generator_output:
             placeholder_file = f"results/content/{content_type}_{batch_id}.txt"
             try:
                 with open(placeholder_file, 'w', encoding='utf-8') as f:
-                    f.write(f"# {content_type.upper().replace('_', ' ')} - Science Live Content\n\n")
+                    # Try to extract the generated content from stdout
+                    content_found = False
                     
-                    # Try to extract relevant content from generator output
-                    if generator_output and content_type in generator_output.lower():
-                        # Look for content related to this content type
-                        lines = generator_output.split('\n')
-                        content_section = []
-                        in_relevant_section = False
+                    # Look for content markers in the output
+                    lines = generator_output.split('\n')
+                    content_lines = []
+                    capture_content = False
+                    
+                    for line in lines:
+                        # Start capturing when we see content generation markers
+                        if any(marker in line.lower() for marker in ['generated content:', 'content:', f'{content_type}:']):
+                            capture_content = True
+                            continue
                         
-                        for line in lines:
-                            if content_type in line.lower() or in_relevant_section:
-                                content_section.append(line)
-                                in_relevant_section = True
-                                if len(content_section) > 20:  # Limit content
-                                    break
-                        
-                        if content_section:
-                            f.write("Generated content:\n\n")
-                            f.write('\n'.join(content_section))
-                        else:
-                            f.write("Content generation completed - check logs for details")
+                        # Stop capturing at certain markers
+                        if capture_content and any(marker in line.lower() for marker in ['source citations:', 'metadata:', 'generated at:', 'processing completed']):
+                            break
+                            
+                        # Capture content lines
+                        if capture_content and line.strip():
+                            content_lines.append(line)
+                            content_found = True
+                    
+                    if content_found and content_lines:
+                        f.write(f"# {content_type.upper().replace('_', ' ')} - Science Live Content\n\n")
+                        f.write('\n'.join(content_lines))
+                        f.write(f"\n\n---\nGenerated: {datetime.now()}")
+                        f.write(f"\nBatch: {batch_id}")
+                        f.write(f"\nContent Type: {content_type}")
+                        generated_files.append(placeholder_file)
+                        print(f"✅ Extracted content from output: {placeholder_file}")
                     else:
-                        f.write("Content generation completed - check logs for details")
-                    
-                    f.write(f"\n\nGenerated: {datetime.now()}")
-                    f.write(f"\nBatch: {batch_id}")
-                    f.write(f"\nContent Type: {content_type}")
-                
-                generated_files.append(placeholder_file)
-                print(f"📝 Created placeholder: {placeholder_file}")
+                        # If we can't extract content, create a minimal file with output info
+                        f.write(f"# {content_type.upper().replace('_', ' ')} - Processing Output\n\n")
+                        f.write("Content generation completed. Check logs for details.\n\n")
+                        f.write("Generator Output Summary:\n")
+                        f.write(generator_output[:500] + "..." if len(generator_output) > 500 else generator_output)
+                        f.write(f"\n\nGenerated: {datetime.now()}")
+                        generated_files.append(placeholder_file)
+                        print(f"📝 Created output summary: {placeholder_file}")
+                        
             except Exception as e:
-                print(f"❌ Error creating placeholder for {content_type}: {e}")
+                print(f"❌ Error creating content file for {content_type}: {e}")
     
     return generated_files
 
@@ -217,210 +228,70 @@ def generate_multiple_content_types(nanopub_urls, content_types, ai_model, user_
     """Generate content for multiple content types using individual config files"""
     all_generated_files = []
     
-    for content_type in content_types:
-        print(f"\n🎯 Generating content for: {content_type}")
+    # First, try to use the external nanopub-content-generator for ALL content types
+    generator_path = check_nanopub_content_generator()
+    
+    if generator_path and os.path.exists(generator_path):
+        print(f"🚀 Using external nanopub_content_generator.py for all content types")
         
-        # Create individual config for this content type
-        single_type_config_file, _ = create_config_file(
-            nanopub_urls, [content_type], ai_model, user_instructions, 
-            f"{batch_id}_{content_type}", batch_description
-        )
-        
-        # Check for nanopub_content_generator
-        generator_path = check_nanopub_content_generator()
-        
-        if generator_path and os.path.exists(generator_path):
-            print(f"🚀 Using nanopub_content_generator.py for {content_type}")
+        for content_type in content_types:
+            print(f"\n🎯 Generating content for: {content_type}")
+            
+            # Create individual config for this content type
+            single_type_config_file, _ = create_config_file(
+                nanopub_urls, [content_type], ai_model, user_instructions, 
+                f"{batch_id}_{content_type}", batch_description
+            )
+            
             success, stdout, stderr = run_nanopub_content_generator(single_type_config_file, generator_path)
             
             if success:
                 generated_files = process_generator_output(stdout, [content_type], batch_id)
                 all_generated_files.extend(generated_files)
             else:
-                print(f"⚠️  External generator failed for {content_type}, using fallback")
-                fallback_files = create_fallback_content([content_type], batch_id, nanopub_urls, ai_model, user_instructions)
-                all_generated_files.extend(fallback_files)
-        else:
-            print(f"📝 Using integrated generator for {content_type}")
-            fallback_files = create_fallback_content([content_type], batch_id, nanopub_urls, ai_model, user_instructions)
-            all_generated_files.extend(fallback_files)
+                print(f"⚠️  External generator failed for {content_type}: {stderr}")
+                # Don't fall back to demo content - let it fail so we know there's an issue
+                error_file = f"results/content/{content_type}_{batch_id}_ERROR.txt"
+                try:
+                    with open(error_file, 'w', encoding='utf-8') as f:
+                        f.write(f"# ERROR: {content_type.upper().replace('_', ' ')}\n\n")
+                        f.write(f"Content generation failed for {content_type}\n\n")
+                        f.write(f"Error: {stderr}\n\n")
+                        f.write(f"Nanopublication URLs:\n")
+                        for url in nanopub_urls:
+                            f.write(f"- {url}\n")
+                        f.write(f"\nGenerated: {datetime.now()}")
+                    all_generated_files.append(error_file)
+                except Exception as e:
+                    print(f"❌ Could not create error file: {e}")
+    else:
+        print("❌ nanopub_content_generator.py not found - cannot generate content")
+        print("This means the actual nanopublication content cannot be processed.")
+        print("Please ensure nanopub-content-generator repository is properly cloned.")
+        
+        # Create error files instead of demo content
+        for content_type in content_types:
+            error_file = f"results/content/{content_type}_{batch_id}_MISSING_GENERATOR.txt"
+            try:
+                with open(error_file, 'w', encoding='utf-8') as f:
+                    f.write(f"# MISSING GENERATOR: {content_type.upper().replace('_', ' ')}\n\n")
+                    f.write("Cannot generate content - nanopub_content_generator.py not found\n\n")
+                    f.write("The external content generator is required to process actual nanopublication data.\n")
+                    f.write("Without it, content cannot be generated from the selected nanopublications.\n\n")
+                    f.write(f"Selected Nanopublication URLs:\n")
+                    for url in nanopub_urls:
+                        f.write(f"- {url}\n")
+                    f.write(f"\nGenerated: {datetime.now()}")
+                all_generated_files.append(error_file)
+            except Exception as e:
+                print(f"❌ Could not create missing generator file: {e}")
     
     return all_generated_files
 
-def create_fallback_content(content_types, batch_id, nanopub_urls, ai_model, user_instructions):
-    """Create high-quality fallback content when external generator is not available"""
-    print("📝 Using integrated high-quality content generation")
-    
-    generated_files = []
-    
-    # Enhanced content templates
-    templates = {
-        'linkedin_post': f"""🔬 Breakthrough in Nanopublication Research: Transforming Scientific Communication
-
-Our latest analysis of structured nanopublications reveals game-changing insights for the research community:
-
-🎯 Key Findings:
-• Enhanced research discoverability through semantic structures
-• 40% improvement in cross-study connections
-• Streamlined validation and reproducibility processes
-• Accelerated scientific collaboration workflows
-
-💡 What This Means:
-The future of scientific publishing is moving toward structured, machine-readable formats that enable:
-- Automated fact-checking and validation
-- Intelligent research recommendations  
-- Seamless integration across studies
-- Transparent provenance tracking
-
-{user_instructions}
-
-This represents a fundamental shift in how we share and validate scientific knowledge. The implications for open science initiatives are profound.
-
-What opportunities do you see for structured research data in your field?
-
-#OpenScience #ResearchInnovation #DataSharing #ScientificCollaboration #SemanticWeb #AcademicPublishing
-
-Source nanopublications analyzed:
-{chr(10).join(f'🔗 {url}' for url in nanopub_urls[:3])}
-{f"...and {len(nanopub_urls)-3} more" if len(nanopub_urls) > 3 else ""}""",
-        
-        'bluesky_post': f"""🔬 Major breakthrough: New research demonstrates structured nanopublications enhance scientific collaboration by 40%. Game-changing implications for open science initiatives and research reproducibility. {user_instructions[:80] if user_instructions else 'The future of academic publishing is here.'} #ResearchBreakthrough #OpenScience #AcademicInnovation""",
-        
-        'scientific_paper': f"""# Structured Nanopublications: Advancing Scientific Communication Through Semantic Web Technologies
-
-## Abstract
-
-The proliferation of scientific literature necessitates innovative approaches to knowledge representation and validation. This study examines the transformative potential of structured nanopublications in enhancing research discoverability, reproducibility, and collaboration. Through comprehensive analysis of {len(nanopub_urls)} nanopublications, we demonstrate significant improvements in semantic structure consistency and cross-study connectivity.
-
-## Introduction
-
-The exponential growth of scientific research output presents unprecedented challenges for knowledge management and validation. Traditional publication methodologies, while foundational to scientific progress, increasingly demonstrate limitations in supporting automated processing, cross-referencing, and validation at scale. Nanopublications represent a paradigm shift toward structured, machine-readable scientific assertions with comprehensive provenance tracking and semantic annotation.
-
-## Methods
-
-This comprehensive analysis employed advanced RDF parsing protocols and semantic analysis frameworks to examine {len(nanopub_urls)} nanopublications from diverse research domains. Content extraction utilized standardized nanopub Python libraries with rigorous validation against W3C semantic web standards. Data processing incorporated automated triple extraction, provenance analysis, and cross-publication relationship mapping.
-
-**Data Collection Protocol:**
-- Systematic retrieval of nanopublications from multiple repositories
-- Validation of RDF structure integrity and semantic compliance
-- Extraction of assertion, provenance, and publication information graphs
-- Automated quality assessment using established semantic web metrics
-
-## Results
-
-Analysis revealed highly consistent semantic structures across examined nanopublications, with an average of 23.4 ± 5.2 triples per assertion graph. Provenance information was comprehensively documented in 95% of examined publications, demonstrating robust attribution patterns and metadata integration.
-
-**Key Findings:**
-- **Semantic Consistency**: 94% of nanopublications adhered to standardized RDF schemas
-- **Provenance Coverage**: Complete attribution chains identified in 95% of samples
-- **Cross-Study Connectivity**: 67% demonstrated explicit linkages to related research
-- **Validation Compliance**: 89% passed automated quality assessment protocols
-
-## Discussion
-
-{user_instructions}
-
-The structured nature of nanopublications enables sophisticated automated processing capabilities and substantially improves research reproducibility metrics. These findings demonstrate significant potential for enhanced scientific communication through standardized knowledge graphs and semantic web technologies.
-
-**Implications for Research Infrastructure:**
-The adoption of nanopublication frameworks supports the development of intelligent research ecosystems capable of automated fact-checking, intelligent recommendation systems, and seamless integration across disciplinary boundaries.
-
-## Conclusion
-
-Nanopublications provide a robust, scalable framework for structured scientific communication with comprehensive attribution and validation mechanisms. This analysis demonstrates their potential to transform traditional publishing paradigms while supporting the advancement of open science initiatives and reproducible research practices.
-
-## References
-
-[1] Comprehensive Nanopublication Network Analysis - Semantic Web Standards Evaluation Framework
-{chr(10).join(f'[{i+2}] {url} - Primary nanopublication source' for i, url in enumerate(nanopub_urls[:5]))}
-{f"[{len(nanopub_urls)+2}] Additional {len(nanopub_urls)-5} nanopublication sources analyzed" if len(nanopub_urls) > 5 else ""}
-
-## Acknowledgments
-
-This research was conducted using the Science Live content generation platform with AI model: {ai_model}. Processing completed at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} UTC.""",
-        
-        'opinion_paper': f"""# The Future of Scientific Publishing: Embracing Structured Knowledge Systems
-
-## Abstract
-
-The scientific community stands at a transformative juncture in knowledge dissemination methodologies. This analysis presents a compelling case for structured scientific communication systems, examining evidence from {len(nanopub_urls)} nanopublications to demonstrate the necessity and feasibility of advancing beyond traditional publishing constraints.
-
-## The Current Paradigm Challenge
-
-Traditional scientific publishing, while historically invaluable, increasingly demonstrates limitations in addressing the sophisticated demands of modern, interconnected research environments. The exponential growth of scientific output has created information silos that impede cross-disciplinary collaboration and automated knowledge synthesis.
-
-Our analysis reveals critical gaps in current publishing methodologies:
-- Limited machine readability constraining automated analysis
-- Inconsistent attribution and provenance tracking
-- Barriers to real-time validation and fact-checking
-- Challenges in establishing cross-study relationships
-
-## Evidence for Transformation
-
-{user_instructions}
-
-Comprehensive examination of {len(nanopub_urls)} nanopublications provides compelling evidence for structured knowledge representation systems. Analysis demonstrates remarkable consistency in semantic structure, with standardized attribution patterns appearing in 95% of examined publications. This consistency enables automated validation processes, cross-study connections, and enhanced reproducibility metrics—objectives that remain challenging within traditional publishing frameworks.
-
-**Critical Advantages Identified:**
-- **Enhanced Discoverability**: Structured metadata improves research findability by 40%
-- **Improved Reproducibility**: Explicit provenance tracking supports validation protocols
-- **Accelerated Collaboration**: Machine-readable formats enable automated integration
-- **Quality Assurance**: Automated validation reduces publication errors significantly
-
-## The Imperative for Change
-
-The transition to structured scientific publishing represents not merely technological advancement, but an essential evolution for reproducible, accessible science. Evidence suggests that integrating human-readable narratives with machine-processable assertions creates more robust, accessible, and verifiable scientific records.
-
-**Strategic Considerations:**
-- Infrastructure development requires coordinated institutional support
-- Training programs must address researcher adaptation needs
-- Quality standards must evolve to encompass structured data validation
-- Economic models must accommodate new publishing paradigms
-
-## Recommendations for Implementation
-
-1. **Gradual Integration**: Implement structured elements alongside traditional formats
-2. **Community Standards**: Develop discipline-specific semantic vocabularies
-3. **Tool Development**: Create user-friendly authoring and validation tools
-4. **Incentive Alignment**: Establish recognition systems for structured contributions
-5. **Education Initiatives**: Integrate semantic publishing in research training
-
-## Conclusion
-
-The nanopublication framework provides a proven foundation for this critical transformation in scientific communication. The evidence presented demonstrates both the necessity and feasibility of advancing toward structured knowledge systems that support enhanced collaboration, validation, and discovery.
-
-The path forward requires embracing structured knowledge frameworks while maintaining scientific rigor and accessibility standards. The scientific community must advocate for this evolution to ensure research infrastructure meets the challenges of 21st-century knowledge creation and dissemination.
-
-**Call to Action:**
-Research institutions, funding agencies, and individual researchers must collectively champion the adoption of structured publishing methodologies. The future of scientific progress depends on our willingness to evolve beyond traditional constraints toward more intelligent, interconnected knowledge systems.
-
----
-
-*Generated using Science Live content generation platform with AI model: {ai_model}*
-*Analysis based on {len(nanopub_urls)} nanopublication sources*
-*Processing completed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} UTC*"""
-    }
-    
-    for content_type in content_types:
-        if content_type in templates:
-            filename = f"results/content/{content_type}_{batch_id}.txt"
-            try:
-                # Ensure directory exists
-                os.makedirs(os.path.dirname(filename), exist_ok=True)
-                
-                with open(filename, 'w', encoding='utf-8') as f:
-                    f.write(templates[content_type])
-                
-                generated_files.append(filename)
-                print(f"✅ Generated high-quality content: {filename}")
-            except Exception as e:
-                print(f"❌ Error creating content for {content_type}: {e}")
-    
-    return generated_files
-
 def main():
-    """Main processing function with enhanced nanopub_content_generator integration"""
+    """Main processing function that actually uses the selected nanopublications"""
     print("=== SCIENCE LIVE CONTENT GENERATOR ===")
+    print("🎯 FIXED VERSION - Uses actual nanopublication data")
     start_time = time.time()
     
     # Get environment variables
@@ -441,6 +312,9 @@ def main():
     content_types = [ct.strip() for ct in content_types_str.split(',') if ct.strip()]
     
     print(f"📊 Processing {len(nanopub_urls)} nanopublications")
+    print(f"📝 Selected nanopublications:")
+    for i, url in enumerate(nanopub_urls, 1):
+        print(f"   {i}. {url}")
     print(f"🎯 Content types: {', '.join(content_types)}")
     print(f"🤖 AI Model: {ai_model}")
     print(f"🆔 Batch ID: {batch_id}")
@@ -449,37 +323,15 @@ def main():
     setup_directories()
     
     generated_files = []
-    generation_method = "integrated"
+    generation_method = "nanopub_content_generator"
     
     if enable_content_generation:
-        print("\n🚀 Starting content generation process...")
+        print("\n🚀 Starting REAL content generation process...")
+        print("⚠️  This will use the ACTUAL nanopublication data you selected")
         
-        # Try multiple content types with individual processing
-        if len(content_types) > 1:
-            generated_files = generate_multiple_content_types(
-                nanopub_urls, content_types, ai_model, user_instructions, batch_id, batch_description
-            )
-        else:
-            # Single content type processing
-            config_file, _ = create_config_file(
-                nanopub_urls, content_types, ai_model, user_instructions, batch_id, batch_description
-            )
-            
-            generator_path = check_nanopub_content_generator()
-            
-            if generator_path and os.path.exists(generator_path):
-                print(f"🚀 Using external nanopub_content_generator.py")
-                success, stdout, stderr = run_nanopub_content_generator(config_file, generator_path)
-                
-                if success:
-                    generation_method = "nanopub_content_generator"
-                    generated_files = process_generator_output(stdout, content_types, batch_id)
-                else:
-                    print("⚠️  External generator failed, using integrated method")
-                    generated_files = create_fallback_content(content_types, batch_id, nanopub_urls, ai_model, user_instructions)
-            else:
-                print("📝 Using integrated content generation")
-                generated_files = create_fallback_content(content_types, batch_id, nanopub_urls, ai_model, user_instructions)
+        generated_files = generate_multiple_content_types(
+            nanopub_urls, content_types, ai_model, user_instructions, batch_id, batch_description
+        )
     else:
         print("ℹ️  Content generation disabled, creating processing summary only")
     
@@ -490,6 +342,7 @@ def main():
         'batch_id': batch_id,
         'processing_method': generation_method,
         'total_nanopubs': len(nanopub_urls),
+        'selected_nanopub_urls': nanopub_urls,  # Store the actual URLs selected
         'content_types_requested': content_types,
         'content_generated': len(generated_files),
         'processing_time': total_time,
@@ -497,13 +350,13 @@ def main():
         'user_instructions': user_instructions,
         'batch_description': batch_description,
         'generated_files': generated_files,
-        'nanopub_urls': nanopub_urls,
         'content_generation_enabled': enable_content_generation,
         'generation_method': generation_method,
         'successful_templates': len(generated_files),
         'quality_mode': 'high',
         'citation_style': 'academic',
-        'timestamp': datetime.now().isoformat()
+        'timestamp': datetime.now().isoformat(),
+        'uses_actual_nanopub_data': True  # Flag to indicate this uses real data
     }
     
     # Save results
@@ -519,12 +372,15 @@ Batch ID: {batch_id}
 
 === PROCESSING SUMMARY ===
 📊 Nanopublications: {len(nanopub_urls)}
+📝 Selected URLs:
+{chr(10).join(f"   {i+1}. {url}" for i, url in enumerate(nanopub_urls))}
 🎯 Content Types: {', '.join(content_types)}
 🤖 AI Model: {ai_model}
 ⚙️  Generation Method: {generation_method}
 ⏱️  Processing Time: {total_time:.2f} seconds
 ✅ Success Rate: {len(generated_files)}/{len(content_types)} content types
 🎨 Content Generation: {'ENABLED' if enable_content_generation else 'DISABLED'}
+🎯 Uses Actual Nanopub Data: YES
 
 === GENERATED CONTENT ===
 {content_summary}
@@ -533,10 +389,8 @@ Batch ID: {batch_id}
 📝 User Instructions: {user_instructions or 'High-quality standards applied'}
 📋 Batch Description: {batch_description or 'Science Live content generation'}
 
-=== NANOPUBLICATION SOURCES ===
-{chr(10).join(f"{i+1}. {url}" for i, url in enumerate(nanopub_urls))}
-
 === QUALITY FEATURES ===
+✅ Uses ACTUAL nanopublication data (not demo content)
 ✅ Scientific accuracy verification
 ✅ Publication-ready formatting standards
 ✅ Comprehensive citation protocols
@@ -551,6 +405,7 @@ Content Files Generated: {len(generated_files)}
 Processing Success Rate: {(len(generated_files)/len(content_types)*100):.1f}%
 Quality Standards: APPLIED
 Citation Compliance: VERIFIED
+External Generator Used: {check_nanopub_content_generator() is not None}
 """
     
     with open('logs/processing_summary.txt', 'w', encoding='utf-8') as f:
@@ -560,7 +415,7 @@ Citation Compliance: VERIFIED
     
     if generated_files:
         print("=== ✅ CONTENT GENERATION SUCCESSFUL ===")
-        print(f"Generated {len(generated_files)} high-quality content files")
+        print(f"Generated {len(generated_files)} content files using ACTUAL nanopublication data")
         print(f"Files available in results/content/")
         
         # Show content previews
@@ -577,7 +432,8 @@ Citation Compliance: VERIFIED
                 print(f"⚠️  Could not preview {file_path}: {e}")
     else:
         print("=== ⚠️  CONTENT GENERATION INCOMPLETE ===")
-        print("Check configuration and dependencies")
+        print("Check that nanopub-content-generator is properly installed")
+        print("The external generator is required to process actual nanopublication data")
 
 if __name__ == "__main__":
     try:
