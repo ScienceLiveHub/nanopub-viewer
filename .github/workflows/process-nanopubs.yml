@@ -383,35 +383,35 @@ EOF
         fi
         
         # Create README file
-        cat > processing-results/${{ steps.params.outputs.batch_id }}/README.md << EOF
-        # Science Live Content Generation Results - ${{ steps.params.outputs.batch_id }}
-        
-        **Generated:** $(date -u)
-        **Nanopublications:** ${{ steps.params.outputs.nanopub_count }}
-        **Source:** ${{ steps.params.outputs.source }}
-        **Workflow Run:** [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-        **Results Branch:** [\`$RESULTS_BRANCH\`](${{ github.server_url }}/${{ github.repository }}/tree/$RESULTS_BRANCH)
-        
-        ## Content Generation
-        **Status:** ${{ steps.params.outputs.content_generation_enabled }}
-        **Content Types:** ${{ steps.params.outputs.content_types }}
-        **AI Model:** ${{ steps.params.outputs.ai_model }}
-        **User Instructions:** ${{ steps.params.outputs.user_instructions }}
-        
-        ## Results Structure
-        - \`batch_results.json\` - Processing results
-        - \`processing_summary.txt\` - Processing summary
-        - \`content/\` - Generated content files (if available)
-        - \`config/\` - Configuration files used
-        
-        ## Processed Nanopublications
-        ${{ steps.params.outputs.nanopub_urls }}
-        
-        ## Access Results
-        - [View Results](${{ github.server_url }}/${{ github.repository }}/tree/$RESULTS_BRANCH/processing-results/${{ steps.params.outputs.batch_id }})
-        - [Download ZIP](${{ github.server_url }}/${{ github.repository }}/archive/refs/heads/$RESULTS_BRANCH.zip)
-        - [Original Workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-        EOF
+        cat > processing-results/${{ steps.params.outputs.batch_id }}/README.md << 'EOF'
+# Science Live Content Generation Results - ${{ steps.params.outputs.batch_id }}
+
+**Generated:** $(date -u)
+**Nanopublications:** ${{ steps.params.outputs.nanopub_count }}
+**Source:** ${{ steps.params.outputs.source }}
+**Workflow Run:** [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+**Results Branch:** [`$RESULTS_BRANCH`](${{ github.server_url }}/${{ github.repository }}/tree/$RESULTS_BRANCH)
+
+## Content Generation
+**Status:** ${{ steps.params.outputs.content_generation_enabled }}
+**Content Types:** ${{ steps.params.outputs.content_types }}
+**AI Model:** ${{ steps.params.outputs.ai_model }}
+**User Instructions:** ${{ steps.params.outputs.user_instructions }}
+
+## Results Structure
+- `batch_results.json` - Processing results
+- `processing_summary.txt` - Processing summary
+- `content/` - Generated content files (if available)
+- `config/` - Configuration files used
+
+## Processed Nanopublications
+${{ steps.params.outputs.nanopub_urls }}
+
+## Access Results
+- [View Results](${{ github.server_url }}/${{ github.repository }}/tree/$RESULTS_BRANCH/processing-results/${{ steps.params.outputs.batch_id }})
+- [Download ZIP](${{ github.server_url }}/${{ github.repository }}/archive/refs/heads/$RESULTS_BRANCH.zip)
+- [Original Workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+EOF
         
         # Add and commit files
         git add processing-results/
