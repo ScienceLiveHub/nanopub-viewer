@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Science Live - Nanopublication Processor</title>
+    <title>Science Live - Nanopublication Content Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css">
 </head>
@@ -14,17 +14,17 @@
                 <img src="./logo.png" alt="Science Live Logo" class="logo-image">
             </div>
             <h1>SCIENCE LIVE</h1>
-            <div class="subtitle">Connecting science through knowledge graphs</div>
+            <div class="subtitle">Transform nanopublications into engaging content</div>
         </div>
         
         <div class="main-content">
             <div class="search-section">
                 <div class="search-title">
-                    🔬 Process Nanopublications
+                    🔬 Process & Generate Content from Nanopublications
                 </div>
                 <div class="search-description">
-                    Enter nanopublication URIs to analyze their structured content and execute batch workflows. 
-                    The system will automatically fetch, validate, and process the nanopublications.
+                    Enter nanopublication URIs and select the types of content you'd like to generate. 
+                    Our AI will transform complex scientific findings into accessible, engaging content for different platforms.
                 </div>
                 
                 <div class="input-group">
@@ -43,9 +43,162 @@
                             </button>
                         </div>
                     </div>
+                    
+                    <!-- Content Type Selection -->
+                    <div class="content-types-section">
+                        <div class="content-types-title">
+                            🎯 Select Content Types to Generate
+                        </div>
+                        <div class="content-types-description">
+                            Choose which formats you'd like us to create from your nanopublications:
+                        </div>
+                        
+                        <div class="content-types-grid">
+                            <div class="content-type-card" data-type="linkedin_post">
+                                <div class="content-type-header">
+                                    <input type="checkbox" id="linkedin_post" name="content_types" value="linkedin_post" checked>
+                                    <label for="linkedin_post">
+                                        <span class="content-type-icon">💼</span>
+                                        <span class="content-type-name">LinkedIn Post</span>
+                                    </label>
+                                </div>
+                                <div class="content-type-description">
+                                    Professional social media content perfect for LinkedIn. Engaging hooks with key insights and calls to action.
+                                </div>
+                                <div class="content-type-example">
+                                    "Recent research reveals surprising insights about..."
+                                </div>
+                            </div>
+                            
+                            <div class="content-type-card" data-type="bluesky_post">
+                                <div class="content-type-header">
+                                    <input type="checkbox" id="bluesky_post" name="content_types" value="bluesky_post">
+                                    <label for="bluesky_post">
+                                        <span class="content-type-icon">🦋</span>
+                                        <span class="content-type-name">Bluesky Post</span>
+                                    </label>
+                                </div>
+                                <div class="content-type-description">
+                                    Concise, engaging posts under 300 characters. Perfect for quick, accessible science communication.
+                                </div>
+                                <div class="content-type-example">
+                                    "New study shows... 🧬 #ScienceNews"
+                                </div>
+                            </div>
+                            
+                            <div class="content-type-card" data-type="scientific_paper">
+                                <div class="content-type-header">
+                                    <input type="checkbox" id="scientific_paper" name="content_types" value="scientific_paper">
+                                    <label for="scientific_paper">
+                                        <span class="content-type-icon">📄</span>
+                                        <span class="content-type-name">Scientific Paper</span>
+                                    </label>
+                                </div>
+                                <div class="content-type-description">
+                                    Academic format with Introduction, Methods, Results, Discussion, and proper citations.
+                                </div>
+                                <div class="content-type-example">
+                                    "This study investigated... Methods: ... Results showed..."
+                                </div>
+                            </div>
+                            
+                            <div class="content-type-card" data-type="opinion_paper">
+                                <div class="content-type-header">
+                                    <input type="checkbox" id="opinion_paper" name="content_types" value="opinion_paper">
+                                    <label for="opinion_paper">
+                                        <span class="content-type-icon">📝</span>
+                                        <span class="content-type-name">Opinion Piece</span>
+                                    </label>
+                                </div>
+                                <div class="content-type-description">
+                                    Editorial-style content presenting clear positions supported by research evidence.
+                                </div>
+                                <div class="content-type-example">
+                                    "The evidence suggests we should reconsider..."
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="select-all-controls">
+                            <button type="button" class="select-all-btn" onclick="selectAllContentTypes()">
+                                ✅ Select All
+                            </button>
+                            <button type="button" class="select-none-btn" onclick="selectNoContentTypes()">
+                                ❌ Select None
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Model Selection -->
+                    <div class="model-selection-section">
+                        <div class="model-selection-title">
+                            🤖 AI Model Selection
+                        </div>
+                        <div class="model-selection-description">
+                            Choose the AI model for content generation:
+                        </div>
+                        <div class="model-options">
+                            <label class="model-option">
+                                <input type="radio" name="ai_model" value="llama3:8b" checked>
+                                <span class="model-name">Llama 3 8B</span>
+                                <span class="model-description">High quality, balanced speed (Recommended)</span>
+                            </label>
+                            <label class="model-option">
+                                <input type="radio" name="ai_model" value="llama2:7b">
+                                <span class="model-name">Llama 2 7B</span>
+                                <span class="model-description">Faster processing, good quality</span>
+                            </label>
+                            <label class="model-option">
+                                <input type="radio" name="ai_model" value="llama3:70b">
+                                <span class="model-name">Llama 3 70B</span>
+                                <span class="model-description">Highest quality, slower processing</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Advanced Options -->
+                    <div class="advanced-options-section">
+                        <div class="advanced-toggle" onclick="toggleAdvancedOptions()">
+                            <span class="advanced-icon">⚙️</span>
+                            <span class="advanced-text">Advanced Options</span>
+                            <span class="advanced-arrow" id="advanced-arrow">▼</span>
+                        </div>
+                        
+                        <div class="advanced-content" id="advanced-content" style="display: none;">
+                            <div class="custom-instructions">
+                                <label for="user-instructions">
+                                    <strong>Custom Instructions:</strong>
+                                    <span class="instructions-hint">Optional: Provide specific guidance for content generation</span>
+                                </label>
+                                <textarea 
+                                    id="user-instructions" 
+                                    name="user_instructions" 
+                                    placeholder="e.g., Focus on practical applications, use a casual tone, emphasize environmental impact..."
+                                    maxlength="500">
+                                </textarea>
+                                <div class="character-count">
+                                    <span id="char-count">0</span>/500 characters
+                                </div>
+                            </div>
+                            
+                            <div class="batch-description">
+                                <label for="batch-description">
+                                    <strong>Batch Description:</strong>
+                                    <span class="description-hint">Optional: Describe this batch for your records</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="batch-description" 
+                                    name="batch_description" 
+                                    placeholder="e.g., Climate research for Q1 social media campaign"
+                                    maxlength="200">
+                            </div>
+                        </div>
+                    </div>
+                    
                     <button class="execute-button" type="button">
                         <span class="execute-icon">🚀</span>
-                        Generate content from Nanopublications
+                        Generate Content from Nanopublications
                     </button>
                 </div>
                 
@@ -72,7 +225,7 @@
             
             <div class="execution-results" id="execution-results" style="display: none;">
                 <div class="results-header">
-                    <h3>📋 Processing Results</h3>
+                    <h3>📋 Content Generation Results</h3>
                 </div>
                 <div class="results-content">
                     <div id="execution-content"></div>

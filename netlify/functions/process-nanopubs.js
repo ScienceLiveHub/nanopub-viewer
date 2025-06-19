@@ -1,5 +1,5 @@
 // netlify/functions/process-nanopubs.js
-// Improved function with better workflow run ID tracking
+// Enhanced function with content generation options support
 
 exports.handler = async (event, context) => {
     const headers = {
@@ -22,10 +22,10 @@ exports.handler = async (event, context) => {
     }
 
     try {
-        console.log('🚀 Starting nanopub processing request...');
+        console.log('🚀 Starting nanopub content generation request...');
         
         const requestData = JSON.parse(event.body);
-        console.log(`📊 Received request for ${requestData.nanopub_count} nanopubs`);
+        console.log(`📊 Received request for ${requestData.nanopub_count} nanopubs with content generation`);
         
         // Validate request data
         if (!requestData.nanopub_urls || !Array.isArray(requestData.nanopub_urls)) {
@@ -59,7 +59,21 @@ exports.handler = async (event, context) => {
             };
         }
 
+        // Validate content generation options
+        const contentGeneration = requestData.content_generation || {};
+        if (contentGeneration.enabled && (!contentGeneration.content_types || contentGeneration.content_types.length === 0)) {
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'Content generation enabled but no content types specified' })
+            };
+        }
+
         console.log(`✅ Validated ${validUrls.length} URLs`);
+        if (contentGeneration.enabled) {
+            console.log(`🎯 Content generation requested: ${contentGeneration.content_types.join(', ')}`);
+            console.log(`🤖 AI Model: ${contentGeneration.ai_model || 'default'}`);
+        }
 
         const githubToken = process.env.GITHUB_TOKEN;
         if (!githubToken) {
@@ -97,26 +111,41 @@ exports.handler = async (event, context) => {
             console.warn('⚠️  Could not get baseline run count:', error.message);
         }
 
-        // Prepare payload with tracking information
+        // Prepare enhanced payload with content generation options
         const payload = {
-            event_type: 'process-nanopubs-direct',
+            event_type: 'process-nanopubs-content-gen',
             client_payload: {
+                // Basic nanopub processing
                 nanopub_urls: validUrls,
                 nanopub_count: validUrls.length,
                 batch_id: batchId,
                 tracking_id: trackingId,
                 timestamp: new Date().toISOString(),
-                source: requestData.source || 'science-live-direct',
-                processing_mode: 'direct',
+                source: requestData.source || 'science-live-content-generator',
+                processing_mode: 'content_generation',
                 user_agent: event.headers['user-agent'] || 'Unknown',
                 nanopub_urls_string: validUrls.join(','),
-                trigger_time: Date.now()
+                trigger_time: Date.now(),
+                
+                // Content generation configuration
+                content_generation: {
+                    enabled: contentGeneration.enabled || false,
+                    content_types: contentGeneration.content_types || [],
+                    ai_model: contentGeneration.ai_model || 'llama3:8b',
+                    user_instructions: contentGeneration.user_instructions || '',
+                    batch_description: contentGeneration.batch_description || '',
+                    templates_requested: contentGeneration.content_types?.length || 0
+                }
             }
         };
 
-        console.log('🚀 Triggering GitHub Action...');
+        console.log('🚀 Triggering GitHub Action with content generation...');
         console.log(`📋 Batch ID: ${batchId}`);
         console.log(`🏷️  Tracking ID: ${trackingId}`);
+        if (contentGeneration.enabled) {
+            console.log(`🎯 Content Types: ${contentGeneration.content_types.join(', ')}`);
+            console.log(`🤖 AI Model: ${contentGeneration.ai_model}`);
+        }
 
         // Trigger GitHub Action
         const response = await fetch('https://api.github.com/repos/ScienceLiveHub/nanopub-viewer/dispatches', {
@@ -125,7 +154,7 @@ exports.handler = async (event, context) => {
                 'Authorization': `Bearer ${githubToken}`,
                 'Accept': 'application/vnd.github.v3+json',
                 'Content-Type': 'application/json',
-                'User-Agent': 'ScienceLive-Netlify/2.0'
+                'User-Agent': 'ScienceLive-ContentGen/2.0'
             },
             body: JSON.stringify(payload)
         });
@@ -188,25 +217,39 @@ exports.handler = async (event, context) => {
                 console.warn('⚠️  Could not determine workflow run ID after multiple attempts');
             }
             
+            // Calculate estimated completion time based on content generation complexity
+            const baseTime = validUrls.length * 10000; // 10 seconds per nanopub base
+            const contentTime = contentGeneration.enabled ? 
+                (contentGeneration.content_types.length * 30000) : 0; // 30 seconds per content type
+            const estimatedCompletion = new Date(Date.now() + baseTime + contentTime);
+            
             return {
                 statusCode: 200,
                 headers,
                 body: JSON.stringify({
                     success: true,
-                    message: 'Nanopub processing started successfully',
+                    message: contentGeneration.enabled ? 
+                        'Nanopub content generation started successfully' : 
+                        'Nanopub processing started successfully',
                     batch_id: batchId,
                     tracking_id: trackingId,
                     workflow_run_id: workflowRunId,
                     processed_urls: validUrls.length,
                     timestamp: payload.client_payload.timestamp,
+                    content_generation: contentGeneration.enabled ? {
+                        enabled: true,
+                        content_types: contentGeneration.content_types,
+                        ai_model: contentGeneration.ai_model,
+                        templates_count: contentGeneration.content_types.length
+                    } : { enabled: false },
                     status_url: workflowRunId ? 
                         `https://github.com/ScienceLiveHub/nanopub-viewer/actions/runs/${workflowRunId}` :
                         `https://github.com/ScienceLiveHub/nanopub-viewer/actions`,
-                    estimated_completion: new Date(Date.now() + validUrls.length * 5000).toISOString(),
+                    estimated_completion: estimatedCompletion.toISOString(),
                     polling_info: {
-                        check_interval: 10000, // 10 seconds
-                        max_attempts: 20,
-                        timeout_minutes: 5
+                        check_interval: contentGeneration.enabled ? 12000 : 10000, // Longer interval for content gen
+                        max_attempts: contentGeneration.enabled ? 30 : 20, // More attempts for content gen
+                        timeout_minutes: contentGeneration.enabled ? 10 : 5 // Longer timeout for content gen
                     }
                 })
             };
@@ -236,7 +279,8 @@ exports.handler = async (event, context) => {
                     error: errorMessage,
                     details: errorText,
                     batch_id: batchId,
-                    github_status: response.status
+                    github_status: response.status,
+                    content_generation_requested: contentGeneration.enabled || false
                 })
             };
         }

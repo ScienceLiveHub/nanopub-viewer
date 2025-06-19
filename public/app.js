@@ -1,5 +1,5 @@
-// Simplified Science Live Nanopublication Processor
-// Direct execution without pre-loading step
+// Enhanced Science Live Nanopublication Content Generator
+// Includes content type selection, AI model selection, and advanced options
 
 // DOM utility functions
 function getElementById(id) {
@@ -39,6 +39,94 @@ function clearContainers() {
     const containers = ['error-container', 'status-container'];
     containers.forEach(id => setInnerHTML(id, ''));
     setDisplayStyle('execution-results', 'none');
+}
+
+// Content Type Selection Functions
+function selectAllContentTypes() {
+    const checkboxes = document.querySelectorAll('input[name="content_types"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+        updateContentTypeCard(checkbox);
+    });
+}
+
+function selectNoContentTypes() {
+    const checkboxes = document.querySelectorAll('input[name="content_types"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+        updateContentTypeCard(checkbox);
+    });
+}
+
+function updateContentTypeCard(checkbox) {
+    const card = checkbox.closest('.content-type-card');
+    if (card) {
+        if (checkbox.checked) {
+            card.classList.add('selected');
+        } else {
+            card.classList.remove('selected');
+        }
+    }
+}
+
+function getSelectedContentTypes() {
+    const selected = [];
+    const checkboxes = document.querySelectorAll('input[name="content_types"]:checked');
+    checkboxes.forEach(checkbox => {
+        selected.push(checkbox.value);
+    });
+    return selected;
+}
+
+function getSelectedAIModel() {
+    const selected = document.querySelector('input[name="ai_model"]:checked');
+    return selected ? selected.value : 'llama3:8b';
+}
+
+function getUserInstructions() {
+    const textarea = getElementById('user-instructions');
+    return textarea ? textarea.value.trim() : '';
+}
+
+function getBatchDescription() {
+    const input = getElementById('batch-description');
+    return input ? input.value.trim() : '';
+}
+
+// Advanced Options Toggle
+function toggleAdvancedOptions() {
+    const content = getElementById('advanced-content');
+    const arrow = getElementById('advanced-arrow');
+    
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        arrow.classList.add('rotated');
+        arrow.textContent = '▲';
+    } else {
+        content.style.display = 'none';
+        arrow.classList.remove('rotated');
+        arrow.textContent = '▼';
+    }
+}
+
+// Character count for user instructions
+function updateCharacterCount() {
+    const textarea = getElementById('user-instructions');
+    const counter = getElementById('char-count');
+    
+    if (textarea && counter) {
+        const count = textarea.value.length;
+        counter.textContent = count;
+        
+        // Change color when approaching limit
+        if (count > 450) {
+            counter.style.color = 'var(--error-text)';
+        } else if (count > 400) {
+            counter.style.color = 'var(--text-secondary)';
+        } else {
+            counter.style.color = 'var(--text-secondary)';
+        }
+    }
 }
 
 // Input management functions
@@ -127,6 +215,15 @@ function generateBatchId() {
     return 'batch_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
+function validateContentSelection() {
+    const selectedTypes = getSelectedContentTypes();
+    if (selectedTypes.length === 0) {
+        showError('Please select at least one content type to generate');
+        return false;
+    }
+    return true;
+}
+
 // Main execution function
 async function executeNanopubs() {
     const nanopubUrls = getAllNanopubUrls();
@@ -136,7 +233,7 @@ async function executeNanopubs() {
         return;
     }
 
-    // Validate all URLs
+    // Validate URLs
     for (const url of nanopubUrls) {
         if (!url.startsWith('http')) {
             showError('Please enter valid URIs starting with http:// or https://');
@@ -144,18 +241,30 @@ async function executeNanopubs() {
         }
     }
 
+    // Validate content type selection
+    if (!validateContentSelection()) {
+        return;
+    }
+
     const executeBtn = getElementById('execute-btn');
     if (executeBtn) {
         executeBtn.disabled = true;
         executeBtn.classList.add('loading');
-        executeBtn.innerHTML = '<span class="execute-icon">⏳</span>Processing...';
+        executeBtn.innerHTML = '<span class="execute-icon">⏳</span>Generating Content...';
     }
 
     clearContainers();
-    showLoading(`Processing ${nanopubUrls.length} nanopublication${nanopubUrls.length > 1 ? 's' : ''}...`);
+    
+    // Get user selections
+    const selectedContentTypes = getSelectedContentTypes();
+    const selectedModel = getSelectedAIModel();
+    const userInstructions = getUserInstructions();
+    const batchDescription = getBatchDescription();
+    
+    showLoading(`Generating ${selectedContentTypes.length} content type(s) from ${nanopubUrls.length} nanopublication(s)...`);
 
     try {
-        // Call the Netlify function to trigger GitHub Action
+        // Call the Netlify function to trigger GitHub Action with content generation options
         const response = await fetch('/.netlify/functions/process-nanopubs', {
             method: 'POST',
             headers: {
@@ -166,13 +275,23 @@ async function executeNanopubs() {
                 nanopub_count: nanopubUrls.length,
                 batch_id: generateBatchId(),
                 timestamp: new Date().toISOString(),
-                source: 'science-live-direct'
+                source: 'science-live-content-generator',
+                // Content generation options
+                content_generation: {
+                    enabled: true,
+                    content_types: selectedContentTypes,
+                    ai_model: selectedModel,
+                    user_instructions: userInstructions,
+                    batch_description: batchDescription
+                }
             })
         });
 
         if (response.ok) {
             const result = await response.json();
-            showStatus('✅ Processing started successfully!', 'success');
+            
+            const contentTypesText = selectedContentTypes.join(', ');
+            showStatus(`✅ Content generation started! Creating: ${contentTypesText}`, 'success');
             
             // Store the workflow run ID for tracking
             const workflowRunId = result.workflow_run_id;
@@ -186,11 +305,11 @@ async function executeNanopubs() {
         
     } catch (error) {
         console.error('Error executing nanopubs:', error);
-        showError(`Failed to start processing: ${error.message}`);
+        showError(`Failed to start content generation: ${error.message}`);
         
         // Show demo results as fallback
         setTimeout(() => {
-            showDemoResults(nanopubUrls);
+            showDemoResults(nanopubUrls, selectedContentTypes, selectedModel);
         }, 2000);
     }
     
@@ -199,17 +318,17 @@ async function executeNanopubs() {
         setTimeout(() => {
             executeBtn.disabled = false;
             executeBtn.classList.remove('loading');
-            executeBtn.innerHTML = '<span class="execute-icon">🚀</span>Fetch and process Nanopublications';
+            executeBtn.innerHTML = '<span class="execute-icon">🚀</span>Generate Content from Nanopublications';
         }, 3000);
     }
 }
 
 // Poll for execution results
 async function pollForResults(batchId, workflowRunId = null) {
-    showStatus('🔄 Checking execution status...');
+    showStatus('🔄 Checking content generation status...');
     
     let attempts = 0;
-    const maxAttempts = 20; // 3+ minutes max
+    const maxAttempts = 25; // Longer timeout for content generation
     
     const pollInterval = setInterval(async () => {
         attempts++;
@@ -232,17 +351,17 @@ async function pollForResults(batchId, workflowRunId = null) {
             if (response.ok) {
                 if (resultData.status === 'completed') {
                     clearInterval(pollInterval);
-                    showStatus('✅ Processing completed!', 'success');
+                    showStatus('✅ Content generation completed!', 'success');
                     displayActualResults(resultData, batchId);
                     return;
                 } else if (resultData.status === 'failed') {
                     clearInterval(pollInterval);
-                    showError('Processing failed - check GitHub Actions for details');
+                    showError('Content generation failed - check GitHub Actions for details');
                     displayFailureInfo(resultData);
                     return;
                 } else if (resultData.status === 'processing') {
                     const runInfo = workflowRunId ? ` (Run: ${workflowRunId})` : '';
-                    showStatus(`🔄 ${resultData.message || 'Processing in progress'}... (${attempts}/${maxAttempts})${runInfo}`);
+                    showStatus(`🔄 ${resultData.message || 'Generating content'}... (${attempts}/${maxAttempts})${runInfo}`);
                 } else {
                     showStatus(`🔄 Status: ${resultData.status} (${attempts}/${maxAttempts})`);
                 }
@@ -252,14 +371,14 @@ async function pollForResults(batchId, workflowRunId = null) {
             
         } catch (error) {
             console.warn(`Attempt ${attempts}: ${error.message}`);
-            if (attempts < 10) {
+            if (attempts < 15) {
                 const runInfo = workflowRunId ? ` (Run: ${workflowRunId})` : '';
-                showStatus(`🔄 Checking status... (${attempts}/${maxAttempts})${runInfo}`);
+                showStatus(`🔄 Checking content generation status... (${attempts}/${maxAttempts})${runInfo}`);
             } else {
-                // Fall back to demo results after 10 attempts
+                // Fall back to demo results after 15 attempts
                 clearInterval(pollInterval);
                 showStatus('⏰ Using demo results (GitHub API temporarily unavailable)', 'info');
-                showDemoResults(getAllNanopubUrls());
+                showDemoResults(getAllNanopubUrls(), getSelectedContentTypes(), getSelectedAIModel());
                 return;
             }
         }
@@ -269,12 +388,12 @@ async function pollForResults(batchId, workflowRunId = null) {
             const actionUrl = workflowRunId ? 
                 `https://github.com/ScienceLiveHub/nanopub-viewer/actions/runs/${workflowRunId}` :
                 'https://github.com/ScienceLiveHub/nanopub-viewer/actions';
-            showStatus(`⏰ Processing taking longer than expected. <a href="${actionUrl}" target="_blank">Check GitHub Actions</a>`, 'info');
+            showStatus(`⏰ Content generation taking longer than expected. <a href="${actionUrl}" target="_blank">Check GitHub Actions</a>`, 'info');
             // Show demo results as fallback
-            showDemoResults(getAllNanopubUrls());
+            showDemoResults(getAllNanopubUrls(), getSelectedContentTypes(), getSelectedAIModel());
         }
         
-    }, 10000); // Check every 10 seconds
+    }, 12000); // Check every 12 seconds (longer for content generation)
 }
 
 // Display actual results from GitHub processing
@@ -286,7 +405,7 @@ function displayActualResults(resultData, batchId) {
     
     executionResults.style.display = 'block';
     
-    console.log('🔍 Fetching full results from branch...', {
+    console.log('🔍 Fetching full content generation results from branch...', {
         batchId: batchId,
         workflowRunId: resultData.workflow_run?.id
     });
@@ -297,65 +416,71 @@ function displayActualResults(resultData, batchId) {
             console.log('📊 Branch results response:', branchResultsData);
             
             if (branchResultsData && branchResultsData.processing_summary) {
-                console.log('✅ Got processing summary from branch, displaying...');
+                console.log('✅ Got content generation results from branch, displaying...');
                 
-                // Display the full processing summary
-                let fullDisplay = `=== FULL PROCESSING RESULTS FROM BRANCH ===
+                // Display enhanced results with content generation focus
+                let fullDisplay = `=== CONTENT GENERATION RESULTS ===
 Retrieved from results branch: ${branchResultsData.results_branch}
 Branch URL: ${branchResultsData.branch_url}
 
 ${branchResultsData.processing_summary}
 
-=== ADDITIONAL ANALYSIS DATA ===`;
+=== GENERATED CONTENT SUMMARY ===`;
 
-                // Add batch results summary if available
+                // Add content generation specific information
                 if (branchResultsData.batch_results) {
                     const br = branchResultsData.batch_results;
                     fullDisplay += `
 
-BATCH PROCESSING SUMMARY:
-- Total nanopubs: ${br.total_nanopubs}
-- Successfully processed: ${br.processed}
-- Failed: ${br.failed}
-- Success rate: ${((br.processed / br.total_nanopubs) * 100).toFixed(1)}%
-- Processing time: ${br.processing_time_seconds}s`;
-                }
+CONTENT GENERATION OVERVIEW:
+- Total nanopubs processed: ${br.total_nanopubs}
+- Content generation method: ${br.processing_method || 'enhanced'}
+- Generated content types: ${br.templates_available ? br.templates_available.join(', ') : 'Multiple formats'}
+- Success rate: ${((br.processed || br.successful_templates || 0) / br.total_nanopubs * 100).toFixed(1)}%`;
 
-                // Add combined analysis if available
-                if (branchResultsData.combined_analysis) {
-                    const ca = branchResultsData.combined_analysis;
-                    fullDisplay += `
-
-CROSS-NANOPUB ANALYSIS:
-- Total nanopubs analyzed: ${ca.total_nanopubs}
-- Successfully processed: ${ca.successful_processing}
-- Total triples: ${ca.total_triples}`;
-
-                    if (ca.graph_distribution) {
-                        fullDisplay += `
-- Graph distribution: ${Object.entries(ca.graph_distribution).map(([k,v]) => `${k}(${v})`).join(', ')}`;
-                    }
-
-                    if (ca.author_network && Object.keys(ca.author_network).length > 0) {
-                        fullDisplay += `
-- Authors: ${Object.entries(ca.author_network).map(([k,v]) => `${k}(${v})`).join(', ')}`;
+                    if (br.content_generated) {
+                        fullDisplay += `\n- Content formats: ${Object.keys(br.content_generated).join(', ')}`;
                     }
                 }
 
-                // Add individual files info
+                // Add file availability info
                 if (branchResultsData.individual_files?.length > 0) {
+                    const contentFiles = branchResultsData.individual_files.filter(file => 
+                        file.name.includes('linkedin_post') || 
+                        file.name.includes('bluesky_post') || 
+                        file.name.includes('scientific_paper') || 
+                        file.name.includes('opinion_paper')
+                    );
+
+                    if (contentFiles.length > 0) {
+                        fullDisplay += `
+
+GENERATED CONTENT FILES (${contentFiles.length}):
+${contentFiles.map(file => `- ${file.name} (${formatBytes(file.size)})`).join('\n')}`;
+                    }
+
                     fullDisplay += `
 
-INDIVIDUAL RESULT FILES (${branchResultsData.individual_files.length}):
+ALL RESULT FILES (${branchResultsData.individual_files.length}):
 ${branchResultsData.individual_files.map(file => `- ${file.name} (${formatBytes(file.size)})`).join('\n')}`;
                 }
 
                 fullDisplay += `
 
-=== ACCESS RESULTS ===
+=== DOWNLOAD YOUR CONTENT ===
 🌿 Results Branch: ${branchResultsData.results_branch}
-🔗 Browse Files: ${branchResultsData.branch_url}
-📦 Download ZIP: https://github.com/ScienceLiveHub/nanopub-viewer/archive/refs/heads/${branchResultsData.results_branch}.zip`;
+🔗 Browse All Files: ${branchResultsData.branch_url}
+📦 Download Everything: https://github.com/ScienceLiveHub/nanopub-viewer/archive/refs/heads/${branchResultsData.results_branch}.zip
+
+=== READY-TO-USE CONTENT ===
+Your generated content is available in multiple formats:
+• LinkedIn posts - Professional social media content
+• Bluesky posts - Concise, engaging updates  
+• Scientific papers - Academic format with citations
+• Opinion pieces - Editorial-style content
+
+All content includes proper citations and source attribution.
+Use the generated files directly or as starting points for your content strategy.`;
 
                 executionContent.textContent = fullDisplay;
                 
@@ -398,12 +523,20 @@ async function fetchBranchResults(batchId, workflowRunId) {
 
 // Fallback summary display
 function displayResultsSummary(resultData, batchId, executionContent) {
-    let resultsDisplay = `=== SCIENCE LIVE PROCESSING RESULTS ===
+    const selectedTypes = getSelectedContentTypes();
+    const selectedModel = getSelectedAIModel();
+    
+    let resultsDisplay = `=== CONTENT GENERATION RESULTS ===
 
 Batch ID: ${batchId}
 Status: ✅ COMPLETED
-Processed: ${new Date(resultData.workflow_run.updated_at).toLocaleString()}
+Generated: ${new Date(resultData.workflow_run.updated_at).toLocaleString()}
 Processing Duration: ${calculateDuration(resultData.workflow_run.created_at, resultData.workflow_run.updated_at)}
+
+=== CONTENT CONFIGURATION ===
+Selected Content Types: ${selectedTypes.join(', ')}
+AI Model Used: ${selectedModel}
+User Instructions: ${getUserInstructions() || 'Default instructions used'}
 
 === WORKFLOW INFORMATION ===
 GitHub Actions Run ID: ${resultData.workflow_run.id}
@@ -414,6 +547,8 @@ View Details: ${resultData.workflow_run.html_url}`;
     // Add results branch information if available
     if (resultData.workflow_run?.id) {
         resultsDisplay += `
+
+=== ACCESS YOUR GENERATED CONTENT ===
 Results Branch: results-${resultData.workflow_run.id}
 Browse Results: https://github.com/ScienceLiveHub/nanopub-viewer/tree/results-${resultData.workflow_run.id}
 Download ZIP: https://github.com/ScienceLiveHub/nanopub-viewer/archive/refs/heads/results-${resultData.workflow_run.id}.zip`;
@@ -421,46 +556,63 @@ Download ZIP: https://github.com/ScienceLiveHub/nanopub-viewer/archive/refs/head
 
     resultsDisplay += `
 
-=== RESULTS AVAILABLE ===`;
+=== CONTENT FORMATS GENERATED ===`;
+
+    selectedTypes.forEach(type => {
+        const descriptions = {
+            'linkedin_post': 'Professional social media content with engaging hooks and calls to action',
+            'bluesky_post': 'Concise, accessible posts under 300 characters with hashtags',
+            'scientific_paper': 'Academic format with Introduction, Methods, Results, Discussion, and citations',
+            'opinion_paper': 'Editorial-style content presenting evidence-based positions'
+        };
+        
+        resultsDisplay += `
+
+📄 ${type.toUpperCase().replace('_', ' ')}:
+   ${descriptions[type] || 'Custom content format'}
+   File: ${type}_${batchId}.txt`;
+    });
 
     if (resultData.artifacts) {
         resultsDisplay += `
-📦 Results Artifact: ${resultData.artifacts.name}
+
+=== DOWNLOAD GENERATED CONTENT ===
+📦 Results Package: ${resultData.artifacts.name}
 📊 Size: ${formatBytes(resultData.artifacts.size_in_bytes)}
 📅 Generated: ${new Date(resultData.artifacts.created_at).toLocaleString()}
 
-⬇️ Download Full Results: 
+⬇️ Download All Content: 
 ${resultData.artifacts.download_url}
 
-The processing results include:
-- Individual nanopub analyses
-- Batch relationship analysis  
-- Comprehensive processing reports
-- RDF content and metadata extraction`;
+Your content package includes:
+- All selected content formats (${selectedTypes.join(', ')})
+- Source citations and references
+- Processing logs and metadata
+- Configuration files for future use`;
     } else {
         resultsDisplay += `
 
-Check the workflow run or results branch for detailed results and logs.`;
+Check the workflow run or results branch for your generated content files.`;
     }
 
     resultsDisplay += `
 
-=== WHAT WAS PROCESSED ===
+=== SOURCE NANOPUBLICATIONS ===
 ${getAllNanopubUrls().map((url, idx) => `${idx + 1}. ${url}`).join('\n')}
 
-=== NEXT STEPS ===
-✓ View detailed results in the results branch above
-✓ Download processing artifacts if available
-✓ Review individual nanopub analyses
-✓ Explore cross-nanopub relationships
+=== CONTENT USAGE ===
+✓ Ready-to-post social media content
+✓ Academic papers with proper citations  
+✓ Editorial pieces for publications
+✓ All content includes source attribution
 
-=== FULL PROCESSING OUTPUT ===
-The complete processing output should be displayed above.
-If not available, check the GitHub Actions workflow logs directly:
-${resultData.workflow_run.html_url}
+=== AI MODEL INFORMATION ===
+Model: ${selectedModel}
+Quality: ${selectedModel.includes('70b') ? 'Highest' : selectedModel.includes('8b') ? 'High' : 'Good'}
+Processing: AI-powered content generation with factual accuracy focus
 
-This processing used the nanopub Python library for proper
-nanopublication parsing and semantic analysis.`;
+This content was generated using advanced AI while maintaining scientific accuracy
+and proper attribution to the original nanopublications.`;
 
     if (executionContent) {
         executionContent.textContent = resultsDisplay;
@@ -478,31 +630,47 @@ function displayFailureInfo(resultData) {
     
     executionResults.style.display = 'block';
     
-    const failureDisplay = `=== PROCESSING FAILED ===
+    const selectedTypes = getSelectedContentTypes();
+    const selectedModel = getSelectedAIModel();
+    
+    const failureDisplay = `=== CONTENT GENERATION FAILED ===
 
 Batch ID: ${resultData.batch_id}
 Status: ❌ FAILED
 Workflow Run: ${resultData.workflow_run.id}
 Failed at: ${new Date(resultData.workflow_run.updated_at).toLocaleString()}
 
+=== ATTEMPTED CONFIGURATION ===
+Content Types: ${selectedTypes.join(', ')}
+AI Model: ${selectedModel}
+User Instructions: ${getUserInstructions() || 'None provided'}
+
 === ERROR DETAILS ===
 Check the workflow logs for detailed error information:
 ${resultData.workflow_run.html_url}
 
 === COMMON ISSUES ===
+• Ollama service not available
+• AI model not installed or accessible
 • Network connectivity problems
 • Invalid nanopub URLs
-• RDF parsing errors
-• GitHub Actions timeout
+• Content generation timeout
 
 === TROUBLESHOOTING ===
 1. Verify nanopub URLs are accessible
 2. Check GitHub Actions logs for specific errors
-3. Try processing fewer nanopubs at once
-4. Ensure URLs point to valid nanopublications
+3. Try with fewer content types or smaller AI model
+4. Ensure Ollama is properly configured in the workflow
+5. Consider using basic processing mode
 
-=== ATTEMPTED URLS ===
-${getAllNanopubUrls().map((url, idx) => `${idx + 1}. ${url}`).join('\n')}`;
+=== ATTEMPTED NANOPUB URLS ===
+${getAllNanopubUrls().map((url, idx) => `${idx + 1}. ${url}`).join('\n')}
+
+=== FALLBACK OPTIONS ===
+- Try again with fewer content types
+- Use a smaller/faster AI model (llama2:7b)
+- Process fewer nanopubs at once
+- Contact support if issues persist`;
 
     executionContent.textContent = failureDisplay;
 }
@@ -529,7 +697,7 @@ function formatBytes(bytes) {
 }
 
 // Show demo results for development/testing
-function showDemoResults(nanopubUrls) {
+function showDemoResults(nanopubUrls, selectedContentTypes, selectedModel) {
     const executionResults = getElementById('execution-results');
     const executionContent = getElementById('execution-content');
     
@@ -538,85 +706,146 @@ function showDemoResults(nanopubUrls) {
     executionResults.style.display = 'block';
     
     const batchId = generateBatchId();
-    const results = `=== SCIENCE LIVE PROCESSING RESULTS ===
+    const userInstructions = getUserInstructions();
+    const batchDescription = getBatchDescription();
+    
+    // Generate demo content for each selected type
+    const demoContent = {};
+    
+    selectedContentTypes.forEach(type => {
+        switch (type) {
+            case 'linkedin_post':
+                demoContent[type] = `🚀 Exciting breakthrough in nanopublication research! 
+
+Recent studies using advanced RDF semantics show how structured scientific data can transform research communication. Key findings reveal:
+
+✨ 40% improvement in research discoverability
+📊 Enhanced cross-study connections
+🔬 Better reproducibility metrics
+
+This could revolutionize how we share and validate scientific knowledge! What are your thoughts on structured research data?
+
+#ScientificResearch #OpenScience #DataSharing #Research #Innovation`;
+                break;
+                
+            case 'bluesky_post':
+                demoContent[type] = `🔬 New research shows structured nanopubs boost scientific collaboration by 40%! Game-changer for open science. #Research #OpenScience 🧬`;
+                break;
+                
+            case 'scientific_paper':
+                demoContent[type] = `**Introduction**
+
+The increasing complexity of scientific research necessitates improved methods for knowledge representation and sharing. Nanopublications represent a novel approach to structuring scientific assertions with proper attribution and provenance.
+
+**Methods**
+
+This study analyzed ${nanopubUrls.length} nanopublications using automated RDF parsing and semantic analysis. Content extraction was performed using the nanopub Python library with validation against W3C standards.
+
+**Results**
+
+Analysis revealed consistent semantic structures across nanopublications with an average of 23.4 triples per assertion graph. Provenance information was present in 95% of examined nanopublications, with standardized attribution patterns.
+
+**Discussion**
+
+The structured nature of nanopublications enables automated processing and improved research reproducibility. These findings suggest significant potential for enhanced scientific communication through standardized knowledge graphs.
+
+**Conclusion**
+
+Nanopublications provide a robust framework for structured scientific communication with proper attribution and validation mechanisms.
+
+**References**
+[1] Nanopublication Network Analysis Study
+[2] ${nanopubUrls[0] || 'https://w3id.org/np/example'}`;
+                break;
+                
+            case 'opinion_paper':
+                demoContent[type] = `**The Future of Scientific Publishing: A Case for Structured Knowledge**
+
+The scientific community stands at a crossroads. Traditional publication methods, while historically valuable, increasingly fail to meet the demands of modern, interconnected research. Based on analysis of structured nanopublications, I argue that we must embrace semantic publishing frameworks to advance scientific knowledge effectively.
+
+**The Current Challenge**
+
+Our analysis of ${nanopubUrls.length} nanopublications reveals the untapped potential of structured scientific communication. Unlike traditional papers that lock knowledge in narrative formats, nanopublications provide machine-readable assertions with clear provenance and attribution.
+
+**Evidence for Change**
+
+The data demonstrates remarkable consistency in semantic structure, with standardized attribution patterns appearing in 95% of examined publications. This consistency enables automated validation, cross-study connections, and improved reproducibility—goals that remain elusive in traditional publishing.
+
+**The Path Forward**
+
+We must advocate for structured knowledge representation as a complement to, not replacement for, traditional publishing. The evidence suggests that combining human-readable narratives with machine-processable assertions creates a more robust scientific record.
+
+**Conclusion**
+
+The transition to structured scientific publishing is not merely technological advancement—it is an ethical imperative for reproducible, accessible science. The nanopublication framework provides a proven foundation for this transformation.`;
+                break;
+        }
+    });
+    
+    const results = `=== CONTENT GENERATION DEMO RESULTS ===
 
 Batch ID: ${batchId}
 Timestamp: ${new Date().toISOString()}
 Status: ✅ SUCCESS (Demo Mode)
-Total URLs: ${nanopubUrls.length}
+Content Types Generated: ${selectedContentTypes.length}
+AI Model: ${selectedModel}
 
-=== NANOPUB LIBRARY PROCESSING ===
-✓ Using nanopub Python library for proper parsing
-✓ Full RDF graph extraction and analysis
-✓ Semantic triple processing
-✓ Metadata and provenance extraction
+=== CONFIGURATION USED ===
+Selected Content Types: ${selectedContentTypes.join(', ')}
+User Instructions: ${userInstructions || 'Default instructions applied'}
+Batch Description: ${batchDescription || 'Content generation demo'}
 
-=== PROCESSED NANOPUBLICATIONS ===
-${nanopubUrls.map((url, idx) => `
-Nanopub ${idx + 1}: ${url}
-  Status: ✅ Successfully processed
-  URI: ${url}
-  Graphs found: assertion, provenance, pubinfo
-  Total triples: ${Math.floor(Math.random() * 40) + 15}
-  Author: ${idx === 0 ? 'Anne Fouilloux' : 'Research Author'}
-  Created: ${new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-  
-  Sample Assertion Triples:
-  - Subject: <https://example.org/entity${idx + 1}>
-  - Predicate: <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>
-  - Object: <https://schema.org/Dataset>
-  
-  - Subject: <https://example.org/entity${idx + 1}>
-  - Predicate: <https://schema.org/name>
-  - Object: "Research Finding ${idx + 1}"
-  
-  Sample Provenance:
-  - Generated by: <https://orcid.org/0000-0002-1784-2920>
-  - Method: Computational analysis
-  - Date: ${new Date().toISOString()}
-`).join('')}
+=== GENERATED CONTENT ===
 
-=== CROSS-NANOPUB ANALYSIS ===
-Common URI Patterns: ${Math.floor(Math.random() * 3) + 2}
-Shared Vocabularies: schema.org, dublin core, FOAF
-Author Network: ${nanopubUrls.length} unique authors identified
-Temporal Distribution: Processed nanopubs span ${Math.floor(Math.random() * 12) + 1} months
+${selectedContentTypes.map(type => `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📄 ${type.toUpperCase().replace('_', ' ')} CONTENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-=== SEMANTIC ANALYSIS ===
-Total Unique Subjects: ${Math.floor(Math.random() * 50) + 20}
-Total Unique Predicates: ${Math.floor(Math.random() * 30) + 15}
-Vocabulary Usage:
-- schema.org: ${Math.floor(Math.random() * 10) + 5} properties
-- Dublin Core: ${Math.floor(Math.random() * 8) + 3} properties
-- FOAF: ${Math.floor(Math.random() * 6) + 2} properties
+${demoContent[type] || 'Content would be generated here...'}
 
-=== QUALITY ASSESSMENT ===
-Validation Status: All nanopubs valid RDF
-Completeness Score: ${(Math.random() * 20 + 80).toFixed(1)}%
-Trusty URI Validation: ✅ All URIs verified
-Digital Signatures: Present and valid
+Length: ${demoContent[type] ? demoContent[type].length : 0} characters
+Status: ✅ Generated successfully
+File: ${type}_${batchId}.txt
+`).join('\n')}
 
-=== GENERATED OUTPUTS ===
-- results/batch_results.json (processing summary)
-- results/combined_analysis.json (cross-nanopub analysis)  
-- results/web/display_data.json (web display data)
-- results/individual/*.json (${nanopubUrls.length} detailed analyses)
-- logs/processing_summary.txt (human-readable report)
+=== AI CONTENT GENERATION FEATURES ===
+✓ Factual accuracy maintained through source verification
+✓ Proper citation and attribution included
+✓ Platform-optimized formatting applied
+✓ User instructions incorporated: "${userInstructions || 'Standard science communication guidelines'}"
+✓ Model: ${selectedModel} - ${selectedModel.includes('70b') ? 'Highest quality, detailed analysis' : selectedModel.includes('8b') ? 'High quality, balanced processing' : 'Good quality, efficient processing'}
 
-=== USING NANOPUB LIBRARY BENEFITS ===
-✓ Proper RDF parsing with rdflib integration
-✓ Native nanopublication structure handling
-✓ Automatic graph separation (assertion/provenance/pubinfo)
-✓ Built-in validation and error handling
-✓ Trusty URI support and verification
-✓ Digital signature processing
+=== SOURCE NANOPUBLICATIONS ===
+${nanopubUrls.map((url, idx) => `${idx + 1}. ${url}`).join('\n')}
 
-Processing Duration: ${(nanopubUrls.length * 2.3 + Math.random() * 3).toFixed(1)} seconds
+=== CONTENT USAGE GUIDELINES ===
+LinkedIn Post: Ready for professional social media posting
+Bluesky Post: Optimized for microblogging with hashtags
+Scientific Paper: Academic format suitable for publication
+Opinion Piece: Editorial content for magazines or blogs
+
+=== QUALITY ASSURANCE ===
+All generated content:
+• Maintains scientific accuracy from source nanopublications
+• Includes proper attribution and citations
+• Follows platform-specific best practices
+• Incorporates user-provided instructions
+• Uses AI model: ${selectedModel} for optimal quality/speed balance
+
+=== FILES GENERATED ===
+- content/${selectedContentTypes.map(type => `${type}_${batchId}.txt`).join('\n- content/')}
+- config/generation_config_${batchId}.json
+- logs/generation_summary_${batchId}.txt
+
+Processing Duration: ${(nanopubUrls.length * selectedContentTypes.length * 1.8 + Math.random() * 5).toFixed(1)} seconds
+Content Quality Score: ${(85 + Math.random() * 15).toFixed(1)}%
 Success Rate: 100%
 
-This demo shows what the enhanced nanopub library processing
-would provide. The actual implementation fetches real nanopub
-data and performs comprehensive semantic analysis.`;
+This demo shows the enhanced content generation capabilities.
+The actual implementation processes real nanopub data and creates
+publication-ready content using advanced AI while maintaining
+scientific accuracy and proper attribution.`;
     
     executionContent.textContent = results;
 }
@@ -664,9 +893,49 @@ function initializeInputs() {
     }
 }
 
+// Initialize content type selection
+function initializeContentTypes() {
+    // Add click handlers for content type cards
+    const contentCards = document.querySelectorAll('.content-type-card');
+    contentCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Only toggle if clicking the card itself, not the checkbox
+            if (e.target.type !== 'checkbox') {
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    updateContentTypeCard(checkbox);
+                }
+            }
+        });
+        
+        // Initialize card state
+        const checkbox = card.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+            updateContentTypeCard(checkbox);
+            
+            // Add change handler
+            checkbox.addEventListener('change', function() {
+                updateContentTypeCard(this);
+            });
+        }
+    });
+}
+
+// Initialize character counter
+function initializeCharacterCounter() {
+    const textarea = getElementById('user-instructions');
+    if (textarea) {
+        textarea.addEventListener('input', updateCharacterCount);
+        updateCharacterCount(); // Initial count
+    }
+}
+
 // Event Listeners
 function initializeEventListeners() {
     initializeInputs();
+    initializeContentTypes();
+    initializeCharacterCounter();
     
     // Execute button
     const executeButton = document.querySelector('.execute-button');
@@ -705,9 +974,12 @@ window.executeNanopubs = executeNanopubs;
 window.loadExample = loadExample;
 window.addNanopubRow = addNanopubRow;
 window.removeNanopubRow = removeNanopubRow;
+window.selectAllContentTypes = selectAllContentTypes;
+window.selectNoContentTypes = selectNoContentTypes;
+window.toggleAdvancedOptions = toggleAdvancedOptions;
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
-    console.log('Science Live Nanopublication Processor initialized');
+    console.log('Science Live Nanopublication Content Generator initialized');
 });
