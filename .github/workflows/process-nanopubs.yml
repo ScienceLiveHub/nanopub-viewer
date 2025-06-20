@@ -51,21 +51,73 @@ jobs:
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then
-          pip install -r requirements.txt
+        pip install requests rdflib pandas numpy aiohttp asyncio
+        
+        # Install nanopub library with error handling
+        pip install nanopub || echo "Warning: nanopub library installation failed, will use fallback"
+        
+        # Install ollama library
+        pip install ollama || echo "Warning: ollama library installation failed"
+        
+        # Install additional dependencies that might be needed
+        pip install lxml beautifulsoup4 || echo "Warning: some optional dependencies failed"
+    
+    - name: Clone and setup nanopub-content-generator
+      run: |
+        echo "🔄 Cloning nanopub-content-generator repository..."
+        
+        # Try to clone the repository
+        if git clone https://github.com/ScienceLiveHub/nanopub-content-generator.git; then
+          echo "✅ Successfully cloned nanopub-content-generator"
+          
+          # Verify the main file exists
+          if [ -f "nanopub-content-generator/nanopub_content_generator.py" ]; then
+            echo "✅ nanopub_content_generator.py found"
+          else
+            echo "❌ nanopub_content_generator.py not found in cloned repository"
+            ls -la nanopub-content-generator/
+            exit 1
+          fi
+          
+          # Copy templates if they exist in this repo
+          if [ -d "templates" ]; then
+            cp -r templates nanopub-content-generator/ 2>/dev/null || echo "Templates not found in main repo"
+            echo "📁 Copied templates to nanopub-content-generator"
+          fi
+          
+          # Copy endpoints.py if it exists
+          if [ -f "endpoints.py" ]; then
+            cp endpoints.py nanopub-content-generator/ 2>/dev/null || echo "endpoints.py not found"
+            echo "📁 Copied endpoints.py to nanopub-content-generator"
+          fi
+          
+          # Install dependencies for the content generator
+          cd nanopub-content-generator
+          if [ -f "requirements.txt" ]; then
+            pip install -r requirements.txt || echo "Warning: some content generator dependencies failed"
+          fi
+          cd ..
+          
         else
-          pip install requests rdflib pandas numpy
-          pip install nanopub || echo "Warning: nanopub library not available"
-          pip install aiohttp asyncio
-          pip install ollama || echo "Warning: ollama library not available"
+          echo "❌ Failed to clone nanopub-content-generator repository"
+          echo "This will cause content generation to fail"
+          exit 1
         fi
     
     - name: Install and Setup Ollama
       run: |
+        echo "🤖 Installing Ollama..."
         curl -fsSL https://ollama.ai/install.sh | sh
-        ollama serve &
-        sleep 20
         
+        # Start ollama service in background
+        echo "🚀 Starting Ollama service..."
+        ollama serve &
+        
+        # Wait for ollama to be ready
+        echo "⏳ Waiting for Ollama to be ready..."
+        sleep 30
+        
+        # Determine which AI model to use
         if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
           AI_MODEL="${{ github.event.client_payload.content_generation.ai_model }}"
         else
@@ -73,8 +125,23 @@ jobs:
         fi
         
         AI_MODEL=${AI_MODEL:-"llama3:8b"}
-        echo "Installing AI model: $AI_MODEL"
-        timeout 600 ollama pull "$AI_MODEL" || timeout 600 ollama pull "llama3:8b" || timeout 600 ollama pull "llama2:7b" || echo "All model installations failed"
+        echo "📥 Installing AI model: $AI_MODEL"
+        
+        # Try to install the requested model, with fallbacks
+        if timeout 600 ollama pull "$AI_MODEL"; then
+          echo "✅ Successfully installed $AI_MODEL"
+        elif timeout 600 ollama pull "llama3:8b"; then
+          echo "⚠️  Fallback: installed llama3:8b instead of $AI_MODEL"
+        elif timeout 600 ollama pull "llama2:7b"; then
+          echo "⚠️  Fallback: installed llama2:7b instead of $AI_MODEL"
+        else
+          echo "❌ Failed to install any AI model"
+          exit 1
+        fi
+        
+        # Verify ollama is working
+        echo "🔍 Testing Ollama installation..."
+        ollama list || echo "Warning: Could not list ollama models"
     
     - name: Extract processing parameters
       id: params
@@ -114,25 +181,17 @@ jobs:
           echo "Content Generation: ENABLED"
           echo "Content Types: ${{ steps.params.outputs.content_types }}"
           echo "AI Model: ${{ steps.params.outputs.ai_model }}"
+          echo "User Instructions: ${{ steps.params.outputs.user_instructions }}"
         else
           echo "Content Generation: DISABLED"
         fi
+        
         echo "=================================================="
-    
-    - name: Clone nanopub-content-generator
-      run: |
-        if ! git clone https://github.com/ScienceLiveHub/nanopub-content-generator.git; then
-          echo "Warning: Could not clone nanopub-content-generator"
-          exit 0
-        fi
-        
-        if [ -f "nanopub-content-generator/nanopub_content_generator.py" ]; then
-          echo "Successfully cloned nanopub-content-generator"
-        fi
-        
-        if [ -d "templates" ]; then
-          cp -r templates nanopub-content-generator/ 2>/dev/null || echo "No templates to copy"
-        fi
+        echo "🔍 Verifying setup..."
+        echo "Python version: $(python --version)"
+        echo "Ollama status: $(pgrep ollama > /dev/null && echo 'RUNNING' || echo 'NOT RUNNING')"
+        echo "Content generator: $([ -f 'nanopub-content-generator/nanopub_content_generator.py' ] && echo 'FOUND' || echo 'NOT FOUND')"
+        echo "=================================================="
     
     - name: Run content generation processing
       env:
@@ -146,25 +205,87 @@ jobs:
         USER_INSTRUCTIONS: ${{ steps.params.outputs.user_instructions }}
         BATCH_DESCRIPTION: ${{ steps.params.outputs.batch_description }}
       run: |
+        echo "🚀 Starting content generation processing..."
+        
+        # Verify the processing script exists
         if [ ! -f "scripts/process_nanopubs.py" ]; then
-          echo "Error: scripts/process_nanopubs.py not found"
+          echo "❌ Error: scripts/process_nanopubs.py not found"
           exit 1
         fi
         
+        # Ensure output directories exist
+        mkdir -p results logs config results/content
+        
+        echo "📊 Processing parameters:"
+        echo "- URLs: $NANOPUB_URLS"
+        echo "- Content types: $CONTENT_TYPES"
+        echo "- AI model: $AI_MODEL"
+        echo "- Batch ID: $BATCH_ID"
+        
+        # Run the processing script
         python scripts/process_nanopubs.py
         
-        mkdir -p results logs config
+        echo "✅ Processing completed"
         
+        # Show what was generated
         if [ -d "./results/content" ]; then
           echo "=== CONTENT GENERATION RESULTS ==="
           ls -la ./results/content/
-          find ./results/content -name "*.txt" -type f | head -10
+          echo ""
+          echo "📄 Generated files:"
+          find ./results/content -name "*.txt" -type f | while read file; do
+            echo "   $(basename "$file") ($(wc -c < "$file") bytes)"
+          done
+        else
+          echo "⚠️  No content directory found"
+        fi
+        
+        # Show processing summary if available
+        if [ -f "logs/processing_summary.txt" ]; then
+          echo ""
+          echo "=== PROCESSING SUMMARY ==="
+          head -20 logs/processing_summary.txt
+        fi
+    
+    - name: Verify generation results
+      run: |
+        echo "🔍 Verifying content generation results..."
+        
+        # Check if any content was actually generated
+        CONTENT_COUNT=$(find results/content -name "*.txt" -type f 2>/dev/null | wc -l)
+        echo "📊 Generated content files: $CONTENT_COUNT"
+        
+        if [ "$CONTENT_COUNT" -gt 0 ]; then
+          echo "✅ Content generation successful"
+          
+          # Show brief preview of generated content
+          find results/content -name "*.txt" -type f | head -3 | while read file; do
+            echo ""
+            echo "📄 Preview of $(basename "$file"):"
+            echo "----------------------------------------"
+            head -10 "$file" | grep -v "^#" | grep -v "^=" | head -3
+            echo "..."
+          done
+        else
+          echo "❌ No content files were generated"
+          
+          # Check for error files
+          ERROR_COUNT=$(find results/content -name "*ERROR*" -type f 2>/dev/null | wc -l)
+          if [ "$ERROR_COUNT" -gt 0 ]; then
+            echo "⚠️  Found $ERROR_COUNT error files"
+            find results/content -name "*ERROR*" -type f | while read file; do
+              echo "📄 Error in $(basename "$file"):"
+              head -5 "$file"
+            done
+          fi
         fi
     
     - name: Ensure results structure
       run: |
-        mkdir -p results logs config processing-results/${{ steps.params.outputs.batch_id }}
+        # Create the processing-results directory structure
+        mkdir -p processing-results/${{ steps.params.outputs.batch_id }}
         
+        # Ensure we have a processing summary
         if [ ! -f "logs/processing_summary.txt" ]; then
           echo "SCIENCE LIVE CONTENT GENERATION SUMMARY" > logs/processing_summary.txt
           echo "=======================================" >> logs/processing_summary.txt
@@ -186,6 +307,7 @@ jobs:
           echo "Generated at: $(date -u)" >> logs/processing_summary.txt
         fi
         
+        # Ensure we have batch results
         if [ ! -f "results/batch_results.json" ]; then
           echo "{" > results/batch_results.json
           echo "  \"batch_id\": \"${{ steps.params.outputs.batch_id }}\"," >> results/batch_results.json
@@ -197,7 +319,8 @@ jobs:
           echo "  \"workflow_run_id\": \"${{ github.run_id }}\"," >> results/batch_results.json
           echo "  \"content_generation_enabled\": ${{ steps.params.outputs.content_generation_enabled }}," >> results/batch_results.json
           echo "  \"processing_time\": 0," >> results/batch_results.json
-          echo "  \"status\": \"completed\"" >> results/batch_results.json
+          echo "  \"status\": \"completed\"," >> results/batch_results.json
+          echo "  \"integration_method\": \"nanopub_content_generator\"" >> results/batch_results.json
           echo "}" >> results/batch_results.json
         fi
     
@@ -230,10 +353,20 @@ jobs:
           echo "**Content Generation:** DISABLED" >> $GITHUB_STEP_SUMMARY
         fi
         
+        # Count generated files
+        CONTENT_COUNT=$(find results/content -name "*.txt" -type f 2>/dev/null | wc -l || echo "0")
+        echo "**Generated Files:** $CONTENT_COUNT" >> $GITHUB_STEP_SUMMARY
+        
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### Download Results" >> $GITHUB_STEP_SUMMARY
         echo "- **Artifacts:** Check the artifacts section above" >> $GITHUB_STEP_SUMMARY
         echo "- **Results Branch:** \`results-${{ github.run_id }}\`" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "$CONTENT_COUNT" -gt 0 ]; then
+          echo "- **Status:** ✅ SUCCESS - Content generated successfully" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- **Status:** ⚠️ PARTIAL - Check logs for issues" >> $GITHUB_STEP_SUMMARY
+        fi
     
     - name: Commit results to repository
       if: env.COMMIT_RESULTS_TO_REPO == 'true'
@@ -247,6 +380,7 @@ jobs:
         
         mkdir -p processing-results/${{ steps.params.outputs.batch_id }}
         
+        # Copy all results to the processing-results directory
         if [ -d "results" ]; then
           cp -r results/* processing-results/${{ steps.params.outputs.batch_id }}/ 2>/dev/null || echo "No results to copy"
         fi
@@ -259,6 +393,7 @@ jobs:
           cp -r config/* processing-results/${{ steps.params.outputs.batch_id }}/ 2>/dev/null || echo "No config to copy"
         fi
         
+        # Create README for the results
         echo "# Science Live Content Generation Results" > processing-results/${{ steps.params.outputs.batch_id }}/README.md
         echo "" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         echo "**Generated:** $(date -u)" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
@@ -271,16 +406,36 @@ jobs:
         echo "**Status:** ${{ steps.params.outputs.content_generation_enabled }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         echo "**Content Types:** ${{ steps.params.outputs.content_types }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         echo "**AI Model:** ${{ steps.params.outputs.ai_model }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "**Integration:** nanopub_content_generator.py" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         echo "" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         echo "## Processed Nanopublications" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         echo "${{ steps.params.outputs.nanopub_urls }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         
+        # Count generated files
+        CONTENT_COUNT=$(find processing-results/${{ steps.params.outputs.batch_id }}/content -name "*.txt" -type f 2>/dev/null | wc -l || echo "0")
+        echo "" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "## Results Summary" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "**Generated Files:** $CONTENT_COUNT" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        
+        if [ "$CONTENT_COUNT" -gt 0 ]; then
+          echo "**Status:** ✅ SUCCESS" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        else
+          echo "**Status:** ⚠️ ISSUES DETECTED" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        fi
+        
+        # Commit the results
         git add processing-results/
         
         if ! git diff --cached --quiet; then
-          git commit -m "Add Science Live content generation results for batch ${{ steps.params.outputs.batch_id }}"
+          git commit -m "Add Science Live content generation results for batch ${{ steps.params.outputs.batch_id }}
+
+Generated $CONTENT_COUNT content files using nanopub_content_generator.py integration
+Content types: ${{ steps.params.outputs.content_types }}
+AI model: ${{ steps.params.outputs.ai_model }}
+Workflow run: ${{ github.run_id }}"
+          
           git push origin "$RESULTS_BRANCH"
-          echo "Results committed to branch: $RESULTS_BRANCH"
+          echo "✅ Results committed to branch: $RESULTS_BRANCH"
         else
-          echo "No new results to commit"
+          echo "ℹ️  No new results to commit"
         fi
