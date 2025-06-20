@@ -427,11 +427,7 @@ jobs:
         git add processing-results/
         
         if ! git diff --cached --quiet; then
-          git commit -m "Add Science Live content generation results for batch ${{ steps.params.outputs.batch_id }}
-Generated \$CONTENT_COUNT content files using nanopub_content_generator.py integration
-Content types: ${{ steps.params.outputs.content_types }}
-AI model: ${{ steps.params.outputs.ai_model }}
-Workflow run: ${{ github.run_id }}"
+          git commit -m "Add Science Live content generation results for batch ${{ steps.params.outputs.batch_id }} - Generated content files using nanopub_content_generator.py integration - Content types: ${{ steps.params.outputs.content_types }} - AI model: ${{ steps.params.outputs.ai_model }} - Workflow run: ${{ github.run_id }}"
           
           git push origin "$RESULTS_BRANCH"
           echo "✅ Results committed to branch: $RESULTS_BRANCH"
