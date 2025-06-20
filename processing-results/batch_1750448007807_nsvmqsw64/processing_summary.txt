@@ -1,0 +1,40 @@
+=== SCIENCE LIVE CONTENT GENERATION RESULTS ===
+Generated: 2025-06-20 19:38:07
+Batch ID: batch_1750448007807_nsvmqsw64
+
+=== PROCESSING SUMMARY ===
+📊 Nanopublications: 1
+📝 Selected URLs:
+   1. https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4
+🎯 Content Types: linkedin_post
+🤖 AI Model: llama3:8b
+⚙️  Generation Method: nanopub_content_generator.py integration
+⏱️  Processing Time: 122.28 seconds
+✅ Success Rate: 1/1 content types
+❌ Failed: 0/1 content types
+🎨 Content Generation: ENABLED
+🎯 Uses Actual Nanopub Data: YES
+
+=== GENERATED CONTENT ===
+✅ linkedin_post_batch_1750448007807_nsvmqsw64.txt
+
+=== CONFIGURATION ===
+📝 User Instructions: High-quality standards applied
+📋 Batch Description: Science Live content generation
+
+=== INTEGRATION STATUS ===
+✅ nanopub_content_generator.py: INTEGRATED
+✅ Templates: CONFIGURED
+✅ Processing: REAL DATA USED
+✅ Content Generation: ALL SUCCESSFUL
+
+=== FILES CREATED ===
+📄 results/content/linkedin_post_batch_1750448007807_nsvmqsw64.txt
+
+=== QUALITY ASSURANCE ===
+✅ Uses ACTUAL nanopublication data from selected URLs
+✅ Integrated with professional content generator
+✅ Scientific accuracy verification enabled
+✅ Publication-ready formatting standards applied
+✅ Comprehensive citation protocols implemented
+✅ Multi-format content generation support
