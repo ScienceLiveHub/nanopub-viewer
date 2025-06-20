@@ -428,8 +428,7 @@ jobs:
         
         if ! git diff --cached --quiet; then
           git commit -m "Add Science Live content generation results for batch ${{ steps.params.outputs.batch_id }}
-
-Generated $CONTENT_COUNT content files using nanopub_content_generator.py integration
+Generated \$CONTENT_COUNT content files using nanopub_content_generator.py integration
 Content types: ${{ steps.params.outputs.content_types }}
 AI model: ${{ steps.params.outputs.ai_model }}
 Workflow run: ${{ github.run_id }}"
