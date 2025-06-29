@@ -1,0 +1,27 @@
+{
+  "batch_id": "batch_1751226947934_vxd3hm8f4",
+  "processing_method": "nanopub_content_generator_integration",
+  "total_nanopubs": 1,
+  "selected_nanopub_urls": [
+    "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4"
+  ],
+  "content_types_requested": [
+    "linkedin_post"
+  ],
+  "content_generated": 1,
+  "processing_time": 123.43772864341736,
+  "ai_model": "llama3:8b",
+  "user_instructions": "",
+  "batch_description": "",
+  "generated_files": [
+    "results/content/linkedin_post_batch_1751226947934_vxd3hm8f4.txt"
+  ],
+  "content_generation_enabled": true,
+  "successful_templates": 1,
+  "failed_templates": 0,
+  "quality_mode": "high",
+  "citation_style": "academic",
+  "timestamp": "2025-06-29T20:00:08.964873",
+  "uses_actual_nanopub_data": true,
+  "integration_status": "success"
+}
