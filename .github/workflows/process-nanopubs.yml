@@ -70,7 +70,15 @@ jobs:
           echo "nanopub_count=${{ github.event.client_payload.nanopub_count }}" >> $GITHUB_OUTPUT
           echo "source=${{ github.event.client_payload.source }}" >> $GITHUB_OUTPUT
           echo "content_generation_enabled=${{ github.event.client_payload.content_generation.enabled }}" >> $GITHUB_OUTPUT
-          echo "content_types=${{ join(github.event.client_payload.content_generation.content_types, ',') }}" >> $GITHUB_OUTPUT
+          
+          # FIXED: Handle content_types array properly
+          CONTENT_TYPES="${{ github.event.client_payload.content_generation.content_types }}"
+          # Convert JSON array to comma-separated string if needed
+          if [[ "$CONTENT_TYPES" == "["* ]]; then
+            CONTENT_TYPES=$(echo "$CONTENT_TYPES" | sed 's/\[//g' | sed 's/\]//g' | sed 's/"//g' | sed 's/ //g')
+          fi
+          echo "content_types=$CONTENT_TYPES" >> $GITHUB_OUTPUT
+          
           echo "ai_model=${{ github.event.client_payload.content_generation.ai_model }}" >> $GITHUB_OUTPUT
           echo "user_instructions=${{ github.event.client_payload.content_generation.user_instructions }}" >> $GITHUB_OUTPUT
           echo "batch_description=${{ github.event.client_payload.content_generation.batch_description }}" >> $GITHUB_OUTPUT
@@ -188,11 +196,7 @@ jobs:
         echo "- Method: Python package import"
         echo ""
         echo "🔧 Package verification:"
-        python -c "
-import nanopub_content_generator
-print(f'✅ Package version: {getattr(nanopub_content_generator, '__version__', 'unknown')}')
-print(f'✅ Package location: {nanopub_content_generator.__file__}')
-"
+        python -c 'import nanopub_content_generator; print("✅ Package version:", getattr(nanopub_content_generator, "__version__", "unknown")); print("✅ Package location:", nanopub_content_generator.__file__)'
         
         # Run the package-based orchestration
         echo "📦 Running package-based orchestration..."
