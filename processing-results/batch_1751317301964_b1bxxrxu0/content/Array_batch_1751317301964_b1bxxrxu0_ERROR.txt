@@ -1,0 +1,16 @@
+# ERROR: ARRAY
+
+Content generation failed for Array
+
+Error Details:
+Template 'Array' not found
+
+Batch ID: batch_1751317301964_b1bxxrxu0
+Content Type: Array
+Generated: 2025-06-30T21:03:54.132007
+
+TROUBLESHOOTING:
+- Check that nanopub URLs are accessible
+- Verify AI model is available in Ollama
+- Check network connectivity
+- Review template configuration

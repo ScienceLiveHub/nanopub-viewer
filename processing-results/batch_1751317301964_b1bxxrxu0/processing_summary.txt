@@ -1,0 +1,40 @@
+=== SCIENCE LIVE PACKAGE-BASED ORCHESTRATION RESULTS (FIXED) ===
+Generated: 2025-06-30 21:03:54
+Batch ID: batch_1751317301964_b1bxxrxu0
+
+=== CLEAN ARCHITECTURE SUMMARY ===
+📦 Package: nanopub-content-generator (installed Python package)
+🏗️  Architecture: Clean separation with package-based integration
+🔧 Fix Applied: Proper async/await handling for run_pipeline()
+📊 Nanopublications: 1
+🎯 Content Types: Array
+🤖 AI Model: llama3:8b
+⏱️  Processing Time: 1.56 seconds
+✅ Success Rate: 0/1 content types
+❌ Failed: 1/1 content types
+
+=== GENERATED CONTENT ===
+📄 Array_batch_1751317301964_b1bxxrxu0_ERROR.txt
+
+=== CONFIGURATION ===
+📝 User Instructions: Default high-quality standards
+📋 Batch Description: Science Live package-based generation
+
+=== CLEAN ARCHITECTURE BENEFITS ===
+✅ Package-Based Integration: Clean import and function calls
+✅ No Repository Cloning: Direct Python package installation
+✅ Better Dependency Management: pip handles everything
+✅ Faster Execution: No git operations during runtime
+✅ Version Control: Specific package versions can be pinned
+✅ Standard Python Practices: Uses established packaging conventions
+✅ Proper Async Handling: Fixed coroutine execution
+
+=== PACKAGE DETAILS ===
+Installation: pip install git+https://github.com/ScienceLiveHub/nanopub-content-generator.git
+Import: from nanopub_content_generator import NanopubContentGenerator
+Usage: await generator.run_pipeline(...)  # Note: ASYNC
+Version Management: Can pin to specific tags/commits
+
+Generated files: 1
+Architecture status: NEEDS_ATTENTION
+Package integration: CHECK_INSTALLATION

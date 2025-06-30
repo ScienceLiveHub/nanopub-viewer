@@ -1,0 +1,25 @@
+{
+  "batch_id": "batch_1751317301964_b1bxxrxu0",
+  "processing_method": "python_package_async",
+  "package_name": "nanopub-content-generator",
+  "total_nanopubs": 1,
+  "selected_nanopub_urls": [
+    "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4"
+  ],
+  "content_types_requested": [
+    "Array"
+  ],
+  "content_generated": 1,
+  "processing_time": 1.5570333003997803,
+  "ai_model": "llama3:8b",
+  "user_instructions": "",
+  "batch_description": "",
+  "generated_files": [
+    "results/content/Array_batch_1751317301964_b1bxxrxu0_ERROR.txt"
+  ],
+  "content_generation_enabled": true,
+  "successful_templates": 0,
+  "failed_templates": 1,
+  "timestamp": "2025-06-30T21:03:54.132065",
+  "architecture": "clean_package_based_async_fixed"
+}
