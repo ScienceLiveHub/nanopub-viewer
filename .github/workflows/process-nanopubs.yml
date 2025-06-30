@@ -53,6 +53,10 @@ jobs:
         echo "📦 Installing nanopub-content-generator as Python package..."
         python -m pip install --upgrade pip
         
+        # FIXED: Install missing nanopub dependency first
+        echo "🔧 Installing missing nanopub dependency..."
+        pip install nanopub
+        
         # Install the content generator package directly from GitHub
         pip install git+https://github.com/ScienceLiveHub/nanopub-content-generator.git
         
@@ -71,12 +75,16 @@ jobs:
           echo "source=${{ github.event.client_payload.source }}" >> $GITHUB_OUTPUT
           echo "content_generation_enabled=${{ github.event.client_payload.content_generation.enabled }}" >> $GITHUB_OUTPUT
           
-          # FIXED: Handle content_types array properly
-          CONTENT_TYPES="${{ github.event.client_payload.content_generation.content_types }}"
-          # Convert JSON array to comma-separated string if needed
-          if [[ "$CONTENT_TYPES" == "["* ]]; then
-            CONTENT_TYPES=$(echo "$CONTENT_TYPES" | sed 's/\[//g' | sed 's/\]//g' | sed 's/"//g' | sed 's/ //g')
+          # FIXED: Use the string version of content_types from Netlify function
+          CONTENT_TYPES="${{ github.event.client_payload.content_generation.content_types_string }}"
+          echo "Received content types: $CONTENT_TYPES"
+          
+          # Fallback to default if empty or invalid
+          if [[ -z "$CONTENT_TYPES" ]] || [[ "$CONTENT_TYPES" == "null" ]]; then
+            CONTENT_TYPES="linkedin_post"
+            echo "Using fallback content types: $CONTENT_TYPES"
           fi
+          
           echo "content_types=$CONTENT_TYPES" >> $GITHUB_OUTPUT
           
           echo "ai_model=${{ github.event.client_payload.content_generation.ai_model }}" >> $GITHUB_OUTPUT
@@ -492,7 +500,7 @@ jobs:
         
         if ! git diff --cached --quiet; then
           git commit -m "Add Science Live package-based content generation results for batch ${{ steps.params.outputs.batch_id }}"
-
+          
           git push origin "$RESULTS_BRANCH"
           echo "✅ Package-based results committed to branch: $RESULTS_BRANCH"
         else

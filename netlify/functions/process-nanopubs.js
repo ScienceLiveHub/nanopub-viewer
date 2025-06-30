@@ -89,6 +89,14 @@ exports.handler = async (event, context) => {
             };
         }
 
+        // FIXED: Ensure content_types is properly converted to comma-separated string
+        let contentTypesString = 'linkedin_post'; // Default fallback
+        if (contentGeneration.content_types && Array.isArray(contentGeneration.content_types)) {
+            contentTypesString = contentGeneration.content_types.join(',');
+            console.log(`🎯 Content types array: ${JSON.stringify(contentGeneration.content_types)}`);
+            console.log(`🎯 Content types string: ${contentTypesString}`);
+        }
+
         // Prepare the dispatch payload - CRITICAL: Keep under 10 top-level properties
         const payload = {
             event_type: 'process-nanopubs-content-gen',  // Make sure this matches workflow
@@ -101,10 +109,10 @@ exports.handler = async (event, context) => {
                 timestamp: new Date().toISOString(),
                 source: requestData.source || 'science-live-frontend',
                 
-                // Content generation settings
+                // Content generation settings - FIXED: Use string instead of array
                 content_generation: {
                     enabled: contentGeneration.enabled || false,
-                    content_types: contentGeneration.content_types || ['linkedin_post'],
+                    content_types_string: contentTypesString,  // FIXED: Send as string
                     ai_model: contentGeneration.ai_model || 'llama3:8b',
                     user_instructions: contentGeneration.user_instructions || '',
                     batch_description: contentGeneration.batch_description || ''
@@ -115,6 +123,7 @@ exports.handler = async (event, context) => {
         console.log('🚀 Triggering GitHub Action...');
         console.log(`📡 Event Type: ${payload.event_type}`);
         console.log(`📊 Payload size: ${JSON.stringify(payload).length} bytes`);
+        console.log(`🎯 Content types in payload: ${payload.client_payload.content_generation.content_types_string}`);
 
         // Trigger GitHub Action
         const response = await fetch('https://api.github.com/repos/ScienceLiveHub/nanopub-viewer/dispatches', {
@@ -186,6 +195,7 @@ exports.handler = async (event, context) => {
                     content_generation: {
                         enabled: contentGeneration.enabled || false,
                         content_types: contentGeneration.content_types || [],
+                        content_types_string: contentTypesString,  // FIXED: Include string version
                         ai_model: contentGeneration.ai_model || 'llama3:8b'
                     },
                     status_url: workflowRunId ? 
@@ -236,7 +246,8 @@ exports.handler = async (event, context) => {
                     debug_info: {
                         event_type: payload.event_type,
                         payload_size: JSON.stringify(payload).length,
-                        repository: 'ScienceLiveHub/nanopub-viewer'
+                        repository: 'ScienceLiveHub/nanopub-viewer',
+                        content_types_sent: contentTypesString
                     }
                 })
             };
