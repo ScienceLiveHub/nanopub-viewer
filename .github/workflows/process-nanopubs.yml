@@ -182,8 +182,8 @@ jobs:
         echo "🚀 Starting package-based content generation..."
         
         # Verify the orchestration script exists
-        if [ ! -f "scripts/orchestrate_processing.py" ]; then
-          echo "❌ Error: scripts/orchestrate_processing.py not found"
+        if [ ! -f "scripts/process_nanopubs.py" ]; then
+          echo "❌ Error: scripts/process_nanopubs.py not found"
           echo "This should be the package-based orchestration script"
           exit 1
         fi
@@ -200,7 +200,7 @@ jobs:
         
         # Run the package-based orchestration
         echo "📦 Running package-based orchestration..."
-        python scripts/orchestrate_processing.py
+        python scripts/process_nanopubs.py
         
         echo "✅ Package-based generation completed"
         
