@@ -2,11 +2,13 @@
 """
 Science Live Orchestrator
 This script uses the nanopub-content-generator as an installed Python package to generate outputs from one or more nanopublications.
+It handles async/await for the nanopub-content-generator package.
 """
 
 import os
 import json
 import time
+import asyncio
 from datetime import datetime
 from pathlib import Path
 
@@ -49,8 +51,8 @@ def create_content_configs(nanopub_urls, content_types, ai_model, user_instructi
     
     return configs
 
-def run_content_generation(configs):
-    """Run content generation using the installed package"""
+async def run_content_generation_async(configs):
+    """Run content generation using the installed package - ASYNC VERSION"""
     try:
         # Import the content generator package
         from nanopub_content_generator import NanopubContentGenerator
@@ -79,8 +81,8 @@ def run_content_generation(configs):
         print(f"\n🎯 Processing {i}/{len(configs)}: {content_type}")
         
         try:
-            # Run the content generation pipeline
-            result = generator.run_pipeline(
+            # FIXED: Properly await the async method
+            result = await generator.run_pipeline(
                 nanopub_uris=config['nanopub_uris'],
                 template_name=config['template'],
                 ollama_model=config['model'],
@@ -111,11 +113,17 @@ def run_content_generation(configs):
         
         except Exception as e:
             print(f"❌ Error processing {content_type}: {e}")
+            import traceback
+            traceback.print_exc()
             error_file = create_error_file(content_type, batch_id, str(e))
             if error_file:
                 generated_files.append(error_file)
     
     return generated_files
+
+def run_content_generation(configs):
+    """Synchronous wrapper for async content generation"""
+    return asyncio.run(run_content_generation_async(configs))
 
 def save_generated_content(content, content_type, batch_id, citations="", metadata=None):
     """Save generated content to a file"""
@@ -187,10 +195,11 @@ def create_error_file(content_type, batch_id, error_message):
         print(f"❌ Could not create error file: {e}")
         return None
 
-def main():
-    """Main orchestration function using package-based approach"""
-    print("=== SCIENCE LIVE PACKAGE-BASED ORCHESTRATOR ===")
+async def async_main():
+    """Async main function using package-based approach"""
+    print("=== SCIENCE LIVE PACKAGE-BASED ORCHESTRATOR (FIXED) ===")
     print("🎯 Clean architecture using nanopub-content-generator as Python package")
+    print("🔧 FIXED: Proper async/await handling")
     start_time = time.time()
     
     # Get environment variables
@@ -232,8 +241,8 @@ def main():
             nanopub_urls, content_types, ai_model, user_instructions, batch_id, batch_description
         )
         
-        # Run content generation using the package
-        generated_files = run_content_generation(configs)
+        # Run content generation using the package (ASYNC)
+        generated_files = await run_content_generation_async(configs)
     else:
         print("ℹ️  Content generation disabled")
     
@@ -242,7 +251,7 @@ def main():
     
     summary = {
         'batch_id': batch_id,
-        'processing_method': 'python_package',
+        'processing_method': 'python_package_async',
         'package_name': 'nanopub-content-generator',
         'total_nanopubs': len(nanopub_urls),
         'selected_nanopub_urls': nanopub_urls,
@@ -257,7 +266,7 @@ def main():
         'successful_templates': len([f for f in generated_files if 'ERROR' not in f]),
         'failed_templates': len([f for f in generated_files if 'ERROR' in f]),
         'timestamp': datetime.now().isoformat(),
-        'architecture': 'clean_package_based'
+        'architecture': 'clean_package_based_async_fixed'
     }
     
     # Save results
@@ -268,13 +277,14 @@ def main():
     success_count = len([f for f in generated_files if 'ERROR' not in f])
     error_count = len([f for f in generated_files if 'ERROR' in f])
     
-    report = f"""=== SCIENCE LIVE PACKAGE-BASED ORCHESTRATION RESULTS ===
+    report = f"""=== SCIENCE LIVE PACKAGE-BASED ORCHESTRATION RESULTS (FIXED) ===
 Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 Batch ID: {batch_id}
 
 === CLEAN ARCHITECTURE SUMMARY ===
 📦 Package: nanopub-content-generator (installed Python package)
 🏗️  Architecture: Clean separation with package-based integration
+🔧 Fix Applied: Proper async/await handling for run_pipeline()
 📊 Nanopublications: {len(nanopub_urls)}
 🎯 Content Types: {', '.join(content_types)}
 🤖 AI Model: {ai_model}
@@ -296,11 +306,12 @@ Batch ID: {batch_id}
 ✅ Faster Execution: No git operations during runtime
 ✅ Version Control: Specific package versions can be pinned
 ✅ Standard Python Practices: Uses established packaging conventions
+✅ Proper Async Handling: Fixed coroutine execution
 
 === PACKAGE DETAILS ===
 Installation: pip install git+https://github.com/ScienceLiveHub/nanopub-content-generator.git
 Import: from nanopub_content_generator import NanopubContentGenerator
-Usage: generator.run_pipeline(...)
+Usage: await generator.run_pipeline(...)  # Note: ASYNC
 Version Management: Can pin to specific tags/commits
 
 Generated files: {len(generated_files)}
@@ -317,6 +328,7 @@ Package integration: {'WORKING' if success_count > 0 else 'CHECK_INSTALLATION'}
         print("=== ✅ PACKAGE-BASED ORCHESTRATION SUCCESSFUL ===")
         print(f"Successfully generated {success_count} content types using Python package")
         print("🏗️  Clean architecture: GUI repository + Python package integration")
+        print("🔧 Fix applied: Proper async/await handling")
         
         # Show content previews
         for file_path in [f for f in generated_files if 'ERROR' not in f][:2]:
@@ -351,12 +363,16 @@ Package integration: {'WORKING' if success_count > 0 else 'CHECK_INSTALLATION'}
         print("\nInstallation command:")
         print("pip install git+https://github.com/ScienceLiveHub/nanopub-content-generator.git")
 
-if __name__ == "__main__":
+def main():
+    """Main synchronous entry point"""
     try:
-        main()
+        asyncio.run(async_main())
     except KeyboardInterrupt:
         print("\n🛑 Process interrupted by user")
     except Exception as e:
         print(f"\n❌ Error: {e}")
         import traceback
         traceback.print_exc()
+
+if __name__ == "__main__":
+    main()
