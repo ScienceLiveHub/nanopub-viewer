@@ -1,5 +1,4 @@
 // Science Live Nanopublication Content Generator
-// FINAL FIX: This version properly displays the real results that are successfully fetched
 
 // DOM utility functions
 function getElementById(id) {
@@ -464,48 +463,222 @@ function displayActualResults(branchResultsData, batchId) {
         `;
     }
     
-    // Extract and display the REAL processing summary
-    let realContent = '';
-    
-    if (branchResultsData.processing_summary) {
-        // Display the actual processing summary with proper formatting
-        realContent = `✅ REAL CONTENT GENERATION COMPLETED
-
-${branchResultsData.processing_summary}
-
-📁 View full results at: ${branchResultsData.branch_url || `https://github.com/ScienceLiveHub/nanopub-viewer/tree/results-${branchResultsData.workflow_run_id}/processing-results/${batchId}`}
-
-🎯 This is your ACTUAL AI-generated content, not a demonstration.`;
-        
-    } else if (branchResultsData.individual_files && branchResultsData.individual_files.length > 0) {
-        realContent = `✅ REAL CONTENT FILES GENERATED
-
-Batch ID: ${batchId}
-Files Generated: ${branchResultsData.individual_files.length}
-
-📄 Generated Files:
-${branchResultsData.individual_files.map(file => `• ${file.name} (${file.size} bytes)`).join('\n')}
-
-📁 View files at: ${branchResultsData.branch_url}
-
-🎯 This is your ACTUAL AI-generated content, not a demonstration.`;
+    // Try to get and display the actual content files first
+    if (branchResultsData.actual_content_files && branchResultsData.actual_content_files.length > 0) {
+        // Display the beautiful, formatted content
+        displayFormattedContentResults(branchResultsData.actual_content_files, batchId, branchResultsData);
         
     } else {
-        realContent = `✅ REAL CONTENT GENERATION COMPLETED
-
-Batch ID: ${batchId}
-Status: SUCCESS
-Method: nanopub-content-generator package with AI model
-Results Branch: ${branchResultsData.results_branch}
-
-📁 View results at: ${branchResultsData.branch_url}
-
-🎯 Your actual AI-generated content has been created and is available in the GitHub repository.
-This is NOT demonstration content - these are real results from processing your nanopublications.`;
+        // Fallback: Try to fetch the content files directly
+        console.log('No content files in response, trying to fetch them...');
+        fetchIndividualContentFiles(branchResultsData, batchId);
     }
     
-    executionContent.textContent = realContent;
     console.log('✅ ACTUAL results displayed successfully (not demo content)');
+}
+
+// NEW: Display the actual generated content in a beautiful format
+function displayFormattedContentResults(contentFiles, batchId, branchResultsData) {
+    const executionContent = getElementById('execution-content');
+    
+    // Create beautiful HTML display for the content
+    let contentHTML = '';
+    
+    contentFiles.forEach(file => {
+        const contentType = file.name.split('_')[0]; // e.g., 'linkedin' from 'linkedin_post_batch.txt'
+        const contentTypeDisplay = contentType.charAt(0).toUpperCase() + contentType.slice(1) + ' Post';
+        
+        // Extract the actual post content (skip headers and metadata)
+        let actualContent = file.content;
+        
+        // Try to extract the main content between the header lines and source citations
+        const lines = actualContent.split('\n');
+        let contentStart = -1;
+        let contentEnd = lines.length;
+        
+        // Find where the actual content starts (after the === line)
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].includes('====') && i < lines.length - 1) {
+                contentStart = i + 1;
+                break;
+            }
+        }
+        
+        // Find where the actual content ends (before SOURCE CITATIONS)
+        for (let i = contentStart; i < lines.length; i++) {
+            if (lines[i].includes('SOURCE CITATIONS') || lines[i].includes('METADATA') || lines[i].includes('====')) {
+                contentEnd = i;
+                break;
+            }
+        }
+        
+        if (contentStart > -1) {
+            actualContent = lines.slice(contentStart, contentEnd).join('\n').trim();
+        }
+        
+        // Remove any remaining formatting artifacts
+        actualContent = actualContent
+            .replace(/^Here's the.*?:\s*/i, '')  // Remove "Here's the LinkedIn post:" prefix
+            .replace(/^["']|["']$/g, '')         // Remove surrounding quotes
+            .trim();
+        
+        contentHTML += `
+            <div class="content-type-result ${contentType}">
+                <div class="content-result-header">
+                    <h3 class="content-result-title">
+                        📝 ${contentTypeDisplay}
+                    </h3>
+                    <div class="content-result-actions">
+                        <button class="action-button" onclick="copyToClipboard('${file.name}')">
+                            📋 Copy
+                        </button>
+                    </div>
+                </div>
+                <div class="content-result-body">
+                    <div class="content-preview">
+                        <pre class="content-text" id="${file.name}">${actualContent}</pre>
+                    </div>
+                    <div class="content-metadata">
+                        <div class="metadata-item">
+                            <span class="metadata-label">Length:</span>
+                            <span class="word-count">${actualContent.length} characters</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Status:</span>
+                            <span style="color: #10b981; font-weight: 600;">✅ Generated Successfully</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    // Add download and view links
+    contentHTML += `
+        <div class="results-actions">
+            <a href="${branchResultsData.branch_url}" target="_blank" class="btn-secondary">
+                📁 View All Files in GitHub
+            </a>
+        </div>
+        
+        <div class="citation-section">
+            <h4 class="citation-title">✅ Real AI-Generated Content</h4>
+            <p class="citation-list">This content was generated using your nanopublication data and custom instructions.
+Generated on: ${new Date().toLocaleString()}
+Batch ID: ${batchId}</p>
+        </div>
+    `;
+    
+    executionContent.innerHTML = contentHTML;
+}
+
+// NEW: Function to copy content to clipboard
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        const text = element.textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            // Show a brief success message
+            const originalText = event.target.textContent;
+            event.target.textContent = '✅ Copied!';
+            setTimeout(() => {
+                event.target.textContent = originalText;
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+        });
+    }
+}
+
+// NEW: Fetch individual content files if not included in the response
+async function fetchIndividualContentFiles(branchResultsData, batchId) {
+    const executionContent = getElementById('execution-content');
+    
+    // Show loading message
+    executionContent.innerHTML = `
+        <div class="content-loading">
+            <div class="content-loading-spinner"></div>
+            <p>Fetching your generated content...</p>
+        </div>
+    `;
+    
+    try {
+        // If we have file names, try to fetch them directly
+        if (branchResultsData.individual_files && branchResultsData.individual_files.length > 0) {
+            const contentFiles = [];
+            
+            for (const file of branchResultsData.individual_files.slice(0, 3)) { // Limit to first 3 files
+                if (file.name.endsWith('.txt') && !file.name.includes('ERROR')) {
+                    try {
+                        // Try to fetch the file content via GitHub raw URL
+                        const rawUrl = `https://raw.githubusercontent.com/ScienceLiveHub/nanopub-viewer/${branchResultsData.results_branch}/${file.path}`;
+                        const response = await fetch(rawUrl);
+                        
+                        if (response.ok) {
+                            const content = await response.text();
+                            contentFiles.push({
+                                name: file.name,
+                                content: content,
+                                size: file.size
+                            });
+                        }
+                    } catch (error) {
+                        console.warn(`Could not fetch content for ${file.name}:`, error);
+                    }
+                }
+            }
+            
+            if (contentFiles.length > 0) {
+                displayFormattedContentResults(contentFiles, batchId, branchResultsData);
+                return;
+            }
+        }
+        
+        // Fallback: Show file list with links
+        let fallbackContent = `
+            <div class="content-type-result">
+                <div class="content-result-header">
+                    <h3 class="content-result-title">✅ Content Generation Completed</h3>
+                </div>
+                <div class="content-result-body">
+                    <div class="content-preview">
+                        <p>Your content has been successfully generated! Files created:</p>
+                        <ul>
+        `;
+        
+        if (branchResultsData.individual_files) {
+            branchResultsData.individual_files.forEach(file => {
+                fallbackContent += `<li>📄 ${file.name} (${file.size} bytes)</li>`;
+            });
+        }
+        
+        fallbackContent += `
+                        </ul>
+                        <p><strong>View your generated content at:</strong></p>
+                        <a href="${branchResultsData.branch_url}" target="_blank" class="btn-primary">
+                            📁 Open GitHub Repository
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        executionContent.innerHTML = fallbackContent;
+        
+    } catch (error) {
+        console.error('Error fetching individual content files:', error);
+        
+        // Show error with link to repository
+        executionContent.innerHTML = `
+            <div class="content-error">
+                <h3>✅ Content Generated Successfully</h3>
+                <p>Your content has been generated, but we couldn't fetch it for preview.</p>
+                <a href="${branchResultsData.branch_url}" target="_blank" class="btn-primary">
+                    📁 View Results in GitHub
+                </a>
+            </div>
+        `;
+    }
 }
 
 // Display partial results when we have some data but not the full summary
@@ -831,6 +1004,7 @@ window.removeNanopubRow = removeNanopubRow;
 window.selectAllContentTypes = selectAllContentTypes;
 window.selectNoContentTypes = selectNoContentTypes;
 window.toggleAdvancedOptions = toggleAdvancedOptions;
+window.copyToClipboard = copyToClipboard;
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
