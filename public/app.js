@@ -79,13 +79,11 @@ function getSelectedContentTypes() {
 }
 
 function getSelectedAIModel() {
-    const selected = document.querySelector('input[name="ai_model"]:checked');
-    return selected ? selected.value : 'llama3:8b';
+    return 'llama3:8b'; // Always use the best model
 }
 
 function getUserInstructions() {
-    const textarea = getElementById('user-instructions');
-    return textarea ? textarea.value.trim() : '';
+    return 'Use the content of the nanopublications and do not invent facts'; // Set user instructions
 }
 
 function getBatchDescription() {

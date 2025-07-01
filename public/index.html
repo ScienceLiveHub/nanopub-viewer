@@ -3,263 +3,435 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Science Live - Nanopublication Content Generator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Science Live - Transform Research into Content</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-    <div class="page-wrapper">
-        <!-- Header Section -->
-        <header class="site-header">
-            <div class="header-content">
-                <div class="logo-section">
-                    <img src="./logo.png" alt="Science Live Logo" class="site-logo">
-                    <div class="brand-text">
-                        <h1 class="site-title">Science Live</h1>
-                        <p class="site-tagline">Nanopublication Content Generator</p>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <img src="./logo.png" alt="Science Live Logo">
+            </div>
+            <h1 class="title">Science Live</h1>
+            <p class="subtitle">Transform your research into engaging content</p>
+        </div>
+
+        <!-- Main Interface -->
+        <div class="main-card">
+            <!-- Progress Indicator -->
+            <div class="progress-container">
+                <div class="progress-steps">
+                    <div class="progress-line">
+                        <div class="progress-line-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="step active" data-step="1">1</div>
+                    <div class="step" data-step="2">2</div>
+                    <div class="step" data-step="3">3</div>
+                </div>
+                <div class="step-labels">
+                    <div class="step-label active">Add Research</div>
+                    <div class="step-label">Choose Format</div>
+                    <div class="step-label">Generate</div>
+                </div>
+            </div>
+
+            <!-- Step 1: Research Input -->
+            <div class="section active" id="step-1">
+                <h2 class="section-title">Add Your Research</h2>
+                <p class="section-description">Paste the URLs of your nanopublications below</p>
+                
+                <div class="research-input">
+                    <label class="input-label">Nanopublication URLs</label>
+                    <div id="nanopub-inputs">
+                        <!-- Dynamic inputs will be added here -->
+                    </div>
+                    <button type="button" class="add-source-btn" onclick="addNanopubInput()">
+                        + Add another source
+                    </button>
+                </div>
+
+                <div class="examples">
+                    <div class="examples-label">Try these examples:</div>
+                    <div class="example-links">
+                        <a href="#" class="example-link" onclick="loadExample('hpc')">HPC Research</a>
+                        <a href="#" class="example-link" onclick="loadExample('weather')">Weather Data</a>
+                        <a href="#" class="example-link" onclick="loadExample('citation')">Citation Study</a>
                     </div>
                 </div>
             </div>
-        </header>
 
-        <!-- Main Content -->
-        <main class="main-container">
-            <div class="content-wrapper">
+            <!-- Step 2: Format Selection -->
+            <div class="section" id="step-2">
+                <h2 class="section-title">Choose Content Format</h2>
+                <p class="section-description">What type of content would you like to create?</p>
                 
-                <!-- Introduction Section -->
-                <section class="intro-section">
-                    <h2 class="page-title">Transform Research into Accessible Content</h2>
-                    <p class="page-description">
-                        Convert structured nanopublications into publication-ready content formats. 
-                        Our platform transforms complex research findings into accessible, engaging content 
-                        optimized for multiple channels and audiences.
-                    </p>
-                </section>
-
-                <!-- Input Form -->
-                <section class="input-form-section">
-                    <div class="form-container">
-                        
-                        <!-- Nanopub URLs Input -->
-                        <div class="input-group">
-                            <label class="field-label">Nanopublication Sources</label>
-                            <div id="nanopub-inputs-container">
-                                <div class="input-row" data-index="0">
-                                    <input 
-                                        type="url" 
-                                        id="nanopub-url-0" 
-                                        class="url-input"
-                                        placeholder="Enter nanopublication URI (e.g., https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4)"
-                                        value=""
-                                    >
-                                    <button class="btn-secondary btn-add" type="button" title="Add another nanopublication">
-                                        Add
-                                    </button>
-                                </div>
+                <div class="format-grid">
+                    <label class="format-option">
+                        <input type="radio" name="format" value="social" checked>
+                        <div class="format-card">
+                            <div class="format-header">
+                                <span class="format-icon">📱</span>
+                                <span class="format-title">Social Media Post</span>
                             </div>
+                            <p class="format-description">Perfect for LinkedIn, Twitter, and other platforms. Engaging and shareable.</p>
                         </div>
-
-                        <!-- Content Types -->
-                        <div class="input-group">
-                            <label class="field-label">Content Generation Options</label>
-                            <p class="field-description">
-                                Select the content formats you require for your nanopublications
-                            </p>
-                            
-                            <div class="content-types-grid">
-                                <label class="content-type-option">
-                                    <input type="checkbox" name="content_types" value="linkedin_post" checked>
-                                    <div class="option-content">
-                                        <div class="option-header">
-                                            <h3 class="option-title">LinkedIn Article</h3>
-                                        </div>
-                                        <p class="option-description">
-                                            Business networking content optimized for LinkedIn with strategic messaging 
-                                            and engagement-driven structure.
-                                        </p>
-                                    </div>
-                                </label>
-                                
-                                <label class="content-type-option">
-                                    <input type="checkbox" name="content_types" value="bluesky_post">
-                                    <div class="option-content">
-                                        <div class="option-header">
-                                            <h3 class="option-title">Social Media Post</h3>
-                                        </div>
-                                        <p class="option-description">
-                                            Concise, engaging posts under 300 characters designed for effective 
-                                            science communication across platforms.
-                                        </p>
-                                    </div>
-                                </label>
-                                
-                                <label class="content-type-option">
-                                    <input type="checkbox" name="content_types" value="scientific_paper">
-                                    <div class="option-content">
-                                        <div class="option-header">
-                                            <h3 class="option-title">Academic Paper</h3>
-                                        </div>
-                                        <p class="option-description">
-                                            Comprehensive academic format with Introduction, Methods, Results, 
-                                            Discussion, and properly formatted citations.
-                                        </p>
-                                    </div>
-                                </label>
-                                
-                                <label class="content-type-option">
-                                    <input type="checkbox" name="content_types" value="opinion_paper">
-                                    <div class="option-content">
-                                        <div class="option-header">
-                                            <h3 class="option-title">Editorial Article</h3>
-                                        </div>
-                                        <p class="option-description">
-                                            Evidence-based editorial content with clear argumentation supported 
-                                            by comprehensive research analysis.
-                                        </p>
-                                    </div>
-                                </label>
+                    </label>
+                    
+                    <label class="format-option">
+                        <input type="radio" name="format" value="summary">
+                        <div class="format-card">
+                            <div class="format-header">
+                                <span class="format-icon">📄</span>
+                                <span class="format-title">Executive Summary</span>
                             </div>
-
-                            <div class="selection-controls">
-                                <button type="button" class="btn-link" onclick="selectAllContentTypes()">
-                                    Select All
-                                </button>
-                                <button type="button" class="btn-link" onclick="selectNoContentTypes()">
-                                    Clear Selection
-                                </button>
+                            <p class="format-description">Professional summary for reports, presentations, and business use.</p>
+                        </div>
+                    </label>
+                    
+                    <label class="format-option">
+                        <input type="radio" name="format" value="article">
+                        <div class="format-card">
+                            <div class="format-header">
+                                <span class="format-icon">📰</span>
+                                <span class="format-title">Blog Article</span>
                             </div>
+                            <p class="format-description">Detailed article perfect for blogs, newsletters, and publications.</p>
                         </div>
-
-                        <!-- AI Model Selection -->
-                        <div class="input-group">
-                            <label class="field-label">AI Model Configuration</label>
-                            <p class="field-description">
-                                Choose the AI model that best fits your content generation requirements
-                            </p>
-                            
-                            <div class="model-options">
-                                <label class="model-option">
-                                    <input type="radio" name="ai_model" value="llama3:8b" checked>
-                                    <div class="model-info">
-                                        <div class="model-name">Llama 3 8B</div>
-                                        <div class="model-description">Optimal balance of quality and speed (Recommended)</div>
-                                    </div>
-                                </label>
-                                
-                                <label class="model-option">
-                                    <input type="radio" name="ai_model" value="llama2:7b">
-                                    <div class="model-info">
-                                        <div class="model-name">Llama 2 7B</div>
-                                        <div class="model-description">Faster processing with reliable output quality</div>
-                                    </div>
-                                </label>
-                                
-                                <label class="model-option">
-                                    <input type="radio" name="ai_model" value="llama3:70b">
-                                    <div class="model-info">
-                                        <div class="model-name">Llama 3 70B</div>
-                                        <div class="model-description">Maximum quality output with extended processing time</div>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Advanced Options -->
-                        <details class="advanced-options">
-                            <summary class="advanced-summary">
-                                <span>Advanced Configuration</span>
-                            </summary>
-                            <div class="advanced-content">
-                                <div class="field-group">
-                                    <label for="user-instructions" class="field-label">
-                                        Custom Generation Instructions
-                                    </label>
-                                    <p class="field-hint">Provide specific guidance for content generation</p>
-                                    <textarea 
-                                        id="user-instructions" 
-                                        name="user_instructions" 
-                                        class="textarea-input"
-                                        placeholder="Specify tone, focus areas, target audience, or formatting preferences..."
-                                        rows="4"
-                                        maxlength="500">
-                                    </textarea>
-                                    <div class="character-count">
-                                        <span id="char-count">0</span>/500 characters
-                                    </div>
-                                </div>
-                                
-                                <div class="field-group">
-                                    <label for="batch-description" class="field-label">
-                                        Batch Description
-                                    </label>
-                                    <p class="field-hint">Document this processing batch for your records</p>
-                                    <input 
-                                        type="text" 
-                                        id="batch-description" 
-                                        name="batch_description" 
-                                        class="text-input"
-                                        placeholder="e.g., Q1 research communications, climate studies analysis"
-                                        maxlength="200">
-                                </div>
-                            </div>
-                        </details>
-
-                        <!-- Execute Button -->
-                        <div class="action-section">
-                            <button class="btn-primary execute-button" type="button">
-                                Generate Content
-                            </button>
-                        </div>
-
-                    </div>
-                </section>
-
-                <!-- Examples Section -->
-                <section class="examples-section">
-                    <h3 class="section-title">Example Nanopublications</h3>
-                    <div class="example-links">
-                        <a class="example-link" data-url="https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4">
-                            HPC Interconnect Research
-                        </a>
-                        <a class="example-link" data-url="https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4">
-                            Weather Data Analysis
-                        </a>
-                        <a class="example-link" data-url="https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q">
-                            Research Citation Study
-                        </a>
-                    </div>
-                </section>
-
-                <!-- Status and Results -->
-                <div id="error-container"></div>
-                <div id="status-container"></div>
-                
-                <section id="execution-results" class="results-section" style="display: none;">
-                    <div class="results-header">
-                        <h3>Content Generation Results</h3>
-                        <div class="results-summary" id="results-summary"></div>
-                    </div>
-                    <div class="results-content">
-                        <div id="execution-content" class="content-display">
-                            <!-- Content will be dynamically inserted here -->
-                        </div>
-                        <div class="results-actions">
-                            <button class="btn-secondary" onclick="downloadAllContent()">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="7,10 12,15 17,10"></polyline>
-                                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                                </svg>
-                                Download All Content
-                            </button>
-                        </div>
-                    </div>
-                </section>
-
+                    </label>
+                </div>
             </div>
-        </main>
+
+            <!-- Step 3: Generate -->
+            <div class="section" id="step-3">
+                <h2 class="section-title">Generate Content</h2>
+                <p class="section-description">Ready to transform your research into engaging content?</p>
+                
+                <div class="status-container" id="status-container"></div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+                    <button class="btn btn-primary" id="generate-btn" onclick="generateContent()">
+                        Generate Content
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="action-buttons" id="nav-buttons" style="display: none;">
+                <button class="btn btn-secondary" onclick="previousStep()">← Previous</button>
+                <button class="btn btn-primary" onclick="nextStep()">Continue →</button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="results-section">
+            <div class="results-header">
+                <div class="success-icon">✓</div>
+                <h2>Content Generated!</h2>
+                <p>Your research has been transformed into engaging content</p>
+            </div>
+            
+            <div class="content-preview" id="generated-content">
+                <!-- Generated content will appear here -->
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="generateNew()">🔄 Start Over</button>
+                <button class="btn btn-primary" onclick="copyContent()">📋 Copy Content</button>
+            </div>
+        </div>
     </div>
 
-    <script src="./app.js"></script>
+    <script>
+        let currentStep = 1;
+        let nanopubCounter = 0;
+        
+        // Example nanopub URLs
+        const examples = {
+            hpc: 'https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4',
+            weather: 'https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4',
+            citation: 'https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q'
+        };
+
+        // Sample content for demo
+        const sampleContent = {
+            social: `🔬 Exciting research reveals new insights into high-performance computing!
+
+Recent nanopublication data shows significant improvements in processing speeds and efficiency. This could revolutionize how we approach large-scale scientific computing.
+
+Key findings:
+✅ 40% improvement in data throughput
+✅ Better resource utilization  
+✅ Reduced processing times
+
+#Research #HPC #Science #Innovation`,
+
+            summary: `Executive Summary: High-Performance Computing Research
+
+Recent nanopublication research demonstrates significant advances in computing efficiency and performance optimization. Key findings include substantial improvements in data throughput, resource utilization, and processing speeds.
+
+These developments have important implications for scientific computing applications and could drive innovation across multiple research domains. Organizations should consider these findings when planning computational infrastructure upgrades.`,
+
+            article: `Breakthrough in High-Performance Computing: New Research Reveals Significant Performance Gains
+
+Introduction
+
+Recent research published in nanopublication format has revealed significant advances in high-performance computing (HPC) capabilities. The findings suggest substantial improvements in computational efficiency that could transform scientific research methodologies.
+
+Key Findings
+
+The research demonstrates remarkable improvements in several critical areas:
+
+Data Throughput Enhancement
+Studies show up to 40% improvement in data processing speeds, enabling faster analysis of large datasets commonly used in scientific research.
+
+Resource Optimization
+Better utilization of computing resources leads to more efficient operations and reduced computational costs for research institutions.
+
+Processing Speed Improvements
+Significant reductions in processing times enable researchers to iterate faster and explore more hypotheses within existing time constraints.
+
+Implications
+
+These advances in HPC technology have far-reaching implications for the scientific community. Faster processing capabilities enable more complex simulations, larger dataset analysis, and accelerated research timelines.
+
+Conclusion
+
+The demonstrated improvements in HPC performance represent a significant step forward for computational science. Research institutions should evaluate these advances when planning future computational infrastructure investments.`
+        };
+
+        function updateProgress() {
+            const progressFill = document.getElementById('progress-fill');
+            const steps = document.querySelectorAll('.step');
+            const labels = document.querySelectorAll('.step-label');
+            
+            // Update progress bar
+            const progressPercent = ((currentStep - 1) / 2) * 100;
+            progressFill.style.width = progressPercent + '%';
+            
+            // Update step indicators
+            steps.forEach((step, index) => {
+                const stepNumber = index + 1;
+                step.classList.remove('active', 'completed');
+                
+                if (stepNumber < currentStep) {
+                    step.classList.add('completed');
+                } else if (stepNumber === currentStep) {
+                    step.classList.add('active');
+                }
+            });
+            
+            // Update labels
+            labels.forEach((label, index) => {
+                label.classList.remove('active');
+                if (index + 1 === currentStep) {
+                    label.classList.add('active');
+                }
+            });
+        }
+
+        function showStep(step) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show current section
+            document.getElementById(`step-${step}`).classList.add('active');
+            
+            // Update navigation
+            const navButtons = document.getElementById('nav-buttons');
+            const stepNavigation = document.querySelector('#step-3 .action-buttons');
+            
+            if (step === 3) {
+                navButtons.style.display = 'none';
+                if (stepNavigation) stepNavigation.style.display = 'flex';
+            } else {
+                navButtons.style.display = 'flex';
+                if (stepNavigation) stepNavigation.style.display = 'none';
+            }
+            
+            updateProgress();
+        }
+
+        function nextStep() {
+            if (currentStep < 3) {
+                if (validateCurrentStep()) {
+                    currentStep++;
+                    showStep(currentStep);
+                }
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        }
+
+        function goBack() {
+            previousStep();
+        }
+
+        function validateCurrentStep() {
+            if (currentStep === 1) {
+                const urls = getAllNanopubUrls();
+                if (urls.length === 0) {
+                    showStatus('Please add at least one nanopublication URL', 'error');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function createNanopubInput(index = nanopubCounter, value = '') {
+            return `
+                <input 
+                    type="url" 
+                    class="nanopub-input" 
+                    placeholder="https://w3id.org/np/..."
+                    value="${value}"
+                    data-index="${index}"
+                    oninput="validateNanopubInput(this)"
+                >
+            `;
+        }
+
+        function addNanopubInput(value = '') {
+            const container = document.getElementById('nanopub-inputs');
+            const newInput = createNanopubInput(nanopubCounter, value);
+            container.insertAdjacentHTML('beforeend', newInput);
+            
+            if (!value) {
+                const input = container.querySelector(`input[data-index="${nanopubCounter}"]`);
+                input.focus();
+            }
+            
+            nanopubCounter++;
+        }
+
+        function validateNanopubInput(input) {
+            const value = input.value.trim();
+            
+            if (!value) {
+                input.classList.remove('valid');
+            } else if (value.startsWith('http') && value.includes('w3id.org/np/')) {
+                input.classList.add('valid');
+            } else {
+                input.classList.remove('valid');
+            }
+        }
+
+        function getAllNanopubUrls() {
+            const inputs = document.querySelectorAll('.nanopub-input');
+            const urls = [];
+            
+            inputs.forEach(input => {
+                const value = input.value.trim();
+                if (value && value.startsWith('http')) {
+                    urls.push(value);
+                }
+            });
+            
+            return urls;
+        }
+
+        function loadExample(type) {
+            // Clear existing inputs
+            document.getElementById('nanopub-inputs').innerHTML = '';
+            nanopubCounter = 0;
+            
+            // Add example
+            addNanopubInput(examples[type]);
+            
+            // Move to next step
+            nextStep();
+        }
+
+        function showStatus(message, type = 'loading') {
+            const container = document.getElementById('status-container');
+            const spinner = type === 'loading' ? '<span class="spinner"></span>' : '';
+            container.innerHTML = `<div class="status-message status-${type}">${spinner}${message}</div>`;
+        }
+
+        function clearStatus() {
+            document.getElementById('status-container').innerHTML = '';
+        }
+
+        async function generateContent() {
+            const urls = getAllNanopubUrls();
+            const format = document.querySelector('input[name="format"]:checked').value;
+            
+            if (urls.length === 0) {
+                showStatus('Please add at least one nanopublication URL', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('generate-btn');
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+            
+            showStatus(`Analyzing ${urls.length} research source${urls.length > 1 ? 's' : ''} and generating content...`);
+
+            try {
+                // Simulate processing time
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                // Show results
+                showResults(format, urls.length);
+                
+            } catch (error) {
+                showStatus('Sorry, there was an error. Please try again.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Generate Content';
+            }
+        }
+
+        function showResults(format, sourceCount) {
+            clearStatus();
+            
+            // Show generated content
+            const content = sampleContent[format];
+            document.getElementById('generated-content').textContent = content;
+            
+            // Show results section
+            document.getElementById('results-section').style.display = 'block';
+            
+            // Scroll to results
+            document.getElementById('results-section').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        }
+
+        function copyContent() {
+            const content = document.getElementById('generated-content').textContent;
+            navigator.clipboard.writeText(content).then(() => {
+                showStatus('Content copied to clipboard!', 'success');
+                setTimeout(clearStatus, 2000);
+            });
+        }
+
+        function generateNew() {
+            // Reset everything
+            currentStep = 1;
+            document.getElementById('results-section').style.display = 'none';
+            document.getElementById('nanopub-inputs').innerHTML = '';
+            nanopubCounter = 0;
+            addNanopubInput();
+            showStep(1);
+            clearStatus();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            addNanopubInput();
+            showStep(1);
+        });
+    </script>
 </body>
 </html>
