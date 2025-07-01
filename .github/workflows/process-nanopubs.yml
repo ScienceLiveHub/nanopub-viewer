@@ -1,5 +1,5 @@
 # .github/workflows/process-nanopubs.yml
-name: Science Live Content Generation (Package-Based Architecture)
+name: Science Live Content Generation (Simple Fix)
 
 on:
   repository_dispatch:
@@ -29,12 +29,12 @@ env:
   COMMIT_RESULTS_TO_REPO: 'true'
 
 jobs:
-  package-based-content-generation:
+  simple-fixed-content-generation:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     
     steps:
-    - name: Checkout GUI repository
+    - name: Checkout repository
       uses: actions/checkout@v4
       
     - name: Set up Python
@@ -48,23 +48,21 @@ jobs:
         git config --global user.email "content-generator@sciencelive.com"
         git config --global user.name "Science Live Content Generator"
     
-    - name: Install nanopub-content-generator package
+    - name: Install dependencies and nanopub-content-generator package
       run: |
-        echo "📦 Installing nanopub-content-generator as Python package..."
+        echo "📦 Installing Python dependencies..."
         python -m pip install --upgrade pip
         
-        # FIXED: Install missing nanopub dependency first
-        echo "🔧 Installing missing nanopub dependency..."
-        pip install nanopub
+        # Install from requirements.txt if it exists
+        if [ -f "requirements.txt" ]; then
+          echo "📋 Installing from requirements.txt..."
+          pip install -r requirements.txt
+        fi
         
-        # Install the content generator package directly from GitHub
+        # Install the nanopub-content-generator package
+        echo "🔧 Installing nanopub-content-generator package..."
         pip install git+https://github.com/ScienceLiveHub/nanopub-content-generator.git
         
-        # Verify installation
-        python -c "import nanopub_content_generator; print('✅ Package installed successfully')"
-        
-        echo "✅ nanopub-content-generator package ready"
-    
     - name: Extract processing parameters
       id: params
       run: |
@@ -75,16 +73,11 @@ jobs:
           echo "source=${{ github.event.client_payload.source }}" >> $GITHUB_OUTPUT
           echo "content_generation_enabled=${{ github.event.client_payload.content_generation.enabled }}" >> $GITHUB_OUTPUT
           
-          # FIXED: Use the string version of content_types from Netlify function
+          # Extract content types properly
           CONTENT_TYPES="${{ github.event.client_payload.content_generation.content_types_string }}"
-          echo "Received content types: $CONTENT_TYPES"
-          
-          # Fallback to default if empty or invalid
           if [[ -z "$CONTENT_TYPES" ]] || [[ "$CONTENT_TYPES" == "null" ]]; then
             CONTENT_TYPES="linkedin_post"
-            echo "Using fallback content types: $CONTENT_TYPES"
           fi
-          
           echo "content_types=$CONTENT_TYPES" >> $GITHUB_OUTPUT
           
           echo "ai_model=${{ github.event.client_payload.content_generation.ai_model }}" >> $GITHUB_OUTPUT
@@ -102,13 +95,10 @@ jobs:
           echo "batch_description=Manual workflow execution" >> $GITHUB_OUTPUT
         fi
     
-    - name: Display package-based architecture information
+    - name: Display simple architecture information
       run: |
-        echo "=== SCIENCE LIVE PACKAGE-BASED CONTENT GENERATION ==="
-        echo "🏗️  Architecture: Clean package-based integration"
+        echo "=== SCIENCE LIVE CONTENT GENERATION ==="
         echo "📦 Content Engine: nanopub-content-generator (Python package)"
-        echo "🖥️  GUI Repository: nanopub-viewer (this repo)"
-        echo "🔗 Integration: Python package import + function calls"
         echo ""
         echo "📊 Processing Details:"
         echo "Timestamp: $(date -u)"
@@ -126,15 +116,6 @@ jobs:
           echo "Content Generation: DISABLED"
         fi
         
-        echo ""
-        echo "🎯 Package-Based Benefits:"
-        echo "✅ No repository cloning during runtime"
-        echo "✅ Standard Python package management"
-        echo "✅ Faster execution (no git operations)"
-        echo "✅ Better dependency resolution"
-        echo "✅ Version pinning capabilities"
-        echo "========================================================="
-    
     - name: Setup AI environment
       run: |
         echo "🤖 Setting up AI environment for content generation..."
@@ -175,7 +156,7 @@ jobs:
         ollama list
         echo "✅ AI environment ready"
     
-    - name: Run package-based content generation
+    - name: Run simple fixed content generation
       env:
         NANOPUB_URLS: ${{ steps.params.outputs.nanopub_urls }}
         NANOPUB_COUNT: ${{ steps.params.outputs.nanopub_count }}
@@ -187,35 +168,33 @@ jobs:
         USER_INSTRUCTIONS: ${{ steps.params.outputs.user_instructions }}
         BATCH_DESCRIPTION: ${{ steps.params.outputs.batch_description }}
       run: |
-        echo "🚀 Starting package-based content generation..."
+        echo "🚀 Starting simple fixed content generation..."
         
-        # Verify the orchestration script exists
-        if [ ! -f "scripts/process_nanopubs.py" ]; then
-          echo "❌ Error: scripts/process_nanopubs.py not found"
-          echo "This should be the package-based orchestration script"
-          exit 1
-        fi
-        
-        echo "📊 Package-based processing parameters:"
+        echo "📊 Processing parameters:"
         echo "- URLs: $NANOPUB_URLS"
         echo "- Content types: $CONTENT_TYPES"
         echo "- AI model: $AI_MODEL"
         echo "- Batch ID: $BATCH_ID"
-        echo "- Method: Python package import"
-        echo ""
-        echo "🔧 Package verification:"
-        python -c 'import nanopub_content_generator; print("✅ Package version:", getattr(nanopub_content_generator, "__version__", "unknown")); print("✅ Package location:", nanopub_content_generator.__file__)'
+        echo "- Method: Direct package import with async fix"
         
-        # Run the package-based orchestration
-        echo "📦 Running package-based orchestration..."
+        # Verify orchestrator script exists
+        if [ ! -f "scripts/process_nanopubs.py" ]; then
+          echo "❌ Error: scripts/process_nanopubs.py not found"
+          exit 1
+        fi
+        
+        echo "✅ Orchestrator script found"
+        
+        # Run the fixed orchestration (same as your local setup)
+        echo "📦 Running fixed orchestration..."
         python scripts/process_nanopubs.py
         
-        echo "✅ Package-based generation completed"
+        echo "✅ Fixed orchestration completed"
         
         # Show results
         if [ -d "./results/content" ]; then
           echo ""
-          echo "=== PACKAGE-BASED GENERATION RESULTS ==="
+          echo "=== SIMPLE FIXED GENERATION RESULTS ==="
           ls -la ./results/content/
           echo ""
           echo "📄 Generated files:"
@@ -230,139 +209,47 @@ jobs:
         # Show processing summary
         if [ -f "logs/processing_summary.txt" ]; then
           echo ""
-          echo "=== PACKAGE-BASED PROCESSING SUMMARY ==="
-          head -25 logs/processing_summary.txt
+          echo "=== SIMPLE FIXED PROCESSING SUMMARY ==="
+          head -30 logs/processing_summary.txt
         fi
     
-    - name: Verify package-based results
+    - name: Verify simple fixed results
       run: |
-        echo "🔍 Verifying package-based content generation..."
+        echo "🔍 Verifying simple fixed content generation..."
         
         # Count generated files
         CONTENT_COUNT=$(find results/content -name "*.txt" -type f 2>/dev/null | wc -l)
-        ERROR_COUNT=$(find results/content -name "*ERROR*" -type f 2>/dev/null | wc -l)
-        SUCCESS_COUNT=$((CONTENT_COUNT - ERROR_COUNT))
+        SUCCESS_COUNT=$(find results/content -name "*.txt" -type f ! -name "*ERROR*" 2>/dev/null | wc -l)
+        ERROR_COUNT=$((CONTENT_COUNT - SUCCESS_COUNT))
         
-        echo "📊 Package-Based Results:"
+        echo "📊 Simple Fixed Results:"
         echo "   Total files: $CONTENT_COUNT"
         echo "   Successful: $SUCCESS_COUNT"
         echo "   Errors: $ERROR_COUNT"
-        echo "   Method: Python package (nanopub-content-generator)"
+        echo "   Method: Direct package import (same as local)"
         
         if [ "$SUCCESS_COUNT" -gt 0 ]; then
-          echo "✅ Package-based generation successful"
+          echo "✅ Simple fixed generation successful"
           
-          # Show brief preview of successful content
-          find results/content -name "*.txt" -type f ! -name "*ERROR*" | head -2 | while read file; do
+          # Show content preview
+          find results/content -name "*.txt" -type f ! -name "*ERROR*" | head -1 | while read file; do
             echo ""
             echo "📄 Preview of $(basename "$file"):"
             echo "----------------------------------------"
-            # Skip headers and show actual content
-            tail -n +10 "$file" | head -3 | grep -v "^=" | grep -v "^#" || head -3 "$file"
+            # Show actual content (skip headers until we find the real content)
+            awk '/^=/{found=1; next} found && NF>0 {print; if(++count>=3) exit}' "$file"
             echo "..."
-          done
-        elif [ "$ERROR_COUNT" -gt 0 ]; then
-          echo "⚠️  Package-based generation completed with errors"
-          
-          # Show error details
-          find results/content -name "*ERROR*" -type f | head -2 | while read file; do
-            echo ""
-            echo "❌ Error in $(basename "$file"):"
-            head -5 "$file" | tail -3
           done
         else
           echo "❌ No content files were generated"
-          echo "Check package installation and dependencies"
-        fi
-        
-        # Verify clean architecture
-        echo ""
-        echo "🏗️  Architecture Verification:"
-        if python -c "import nanopub_content_generator" 2>/dev/null; then
-          echo "✅ Python package integration working"
-        else
-          echo "❌ Python package integration failed"
-        fi
-        
-        if [ ! -d "temp/nanopub-content-generator" ]; then
-          echo "✅ No repository cloning (clean package-based approach)"
-        else
-          echo "⚠️  Repository directory found (should not exist in package-based approach)"
+          echo "Check package installation and async handling"
         fi
     
-    - name: Create final results structure
-      run: |
-        # Ensure we have all required result files
-        mkdir -p processing-results/${{ steps.params.outputs.batch_id }}
-        
-        # Create package-based summary if missing
-        if [ ! -f "logs/processing_summary.txt" ]; then
-          echo "SCIENCE LIVE PACKAGE-BASED CONTENT GENERATION SUMMARY" > logs/processing_summary.txt
-          echo "======================================================" >> logs/processing_summary.txt
-          echo "Architecture: Package-Based Integration (Clean)" >> logs/processing_summary.txt
-          echo "Content Engine: nanopub-content-generator (Python package)" >> logs/processing_summary.txt
-          echo "GUI Repository: nanopub-viewer (orchestration only)" >> logs/processing_summary.txt
-          echo "Integration Method: pip install + Python import" >> logs/processing_summary.txt
-          echo "" >> logs/processing_summary.txt
-          echo "Batch ID: ${{ steps.params.outputs.batch_id }}" >> logs/processing_summary.txt
-          echo "Timestamp: $(date -u)" >> logs/processing_summary.txt
-          echo "Nanopublications: ${{ steps.params.outputs.nanopub_count }}" >> logs/processing_summary.txt
-          echo "Content Types: ${{ steps.params.outputs.content_types }}" >> logs/processing_summary.txt
-          echo "AI Model: ${{ steps.params.outputs.ai_model }}" >> logs/processing_summary.txt
-          echo "Source: ${{ steps.params.outputs.source }}" >> logs/processing_summary.txt
-          echo "Workflow Run: ${{ github.run_id }}" >> logs/processing_summary.txt
-          echo "" >> logs/processing_summary.txt
-          echo "PACKAGE-BASED GENERATION COMPLETED" >> logs/processing_summary.txt
-          echo "Status: SUCCESS" >> logs/processing_summary.txt
-          echo "Method: Python package integration" >> logs/processing_summary.txt
-          echo "Content Generation: ${{ steps.params.outputs.content_generation_enabled }}" >> logs/processing_summary.txt
-          echo "" >> logs/processing_summary.txt
-          echo "CLEAN ARCHITECTURE BENEFITS:" >> logs/processing_summary.txt
-          echo "✅ No repository cloning during execution" >> logs/processing_summary.txt
-          echo "✅ Standard Python package management with pip" >> logs/processing_summary.txt
-          echo "✅ Faster execution (no git operations)" >> logs/processing_summary.txt
-          echo "✅ Better dependency resolution and version control" >> logs/processing_summary.txt
-          echo "✅ Clean separation: GUI (orchestration) + Package (content generation)" >> logs/processing_summary.txt
-          echo "" >> logs/processing_summary.txt
-          echo "PACKAGE INSTALLATION:" >> logs/processing_summary.txt
-          echo "Command: pip install git+https://github.com/ScienceLiveHub/nanopub-content-generator.git" >> logs/processing_summary.txt
-          echo "Import: from nanopub_content_generator import NanopubContentGenerator" >> logs/processing_summary.txt
-          echo "" >> logs/processing_summary.txt
-          echo "NANOPUBLICATION SOURCES:" >> logs/processing_summary.txt
-          echo "${{ steps.params.outputs.nanopub_urls }}" >> logs/processing_summary.txt
-        fi
-        
-        # Ensure batch results exist
-        if [ ! -f "results/batch_results.json" ]; then
-          CONTENT_COUNT=$(find results/content -name "*.txt" -type f 2>/dev/null | wc -l || echo "0")
-          SUCCESS_COUNT=$(find results/content -name "*.txt" -type f ! -name "*ERROR*" 2>/dev/null | wc -l || echo "0")
-          
-          echo "{" > results/batch_results.json
-          echo "  \"batch_id\": \"${{ steps.params.outputs.batch_id }}\"," >> results/batch_results.json
-          echo "  \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"," >> results/batch_results.json
-          echo "  \"architecture\": \"package_based_clean\"," >> results/batch_results.json
-          echo "  \"gui_repository\": \"nanopub-viewer\"," >> results/batch_results.json
-          echo "  \"content_engine\": \"nanopub-content-generator\"," >> results/batch_results.json
-          echo "  \"integration_method\": \"python_package\"," >> results/batch_results.json
-          echo "  \"package_installation\": \"pip install git+https://github.com/ScienceLiveHub/nanopub-content-generator.git\"," >> results/batch_results.json
-          echo "  \"nanopub_count\": ${{ steps.params.outputs.nanopub_count }}," >> results/batch_results.json
-          echo "  \"content_types\": \"${{ steps.params.outputs.content_types }}\"," >> results/batch_results.json
-          echo "  \"ai_model\": \"${{ steps.params.outputs.ai_model }}\"," >> results/batch_results.json
-          echo "  \"source\": \"${{ steps.params.outputs.source }}\"," >> results/batch_results.json
-          echo "  \"workflow_run_id\": \"${{ github.run_id }}\"," >> results/batch_results.json
-          echo "  \"content_generation_enabled\": ${{ steps.params.outputs.content_generation_enabled }}," >> results/batch_results.json
-          echo "  \"files_generated\": $CONTENT_COUNT," >> results/batch_results.json
-          echo "  \"successful_generations\": $SUCCESS_COUNT," >> results/batch_results.json
-          echo "  \"processing_method\": \"package_based\"," >> results/batch_results.json
-          echo "  \"status\": \"completed\"" >> results/batch_results.json
-          echo "}" >> results/batch_results.json
-        fi
-    
-    - name: Upload package-based artifacts
+    - name: Upload simple fixed artifacts
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: science-live-package-results-${{ steps.params.outputs.batch_id }}
+        name: science-live-simple-results-${{ steps.params.outputs.batch_id }}
         path: |
           results/**/*
           logs/**/*
@@ -375,65 +262,46 @@ jobs:
       run: |
         CONTENT_COUNT=$(find results/content -name "*.txt" -type f 2>/dev/null | wc -l || echo "0")
         SUCCESS_COUNT=$(find results/content -name "*.txt" -type f ! -name "*ERROR*" 2>/dev/null | wc -l || echo "0")
-        ERROR_COUNT=$((CONTENT_COUNT - SUCCESS_COUNT))
         
-        echo "## Science Live Package-Based Content Generation" >> $GITHUB_STEP_SUMMARY
+        echo "## Science Live Simple Fixed Content Generation" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 🏗️ Clean Package-Based Architecture" >> $GITHUB_STEP_SUMMARY
-        echo "- **GUI Repository**: nanopub-viewer (this repo) - Orchestration only" >> $GITHUB_STEP_SUMMARY
-        echo "- **Content Engine**: nanopub-content-generator - Python package" >> $GITHUB_STEP_SUMMARY
-        echo "- **Integration Method**: \`pip install\` + Python import" >> $GITHUB_STEP_SUMMARY
-        echo "- **Installation**: \`pip install git+https://github.com/ScienceLiveHub/nanopub-content-generator.git\`" >> $GITHUB_STEP_SUMMARY
+        echo "### 🔧 Simple Architecture (Fixed)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Method**: Direct package import (same as your local setup)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Fix Applied**: Proper async handling with asyncio.run()" >> $GITHUB_STEP_SUMMARY
+        echo "- **Package**: nanopub-content-generator (installed via pip)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Architecture**: Environment variables → Orchestrator → Package" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 📊 Processing Details" >> $GITHUB_STEP_SUMMARY
         echo "**Batch ID:** \`${{ steps.params.outputs.batch_id }}\`" >> $GITHUB_STEP_SUMMARY
-        echo "**Nanopublications Processed:** ${{ steps.params.outputs.nanopub_count }}" >> $GITHUB_STEP_SUMMARY
-        echo "**Workflow Run:** [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
-        
-        if [ "${{ steps.params.outputs.content_generation_enabled }}" = "true" ]; then
-          echo "**Content Generation:** ENABLED" >> $GITHUB_STEP_SUMMARY
-          echo "**Content Types:** ${{ steps.params.outputs.content_types }}" >> $GITHUB_STEP_SUMMARY
-          echo "**AI Model:** ${{ steps.params.outputs.ai_model }}" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "**Content Generation:** DISABLED" >> $GITHUB_STEP_SUMMARY
-        fi
-        
-        echo "**Generated Files:** $CONTENT_COUNT (Success: $SUCCESS_COUNT, Errors: $ERROR_COUNT)" >> $GITHUB_STEP_SUMMARY
-        
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 📥 Download Results" >> $GITHUB_STEP_SUMMARY
-        echo "- **Artifacts:** Check the artifacts section above" >> $GITHUB_STEP_SUMMARY
-        echo "- **Results Branch:** \`results-${{ github.run_id }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Nanopublications:** ${{ steps.params.outputs.nanopub_count }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Content Types:** ${{ steps.params.outputs.content_types }}" >> $GITHUB_STEP_SUMMARY
+        echo "**AI Model:** ${{ steps.params.outputs.ai_model }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Generated Files:** $CONTENT_COUNT (Success: $SUCCESS_COUNT)" >> $GITHUB_STEP_SUMMARY
         
         if [ "$SUCCESS_COUNT" -gt 0 ]; then
-          echo "- **Status:** ✅ SUCCESS - Package-based generation successful" >> $GITHUB_STEP_SUMMARY
-        elif [ "$ERROR_COUNT" -gt 0 ]; then
-          echo "- **Status:** ⚠️ PARTIAL - Some content generated with errors" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ✅ SUCCESS - Simple fixed approach working" >> $GITHUB_STEP_SUMMARY
         else
-          echo "- **Status:** ❌ FAILED - No content was generated" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ❌ FAILED - Check async handling and dependencies" >> $GITHUB_STEP_SUMMARY
         fi
         
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### ✅ Package-Based Architecture Benefits" >> $GITHUB_STEP_SUMMARY
-        echo "- **No Repository Cloning**: Faster execution without git operations" >> $GITHUB_STEP_SUMMARY
-        echo "- **Standard Python Practices**: Uses pip and standard package management" >> $GITHUB_STEP_SUMMARY
-        echo "- **Better Dependency Management**: Pip handles all dependencies automatically" >> $GITHUB_STEP_SUMMARY
-        echo "- **Version Control**: Can pin to specific package versions or tags" >> $GITHUB_STEP_SUMMARY
-        echo "- **Clean Separation**: GUI handles orchestration, package handles content generation" >> $GITHUB_STEP_SUMMARY
+        echo "### 🔧 Simple Architecture Benefits" >> $GITHUB_STEP_SUMMARY
+        echo "- **Same as Local**: Identical to your working local setup" >> $GITHUB_STEP_SUMMARY
+        echo "- **Direct Import**: No CLI complexity or config files" >> $GITHUB_STEP_SUMMARY
+        echo "- **Proper Async**: Fixed asyncio.run() for event loop management" >> $GITHUB_STEP_SUMMARY
+        echo "- **Environment Variables**: Uses same env vars as local" >> $GITHUB_STEP_SUMMARY
+        echo "- **Better Debugging**: Clear error messages and async handling" >> $GITHUB_STEP_SUMMARY
     
-    - name: Commit package-based results to repository
+    - name: Commit simple fixed results to repository
       if: env.COMMIT_RESULTS_TO_REPO == 'true'
       run: |
         RESULTS_BRANCH="results-${{ github.run_id }}"
-        
-        git config --local user.email "content-generator@sciencelive.com"
-        git config --local user.name "Science Live Content Generator"
         
         git checkout -b "$RESULTS_BRANCH"
         
         mkdir -p processing-results/${{ steps.params.outputs.batch_id }}
         
-        # Copy all results to the processing-results directory
+        # Copy all results
         if [ -d "results" ]; then
           cp -r results/* processing-results/${{ steps.params.outputs.batch_id }}/ 2>/dev/null || echo "No results to copy"
         fi
@@ -446,39 +314,28 @@ jobs:
           cp -r config/* processing-results/${{ steps.params.outputs.batch_id }}/ 2>/dev/null || echo "No config to copy"
         fi
         
-        # Create comprehensive README
+        # Create simple README
         CONTENT_COUNT=$(find processing-results/${{ steps.params.outputs.batch_id }}/content -name "*.txt" -type f 2>/dev/null | wc -l || echo "0")
         SUCCESS_COUNT=$(find processing-results/${{ steps.params.outputs.batch_id }}/content -name "*.txt" -type f ! -name "*ERROR*" 2>/dev/null | wc -l || echo "0")
         
-        echo "# Science Live Package-Based Content Generation Results" > processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "# Science Live Simple Fixed Content Generation Results" > processing-results/${{ steps.params.outputs.batch_id }}/README.md
         echo "" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "## 🏗️ Clean Package-Based Architecture" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "## 🔧 Simple Fixed Architecture" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         echo "" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "This batch was processed using the clean package-based architecture:" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "This batch was processed using the simple fixed architecture:" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         echo "" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "- **GUI Repository**: [nanopub-viewer](https://github.com/ScienceLiveHub/nanopub-viewer) - User interface and orchestration" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "- **Content Engine**: [nanopub-content-generator](https://github.com/ScienceLiveHub/nanopub-content-generator) - Python package for content generation" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "- **Integration**: \`pip install git+https://github.com/ScienceLiveHub/nanopub-content-generator.git\`" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "- **Usage**: \`from nanopub_content_generator import NanopubContentGenerator\`" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "- **Method**: Direct package import (same as local setup)" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "- **Fix Applied**: Proper async handling with asyncio.run()" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "- **Package**: nanopub-content-generator (pip install)" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "- **Architecture**: Environment variables → Orchestrator → Package" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         echo "" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         echo "## 📊 Processing Details" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         echo "**Generated:** $(date -u)" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         echo "**Batch ID:** ${{ steps.params.outputs.batch_id }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         echo "**Nanopublications:** ${{ steps.params.outputs.nanopub_count }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "**Source:** ${{ steps.params.outputs.source }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "**Workflow Run:** [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "## 🎯 Content Generation" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "**Status:** ${{ steps.params.outputs.content_generation_enabled }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         echo "**Content Types:** ${{ steps.params.outputs.content_types }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         echo "**AI Model:** ${{ steps.params.outputs.ai_model }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "**Method:** Python package integration" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "## 📈 Results Summary" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "**Generated Files:** $CONTENT_COUNT" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "**Successful:** $SUCCESS_COUNT" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "**Errors:** $((CONTENT_COUNT - SUCCESS_COUNT))" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
+        echo "**Generated Files:** $CONTENT_COUNT (Success: $SUCCESS_COUNT)" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         
         if [ "$SUCCESS_COUNT" -gt 0 ]; then
           echo "**Status:** ✅ SUCCESS" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
@@ -486,23 +343,13 @@ jobs:
           echo "**Status:** ❌ FAILED" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
         fi
         
-        echo "" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "## 📦 Package Integration Details" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-          echo "**Installation Command:** \`pip install git+https://github.com/ScienceLiveHub/nanopub-content-generator.git\`" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "**Import Statement:** \`from nanopub_content_generator import NanopubContentGenerator\`" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "**Function Call:** \`generator.run_pipeline(...)\`" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "## 📝 Processed Nanopublications" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        echo "${{ steps.params.outputs.nanopub_urls }}" >> processing-results/${{ steps.params.outputs.batch_id }}/README.md
-        
         # Commit the results
         git add processing-results/
         
         if ! git diff --cached --quiet; then
-          git commit -m "Add Science Live package-based content generation results for batch ${{ steps.params.outputs.batch_id }}"
-          
+          git commit -m "Add Science Live simple fixed content generation results for batch ${{ steps.params.outputs.batch_id }}"
           git push origin "$RESULTS_BRANCH"
-          echo "✅ Package-based results committed to branch: $RESULTS_BRANCH"
+          echo "✅ Simple fixed results committed to branch: $RESULTS_BRANCH"
         else
           echo "ℹ️  No new results to commit"
         fi
