@@ -1,0 +1,25 @@
+{
+  "batch_id": "batch_1751373917494_fogssswav",
+  "processing_method": "python_package_async_fixed",
+  "package_name": "nanopub-content-generator",
+  "total_nanopubs": 1,
+  "selected_nanopub_urls": [
+    "https://w3id.org/np/RAJzZ8p6LBoe9D8ViX9DP2IIqZdxxfh-cQkBW3nfsYCzM"
+  ],
+  "content_types_requested": [
+    "linkedin_post"
+  ],
+  "content_generated": 1,
+  "processing_time": 102.54010677337646,
+  "ai_model": "llama3:8b",
+  "user_instructions": "Focus on the historical context and make it engaging for a general audience interested in demographics. Emphasize how population changes reflect major historical events. Use a slightly informal but professional tone, and include relevant hashtags about demographics, history, and Germany.",
+  "batch_description": "",
+  "generated_files": [
+    "results/content/linkedin_post_batch_1751373917494_fogssswav.txt"
+  ],
+  "content_generation_enabled": true,
+  "successful_templates": 1,
+  "failed_templates": 0,
+  "timestamp": "2025-07-01T12:48:59.632411",
+  "architecture": "simple_package_based_async_fixed"
+}
