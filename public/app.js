@@ -1,5 +1,4 @@
 // Science Live Nanopublication Content Generator
-// Refined, modern implementation with sophisticated UX
 
 // DOM utility functions
 function getElementById(id) {
@@ -92,22 +91,6 @@ function getUserInstructions() {
 function getBatchDescription() {
     const input = getElementById('batch-description');
     return input ? input.value.trim() : '';
-}
-
-// Advanced Options Toggle
-function toggleAdvancedOptions() {
-    const content = getElementById('advanced-content');
-    const arrow = getElementById('advanced-arrow');
-    
-    if (content.style.display === 'none' || content.style.display === '') {
-        content.style.display = 'block';
-        arrow.classList.add('rotated');
-        arrow.textContent = '▲';
-    } else {
-        content.style.display = 'none';
-        arrow.classList.remove('rotated');
-        arrow.textContent = '▼';
-    }
 }
 
 // Character count for user instructions
@@ -225,33 +208,6 @@ function validateContentSelection() {
     return true;
 }
 
-// Configuration file generation for nanopub_content_generator.py
-function generateConfigFile(nanopubUrls, selectedContentTypes, selectedModel, userInstructions, batchDescription) {
-    const batchId = generateBatchId();
-    
-    const config = {
-        nanopub_uris: nanopubUrls,
-        template: selectedContentTypes[0], // Primary template
-        model: selectedModel,
-        description: batchDescription || `Science Live content generation - ${new Date().toISOString()}`,
-        user_instructions: userInstructions || "Create engaging, accessible content that maintains scientific accuracy while being compelling for the target audience.",
-        notes: `Generated configuration for ${selectedContentTypes.length} content types: ${selectedContentTypes.join(', ')}. Processing ${nanopubUrls.length} nanopublications.`,
-        batch_id: batchId,
-        processing_options: {
-            content_types: selectedContentTypes,
-            ai_model: selectedModel,
-            quality_mode: "high",
-            citation_style: "academic",
-            output_format: "publication_ready"
-        }
-    };
-    
-    return {
-        config: config,
-        filename: `science_live_config_${batchId}.json`
-    };
-}
-
 // Main execution function
 async function executeNanopubs() {
     const nanopubUrls = getAllNanopubUrls();
@@ -292,9 +248,6 @@ async function executeNanopubs() {
     showLoading(`Generating ${selectedContentTypes.length} content type(s) from ${nanopubUrls.length} nanopublication(s)...`);
 
     try {
-        // Generate configuration for nanopub_content_generator.py
-        const configData = generateConfigFile(nanopubUrls, selectedContentTypes, selectedModel, userInstructions, batchDescription);
-        
         // Call the Netlify function to trigger GitHub Action
         const response = await fetch('/.netlify/functions/process-nanopubs', {
             method: 'POST',
@@ -316,10 +269,7 @@ async function executeNanopubs() {
                     batch_description: batchDescription,
                     quality_mode: 'high',
                     citation_style: 'academic'
-                },
-                // Include the generated config for the new processor
-                config_file: configData.config,
-                config_filename: configData.filename
+                }
             })
         });
 
@@ -398,8 +348,32 @@ async function pollForResults(batchId, workflowRunId = null) {
                 if (resultData.status === 'completed') {
                     clearInterval(pollInterval);
                     showStatus('Content generation completed successfully', 'success');
-                    displayActualResults(resultData, batchId);
+                    
+                    // CRITICAL FIX: Call the correct function to display real results
+                    console.log('Fetching comprehensive content generation results...', {
+                        batchId: batchId,
+                        workflowRunId: resultData.workflow_run?.id
+                    });
+                    
+                    fetchBranchResults(batchId, resultData.workflow_run?.id)
+                        .then(branchResultsData => {
+                            console.log('Branch results response:', branchResultsData);
+                            
+                            if (branchResultsData && (branchResultsData.processing_summary || branchResultsData.individual_files?.length > 0)) {
+                                console.log('Retrieved content generation results');
+                                // FIXED: Display the actual real results instead of demo
+                                displayActualResults(branchResultsData, batchId);
+                            } else {
+                                console.log('No processing summary available, but branch exists');
+                                displayPartialResults(branchResultsData, batchId);
+                            }
+                        })
+                        .catch(error => {
+                            console.warn('Could not fetch branch results:', error);
+                            displayResultsSummary(resultData, batchId);
+                        });
                     return;
+                    
                 } else if (resultData.status === 'failed') {
                     clearInterval(pollInterval);
                     showError('Content generation failed - check GitHub Actions for details');
@@ -427,7 +401,6 @@ async function pollForResults(batchId, workflowRunId = null) {
                 // Show formatted results instead of raw text
                 const executionResults = getElementById('execution-results');
                 const executionContent = getElementById('execution-content');
-                const resultsSummary = getElementById('results-summary');
                 
                 if (executionResults && executionContent) {
                     executionResults.style.display = 'block';
@@ -457,8 +430,10 @@ async function pollForResults(batchId, workflowRunId = null) {
     }, 12000);
 }
 
-// Display actual results from GitHub processing
-function displayActualResults(resultData, batchId) {
+// FIXED: Display actual results from the branch (the real results)
+function displayActualResults(branchResultsData, batchId) {
+    console.log('🎨 Displaying ACTUAL results (not demo)');
+    
     const executionResults = getElementById('execution-results');
     const executionContent = getElementById('execution-content');
     const resultsSummary = getElementById('results-summary');
@@ -467,44 +442,14 @@ function displayActualResults(resultData, batchId) {
     
     executionResults.style.display = 'block';
     
-    console.log('Fetching comprehensive content generation results...', {
-        batchId: batchId,
-        workflowRunId: resultData.workflow_run?.id
-    });
-    
-    fetchBranchResults(batchId, resultData.workflow_run?.id)
-        .then(branchResultsData => {
-            console.log('Branch results response:', branchResultsData);
-            
-            if (branchResultsData && branchResultsData.processing_summary) {
-                console.log('Retrieved content generation results');
-                displayFormattedResults(branchResultsData, batchId);
-            } else {
-                console.log('No processing summary available');
-                displayResultsSummary(resultData, batchId, executionContent);
-            }
-        })
-        .catch(error => {
-            console.warn('Could not fetch branch results:', error);
-            displayResultsSummary(resultData, batchId, executionContent);
-        });
-}
-
-// New function to display formatted results
-function displayFormattedResults(branchResultsData, batchId) {
-    const executionContent = getElementById('execution-content');
-    const resultsSummary = getElementById('results-summary');
-    
-    // Extract content types from the results
-    const selectedContentTypes = getSelectedContentTypes();
-    const selectedModel = getSelectedAIModel();
-    const nanopubUrls = getAllNanopubUrls();
-    
-    // Update summary
+    // Update summary with real data
     if (resultsSummary) {
+        const selectedTypes = getSelectedContentTypes();
+        const nanopubUrls = getAllNanopubUrls();
+        
         resultsSummary.innerHTML = `
             <div class="summary-item">
-                <span class="summary-badge">${selectedContentTypes.length}</span>
+                <span class="summary-badge">${selectedTypes.length}</span>
                 <span>Content Types Generated</span>
             </div>
             <div class="summary-item">
@@ -512,15 +457,84 @@ function displayFormattedResults(branchResultsData, batchId) {
                 <span>Nanopublications Processed</span>
             </div>
             <div class="summary-item">
-                <span class="summary-badge">${selectedModel}</span>
-                <span>AI Model Used</span>
+                <span class="summary-badge">REAL</span>
+                <span>AI-Generated Content</span>
             </div>
         `;
     }
     
-    // For now, show the demo formatted results since we have the structure ready
-    // In production, this would parse the actual branchResultsData
-    showFormattedDemoResults(nanopubUrls, selectedContentTypes, selectedModel);
+    // Extract and display the REAL processing summary
+    let realContent = '';
+    
+    if (branchResultsData.processing_summary) {
+        // Display the actual processing summary with proper formatting
+        realContent = `✅ REAL CONTENT GENERATION COMPLETED
+
+${branchResultsData.processing_summary}
+
+📁 View full results at: ${branchResultsData.branch_url || `https://github.com/ScienceLiveHub/nanopub-viewer/tree/results-${branchResultsData.workflow_run_id}/processing-results/${batchId}`}
+
+🎯 This is your ACTUAL AI-generated content, not a demonstration.`;
+        
+    } else if (branchResultsData.individual_files && branchResultsData.individual_files.length > 0) {
+        realContent = `✅ REAL CONTENT FILES GENERATED
+
+Batch ID: ${batchId}
+Files Generated: ${branchResultsData.individual_files.length}
+
+📄 Generated Files:
+${branchResultsData.individual_files.map(file => `• ${file.name} (${file.size} bytes)`).join('\n')}
+
+📁 View files at: ${branchResultsData.branch_url}
+
+🎯 This is your ACTUAL AI-generated content, not a demonstration.`;
+        
+    } else {
+        realContent = `✅ REAL CONTENT GENERATION COMPLETED
+
+Batch ID: ${batchId}
+Status: SUCCESS
+Method: nanopub-content-generator package with AI model
+Results Branch: ${branchResultsData.results_branch}
+
+📁 View results at: ${branchResultsData.branch_url}
+
+🎯 Your actual AI-generated content has been created and is available in the GitHub repository.
+This is NOT demonstration content - these are real results from processing your nanopublications.`;
+    }
+    
+    executionContent.textContent = realContent;
+    console.log('✅ ACTUAL results displayed successfully (not demo content)');
+}
+
+// Display partial results when we have some data but not the full summary
+function displayPartialResults(branchResultsData, batchId) {
+    console.log('📊 Displaying partial results');
+    
+    const executionResults = getElementById('execution-results');
+    const executionContent = getElementById('execution-content');
+    
+    if (!executionResults || !executionContent) return;
+    
+    executionResults.style.display = 'block';
+    
+    const partialContent = `✅ CONTENT GENERATION COMPLETED
+
+Batch ID: ${batchId}
+Status: SUCCESS
+Results Available: ${branchResultsData.has_results ? 'YES' : 'PROCESSING'}
+Files Found: ${branchResultsData.files_found || 0}
+
+📁 View results at: ${branchResultsData.branch_url}
+
+🎯 Your content has been generated. Check the GitHub repository branch for the complete results.
+
+Repository Branch: ${branchResultsData.results_branch}
+Expected Path: processing-results/${batchId}/content/
+
+This is your REAL generated content, not a demonstration.`;
+
+    executionContent.textContent = partialContent;
 }
 
 // Fetch full results from committed branch files
@@ -549,7 +563,70 @@ async function fetchBranchResults(batchId, workflowRunId) {
     }
 }
 
-// Display formatted demo results (renamed from showRefinedDemoResults)
+// Fallback summary display (only used if branch results fail)
+function displayResultsSummary(resultData, batchId) {
+    console.log('📋 Displaying results summary (fallback)');
+    
+    const executionResults = getElementById('execution-results');
+    const executionContent = getElementById('execution-content');
+    
+    if (!executionResults || !executionContent) return;
+    
+    executionResults.style.display = 'block';
+    
+    const summaryContent = `✅ CONTENT GENERATION COMPLETED
+
+Batch ID: ${batchId}
+Workflow Run: ${resultData.workflow_run?.id}
+Status: ${resultData.status}
+Completed: ${resultData.workflow_run?.updated_at ? new Date(resultData.workflow_run.updated_at).toLocaleString() : 'Recently'}
+
+📁 Check GitHub repository for results:
+${resultData.workflow_run?.html_url || 'https://github.com/ScienceLiveHub/nanopub-viewer/actions'}
+
+Expected results branch: results-${resultData.workflow_run?.id}
+Expected path: processing-results/${batchId}/content/
+
+🎯 Your content has been generated. The results are available in the GitHub repository.`;
+
+    executionContent.textContent = summaryContent;
+}
+
+// Display failure information
+function displayFailureInfo(resultData) {
+    const executionResults = getElementById('execution-results');
+    const executionContent = getElementById('execution-content');
+    
+    if (!executionResults || !executionContent) return;
+    
+    executionResults.style.display = 'block';
+    
+    const selectedTypes = getSelectedContentTypes();
+    const selectedModel = getSelectedAIModel();
+    
+    const failureDisplay = `❌ CONTENT GENERATION FAILED
+
+Batch ID: ${resultData.batch_id}
+Status: FAILED
+Workflow Run: ${resultData.workflow_run?.id || 'Unknown'}
+Failed at: ${resultData.workflow_run?.updated_at ? new Date(resultData.workflow_run.updated_at).toLocaleString() : 'Unknown'}
+
+ATTEMPTED CONFIGURATION
+Content Types: ${selectedTypes.join(', ')}
+AI Model: ${selectedModel}
+User Instructions: ${getUserInstructions() || 'None provided'}
+
+ERROR DETAILS
+Check the workflow logs for detailed error information:
+${resultData.workflow_run?.html_url || 'https://github.com/ScienceLiveHub/nanopub-viewer/actions'}
+
+ATTEMPTED NANOPUBLICATION URLS
+${getAllNanopubUrls().map((url, idx) => `${idx + 1}. ${url}`).join('\n')}`;
+
+    executionContent.textContent = failureDisplay;
+}
+
+// Show formatted demo results (only as absolute fallback)
 function showFormattedDemoResults(nanopubUrls, selectedContentTypes, selectedModel) {
     const executionResults = getElementById('execution-results');
     const executionContent = getElementById('execution-content');
@@ -562,143 +639,40 @@ function showFormattedDemoResults(nanopubUrls, selectedContentTypes, selectedMod
     const userInstructions = getUserInstructions();
     const batchDescription = getBatchDescription();
     
-    const demoContent = {};
-    
-    selectedContentTypes.forEach(type => {
-        switch (type) {
-            case 'linkedin_post':
-                demoContent[type] = `Breaking: Advanced nanopublication research reveals transformative potential for scientific communication.
+    const results = `⚠️ DEMONSTRATION MODE - NETWORK ISSUES DETECTED
 
-New analysis demonstrates how structured data sharing can revolutionize research collaboration. Key findings show 40% improvement in research discoverability and significant advances in cross-study connections.
+This is demonstration content shown due to network connectivity issues.
+Your actual content generation may still be processing successfully.
 
-This breakthrough in semantic web technology could fundamentally change how we validate and share scientific knowledge across disciplines.
+Check GitHub repository for real results:
+https://github.com/ScienceLiveHub/nanopub-viewer/branches
 
-The implications for open science are profound. What opportunities do you see for structured research data in your field?
+================ DEMO PREVIEW ================
 
-#OpenScience #ResearchInnovation #DataSharing #ScientificCollaboration #SementicWeb`;
-                break;
-                
-            case 'bluesky_post':
-                demoContent[type] = `New research shows structured nanopublications enhance scientific collaboration by 40%. Major breakthrough for open science initiatives. #ResearchBreakthrough #OpenScience`;
-                break;
-                
-            case 'scientific_paper':
-                demoContent[type] = `Introduction
+LinkedIn Post Sample:
+"Did you know that population changes can reveal hidden patterns in history? 
+Recent research shows that Germany's population growth and decline mirror major historical events!
 
-The exponential growth of scientific literature necessitates innovative approaches to knowledge representation and validation. Nanopublications represent a paradigm shift toward structured, machine-readable scientific assertions with comprehensive provenance tracking.
+In the 19th century, Germany's population surged as industrialization took off. 
+But during World War I, it plummeted due to massive losses on the battlefield. 
+Then, after WWII, the country experienced a baby boom as people rebuilt their lives.
 
-Methods
+What can we learn from this? Understanding demographic trends helps us grasp 
+the complexities of historical events. It's also a reminder that population changes 
+have far-reaching impacts on society and economy!
 
-This comprehensive analysis examined ${nanopubUrls.length} nanopublications using advanced RDF parsing protocols and semantic analysis frameworks. Content extraction utilized the nanopub Python library with rigorous validation against W3C semantic web standards.
+#Demographics #History #Germany #PopulationGrowth #WWI #WWII"
 
-Results
+===============================================
 
-Analysis revealed highly consistent semantic structures across nanopublications, with an average of 23.4 triples per assertion graph. Provenance information was comprehensively documented in 95% of examined publications, demonstrating robust attribution patterns and metadata integration.
+⚠️ This is NOT your actual generated content.
+Your real results should be available in the GitHub repository if processing completed successfully.
 
-Discussion
-
-The structured nature of nanopublications enables sophisticated automated processing capabilities and substantially improves research reproducibility metrics. These findings demonstrate significant potential for enhanced scientific communication through standardized knowledge graphs and semantic web technologies.
-
-Conclusion
-
-Nanopublications provide a robust, scalable framework for structured scientific communication with comprehensive attribution and validation mechanisms, supporting the advancement of open science initiatives.
-
-References
-[1] Comprehensive Nanopublication Network Analysis - Semantic Web Evaluation
-[2] ${nanopubUrls[0] || 'https://w3id.org/np/example'} - Primary nanopublication source
-[3] W3C Semantic Web Standards - Validation Framework Documentation`;
-                break;
-                
-            case 'opinion_paper':
-                demoContent[type] = `The Future of Scientific Publishing: Embracing Structured Knowledge Systems
-
-The scientific community faces a pivotal moment in knowledge dissemination methodologies. Traditional publication frameworks, while historically invaluable, increasingly demonstrate limitations in addressing the demands of modern, interconnected research environments.
-
-The Current Challenge
-
-Our analysis of ${nanopubUrls.length} nanopublications reveals the substantial untapped potential of structured scientific communication systems. Unlike conventional publications that constrain knowledge within narrative formats, nanopublications provide machine-readable assertions with comprehensive provenance and attribution frameworks.
-
-Evidence for Transformation
-
-Data analysis demonstrates remarkable consistency in semantic structure, with standardized attribution patterns appearing in 95% of examined publications. This consistency enables automated validation processes, cross-study connections, and enhanced reproducibility metrics—objectives that remain challenging within traditional publishing frameworks.
-
-The Path Forward
-
-The scientific community must advocate for structured knowledge representation as a strategic enhancement to traditional publishing methodologies. Evidence suggests that integrating human-readable narratives with machine-processable assertions creates more robust, accessible, and verifiable scientific records.
-
-Conclusion
-
-The transition to structured scientific publishing represents not merely technological advancement, but an essential evolution for reproducible, accessible science. The nanopublication framework provides a proven foundation for this critical transformation in scientific communication.`;
-                break;
-        }
-    });
-    
-    const results = `SCIENCE LIVE CONTENT GENERATION - DEMONSTRATION
-
-Batch ID: ${batchId}
-Timestamp: ${new Date().toISOString()}
-Status: SUCCESS (Demonstration Mode)
-Content Types Generated: ${selectedContentTypes.length}
-AI Model: ${selectedModel}
-
-CONFIGURATION SUMMARY
-Selected Content Types: ${selectedContentTypes.join(', ')}
-User Instructions: ${userInstructions || 'High-quality content generation guidelines applied'}
-Batch Description: ${batchDescription || 'Science Live content generation demonstration'}
-
-GENERATED CONTENT
-
-${selectedContentTypes.map(type => `
-================================================
-${type.toUpperCase().replace('_', ' ')} CONTENT
-================================================
-
-${demoContent[type] || 'Content would be generated here...'}
-
-Length: ${demoContent[type] ? demoContent[type].length : 0} characters
-Status: Generated successfully
-File: ${type}_${batchId}.txt
-Quality: High
-`).join('\n')}
-
-CONTENT GENERATION FEATURES
-✓ Scientific accuracy maintained through comprehensive source verification
-✓ Publication-ready formatting and presentation standards applied
-✓ Comprehensive citation and attribution protocols implemented
-✓ Platform-optimized content structure and strategic messaging
-✓ User instructions integrated: "${userInstructions || 'High-quality science communication standards'}"
-✓ Model: ${selectedModel} - ${selectedModel.includes('70b') ? 'Maximum quality, comprehensive analysis' : selectedModel.includes('8b') ? 'High quality, balanced processing' : 'Efficient quality, optimized processing'}
-
-SOURCE NANOPUBLICATIONS
-${nanopubUrls.map((url, idx) => `${idx + 1}. ${url}`).join('\n')}
-
-CONTENT APPLICATIONS
-LinkedIn Article: Ready for business networking and industry engagement
-Social Media Post: Optimized for multi-platform sharing with strategic messaging
-Academic Paper: Publication-ready format suitable for peer review
-Editorial Article: Evidence-based content for industry publications
-
-QUALITY ASSURANCE STANDARDS
-All generated content adheres to:
-• Scientific accuracy from verified nanopublication sources
-• Publication-ready formatting and presentation standards
-• Comprehensive attribution and citation protocols
-• Platform-specific optimization and best practices
-• Evidence-based content development using AI model: ${selectedModel}
-
-GENERATED FILES
-- content/${selectedContentTypes.map(type => `${type}_${batchId}.txt`).join('\n- content/')}
-- config/generation_config_${batchId}.json
-- reports/processing_report_${batchId}.pdf
-
-Processing Duration: ${(nanopubUrls.length * selectedContentTypes.length * 1.8 + Math.random() * 5).toFixed(1)} seconds
-Content Quality Score: ${(88 + Math.random() * 12).toFixed(1)}%
-Standards Compliance: 100%
-
-This demonstration showcases the advanced content generation capabilities.
-The production implementation processes actual nanopublication data and creates
-publication-ready content using sophisticated AI while maintaining scientific accuracy
-and comprehensive attribution standards.`;
+Configuration Attempted:
+- Content Types: ${selectedContentTypes.join(', ')}
+- AI Model: ${selectedModel}
+- Nanopublications: ${nanopubUrls.length}
+- User Instructions: ${userInstructions || 'Default guidelines'}`;
     
     executionContent.textContent = results;
 }
@@ -722,71 +696,6 @@ function formatBytes(bytes) {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-// Fallback summary display
-function displayResultsSummary(resultData, batchId, executionContent) {
-    // Instead of showing raw text, use the formatted display
-    const selectedTypes = getSelectedContentTypes();
-    const selectedModel = getSelectedAIModel();
-    const nanopubUrls = getAllNanopubUrls();
-    
-    // Show the beautiful formatted results instead of raw text
-    showFormattedDemoResults(nanopubUrls, selectedTypes, selectedModel);
-}
-
-// Display failure information
-function displayFailureInfo(resultData) {
-    const executionResults = getElementById('execution-results');
-    const executionContent = getElementById('execution-content');
-    
-    if (!executionResults || !executionContent) return;
-    
-    executionResults.style.display = 'block';
-    
-    const selectedTypes = getSelectedContentTypes();
-    const selectedModel = getSelectedAIModel();
-    
-    const failureDisplay = `CONTENT GENERATION FAILED
-
-Batch ID: ${resultData.batch_id}
-Status: FAILED
-Workflow Run: ${resultData.workflow_run.id}
-Failed at: ${new Date(resultData.workflow_run.updated_at).toLocaleString()}
-
-ATTEMPTED CONFIGURATION
-Content Types: ${selectedTypes.join(', ')}
-AI Model: ${selectedModel}
-User Instructions: ${getUserInstructions() || 'None provided'}
-
-ERROR DETAILS
-Check the workflow logs for detailed error information:
-${resultData.workflow_run.html_url}
-
-COMMON ISSUES
-• Ollama service not available
-• AI model not installed or accessible
-• Network connectivity problems
-• Invalid nanopublication URLs
-• Content generation timeout
-
-TROUBLESHOOTING STEPS
-1. Verify nanopublication URLs are accessible
-2. Check GitHub Actions logs for specific errors
-3. Try with fewer content types or smaller AI model
-4. Ensure Ollama is properly configured in the workflow
-5. Consider using basic processing mode
-
-ATTEMPTED NANOPUBLICATION URLS
-${getAllNanopubUrls().map((url, idx) => `${idx + 1}. ${url}`).join('\n')}
-
-RESOLUTION OPTIONS
-- Retry with fewer content types
-- Use a smaller/faster AI model (llama2:7b)
-- Process fewer nanopublications at once
-- Contact technical support if issues persist`;
-
-    executionContent.textContent = failureDisplay;
 }
 
 // Example loading
@@ -913,5 +822,5 @@ window.toggleAdvancedOptions = toggleAdvancedOptions;
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
-    console.log('Science Live Content Generator initialized');
+    console.log('Science Live Content Generator initialized (REAL RESULTS FIXED)');
 });
