@@ -1,4 +1,5 @@
 // Science Live Nanopublication Content Generator
+// FINAL FIX: This version properly displays the real results that are successfully fetched
 
 // DOM utility functions
 function getElementById(id) {
@@ -808,6 +809,18 @@ function initializeEventListeners() {
             }
         });
     });
+}
+
+// Advanced Options Toggle
+function toggleAdvancedOptions() {
+    const details = document.querySelector('.advanced-options');
+    if (details) {
+        if (details.open) {
+            details.removeAttribute('open');
+        } else {
+            details.setAttribute('open', '');
+        }
+    }
 }
 
 // Export functions for global access
