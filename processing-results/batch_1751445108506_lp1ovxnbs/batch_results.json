@@ -1,0 +1,25 @@
+{
+  "batch_id": "batch_1751445108506_lp1ovxnbs",
+  "processing_method": "python_package_async_fixed",
+  "package_name": "nanopub-content-generator",
+  "total_nanopubs": 1,
+  "selected_nanopub_urls": [
+    "https://w3id.org/np/RA5aU0Cg0MKc5moV6xOk_ThBwxah5xipXgz6sy0F29N2Q"
+  ],
+  "content_types_requested": [
+    "scientific_paper"
+  ],
+  "content_generated": 1,
+  "processing_time": 150.75537014007568,
+  "ai_model": "llama3:8b",
+  "user_instructions": "Use the content of the nanopublications and do not invent facts",
+  "batch_description": "Science Live article content generation",
+  "generated_files": [
+    "results/content/scientific_paper_batch_1751445108506_lp1ovxnbs.txt"
+  ],
+  "content_generation_enabled": true,
+  "successful_templates": 1,
+  "failed_templates": 0,
+  "timestamp": "2025-07-02T08:36:54.044035",
+  "architecture": "simple_package_based_async_fixed"
+}
