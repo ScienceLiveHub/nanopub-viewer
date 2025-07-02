@@ -1,0 +1,40 @@
+=== SCIENCE LIVE SIMPLE FIXED ORCHESTRATION RESULTS ===
+Generated: 2025-07-02 08:54:35
+Batch ID: batch_1751446244614_53rgd2e9m
+
+=== SIMPLE ARCHITECTURE SUMMARY (FIXED) ===
+📦 Package: nanopub-content-generator (installed Python package)
+🔧 Fix Applied: Proper async/await handling for run_pipeline()
+🏗️  Architecture: Direct package import with async orchestration
+📊 Nanopublications: 1
+🎯 Content Types: linkedin_post
+🤖 AI Model: llama3:8b
+⏱️  Processing Time: 93.75 seconds
+✅ Success Rate: 1/1 content types
+❌ Failed: 0/1 content types
+
+=== GENERATED CONTENT ===
+📄 linkedin_post_batch_1751446244614_53rgd2e9m.txt
+
+=== CONFIGURATION ===
+📝 User Instructions: Use the content of the nanopublications and do not invent facts
+📋 Batch Description: Science Live social content generation
+
+=== SIMPLE ARCHITECTURE BENEFITS (FIXED) ===
+✅ Direct Package Import: Clean import and async function calls
+✅ Proper Async Handling: Uses asyncio.run() for event loop management
+✅ No CLI Complexity: Direct Python package usage
+✅ Better Error Handling: Async exceptions properly caught
+✅ Same as Local: Identical behavior to your working local setup
+✅ Environment Variables: Uses same env vars as your local setup
+
+=== PACKAGE DETAILS ===
+Installation: pip install git+https://github.com/ScienceLiveHub/nanopub-content-generator.git
+Import: from nanopub_content_generator import NanopubContentGenerator
+Usage: await generator.run_pipeline(...)  # PROPERLY AWAITED NOW
+Event Loop: asyncio.run(async_main())  # PROPER ASYNC HANDLING
+
+Generated files: 1
+Architecture status: SUCCESS
+Package integration: WORKING
+Async handling: FIXED

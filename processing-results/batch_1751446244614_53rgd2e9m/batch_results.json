@@ -1,0 +1,25 @@
+{
+  "batch_id": "batch_1751446244614_53rgd2e9m",
+  "processing_method": "python_package_async_fixed",
+  "package_name": "nanopub-content-generator",
+  "total_nanopubs": 1,
+  "selected_nanopub_urls": [
+    "https://w3id.org/np/RAaCbrybsINHksiFpzcamlUkSU9-5_u3WtcP4hC3jbkQ4"
+  ],
+  "content_types_requested": [
+    "linkedin_post"
+  ],
+  "content_generated": 1,
+  "processing_time": 93.75402498245239,
+  "ai_model": "llama3:8b",
+  "user_instructions": "Use the content of the nanopublications and do not invent facts",
+  "batch_description": "Science Live social content generation",
+  "generated_files": [
+    "results/content/linkedin_post_batch_1751446244614_53rgd2e9m.txt"
+  ],
+  "content_generation_enabled": true,
+  "successful_templates": 1,
+  "failed_templates": 0,
+  "timestamp": "2025-07-02T08:54:35.370120",
+  "architecture": "simple_package_based_async_fixed"
+}
