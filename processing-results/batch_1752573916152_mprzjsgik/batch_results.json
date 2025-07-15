@@ -1,0 +1,25 @@
+{
+  "batch_id": "batch_1752573916152_mprzjsgik",
+  "processing_method": "python_package_async_fixed",
+  "package_name": "nanopub-content-generator",
+  "total_nanopubs": 1,
+  "selected_nanopub_urls": [
+    "https://w3id.org/np/RAeCQAe0XKmQHnwJhMe6Sj0hinsROZdj068Hoy-MmUGY4"
+  ],
+  "content_types_requested": [
+    "opinion_paper"
+  ],
+  "content_generated": 1,
+  "processing_time": 136.66571378707886,
+  "ai_model": "llama3:8b",
+  "user_instructions": "Use the content of the nanopublications and do not invent facts",
+  "batch_description": "Science Live summary content generation",
+  "generated_files": [
+    "results/content/opinion_paper_batch_1752573916152_mprzjsgik.txt"
+  ],
+  "content_generation_enabled": true,
+  "successful_templates": 1,
+  "failed_templates": 0,
+  "timestamp": "2025-07-15T10:09:57.545589",
+  "architecture": "simple_package_based_async_fixed"
+}
